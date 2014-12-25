@@ -273,7 +273,8 @@ public class MainActivity extends ActionBarActivity
                 case MESSAGE_READ:
 
                     byte[] data = (byte[]) msg.obj;
-                    message = new String(data);
+                    int bytes = msg.arg1;
+                    message = new String(data, 0, bytes);
 
                     Log.i(TAG, message);
 

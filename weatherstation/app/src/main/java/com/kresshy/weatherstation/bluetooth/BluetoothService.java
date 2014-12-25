@@ -345,23 +345,29 @@ public class BluetoothService {
 		}
 
 		public void run() {
-			byte[] buffer = new byte[2048]; // buffer store for the stream
-
+			byte[] buffer = new byte[1024]; // buffer store for the stream
+            int sumBytes = 0;
 			int bytes = 0; // bytes returned from read()
 
 			// Keep listening to the InputStream until an exception occurs
 			while (true) {
 				try {
 
-					// Read from the InputStream
-					bytes = mmInStream.read(buffer);
+                    int count = 0;
+
+                    // Read from the InputStream
+                    while ((count = mmInStream.available()) > 0) {
+                        bytes = mmInStream.read(buffer, sumBytes, count);
+                        sumBytes += bytes;
+                    }
 
 					// Send the obtained bytes to the UI activity
-					mHandler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+					mHandler.obtainMessage(MainActivity.MESSAGE_READ, sumBytes, -1, buffer).sendToTarget();
+                    sumBytes = 0;
 
 					try {
 
-						Thread.sleep(30);
+						Thread.sleep(500);
 
 					} catch (InterruptedException e) {
 						e.printStackTrace();
