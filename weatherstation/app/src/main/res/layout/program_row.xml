@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <TextView 
+        android:id="@+id/num"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"/>
+    
+    <TextView 
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000.00"/>
+    
+    <TextView 
+        android:id="@+id/servo1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000"/>
+   
+    <TextView 
+        android:id="@+id/servo2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000"/>
+    
+    <TextView 
+        android:id="@+id/servo3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000"/>
+    
+</LinearLayout>
+

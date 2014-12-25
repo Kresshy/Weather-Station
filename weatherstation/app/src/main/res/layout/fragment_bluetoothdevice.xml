@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    tools:context="com.kresshy.weatherstation.fragment.BluetoothDeviceListFragment">
+
+    <TextView
+        android:id="@+id/text_select_timer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dip"
+        android:layout_marginTop="10dip"
+        android:text="Please select your weather station"
+        android:textSize="20dip"
+        android:textStyle="italic|bold" />
+
+    <TextView
+        android:id="@+id/text_paired_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_select_timer"
+        android:layout_marginLeft="25dip"
+        android:layout_marginTop="20dip"
+        android:layout_marginBottom="10dp"
+        android:text="Paired Devices"
+        android:textColor="#000" />
+
+    <ListView
+        android:id="@+id/listview_paired_devices"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_below="@id/text_paired_devices"
+        android:layout_marginLeft="25dip"
+        android:layout_marginRight="25dip"
+        android:fadingEdge="none"
+        android:stackFromBottom="false" />
+
+    <TextView
+        android:id="@+id/text_new_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listview_paired_devices"
+        android:layout_marginLeft="25dip"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="Found Devices"
+        android:textColor="#000" />
+
+
+    <Button
+        android:id="@+id/button_skip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dip"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="Skip connection"
+        android:textSize="20dip" />
+
+    <ListView
+        android:id="@+id/listview_new_devices"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@id/button_skip"
+        android:layout_below="@id/text_new_devices"
+        android:layout_marginLeft="25dip"
+        android:layout_marginRight="25dip"
+        android:layout_marginBottom="50dip"
+        android:fadingEdge="none"
+        android:stackFromBottom="false" />
+
+</RelativeLayout>
