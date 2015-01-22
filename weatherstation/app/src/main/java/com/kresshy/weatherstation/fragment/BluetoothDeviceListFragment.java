@@ -1,8 +1,8 @@
 package com.kresshy.weatherstation.fragment;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +10,8 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.kresshy.weatherstation.MainActivity;
 import com.kresshy.weatherstation.R;
+import com.kresshy.weatherstation.activity.WeatherStationActivity;
 
 
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
@@ -23,6 +23,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
      */
     private AbsListView mNewDeviceListView;
     private AbsListView mPairedDeviceListView;
+    private TextView pairedDevices;
+    private TextView newDevices;
 
     /**
      * The Adapter which will be used to populate the ListView/GridView with
@@ -39,12 +41,20 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+            mListener.startBluetoothDiscovery();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // TODO: Change Adapter to display your content
-        // mNewDeviceListAdapter = new ArrayAdapter<String>(getActivity(), R.layout.device_name);
-        // mPairedDeviceListAdapter = new ArrayAdapter<String>(getActivity(), R.layout.device_name);
     }
 
     @Override
@@ -55,13 +65,11 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         // Set the adapter
         mNewDeviceListView = (AbsListView) view.findViewById(R.id.listview_new_devices);
         mPairedDeviceListView = (AbsListView) view.findViewById(R.id.listview_paired_devices);
+        pairedDevices = (TextView) view.findViewById(R.id.text_paired_devices);
+        newDevices = (TextView) view.findViewById(R.id.text_new_devices);
 
-        mNewDeviceListView.setAdapter(((MainActivity) getActivity()).getNewDevicesArrayAdapter());
-        mPairedDeviceListView.setAdapter(((MainActivity) getActivity()).getPairedDevicesArrayAdapter());
-
-        if(((MainActivity) getActivity()).getPairedDevices().size() > 0) {
-            view.findViewById(R.id.text_paired_devices).setVisibility(View.VISIBLE);
-        }
+        mNewDeviceListView.setAdapter(((WeatherStationActivity) getActivity()).getNewDevicesArrayAdapter());
+        mPairedDeviceListView.setAdapter(((WeatherStationActivity) getActivity()).getPairedDevicesArrayAdapter());
 
         // Set OnItemClickListener so we can be notified on item clicks
         mNewDeviceListView.setOnItemClickListener(this);
@@ -71,14 +79,11 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-            mListener.startBluetoothDiscovery();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+    public void onStart() {
+        super.onStart();
+
+        if(((WeatherStationActivity) getActivity()).getPairedDevices() != null) {
+            pairedDevices.setVisibility(View.VISIBLE);
         }
     }
 

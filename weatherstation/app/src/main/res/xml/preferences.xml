@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="pref_reconnect"
+        android:title="@string/pref_reconnect"
+        android:summary="@string/pref_reconnect_summ"
+        android:defaultValue="true" />
+
+    <ListPreference
+        android:key="pref_interval"
+        android:entryValues="@array/pref_interval_values"
+        android:entries="@array/pref_interval_entries"
+        android:defaultValue="300"
+        android:title="@string/pref_interval"
+        android:summary="@string/pref_interval_summ" />
+
+</PreferenceScreen>
