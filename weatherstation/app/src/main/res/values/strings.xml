@@ -3,9 +3,10 @@
 
     <string name="app_name">Weather Station</string>
 
-    <string name="title_section1">Bluetooth Devices</string>
-    <string name="title_section2">Weather status</string>
+    <string name="title_section1">Weather</string>
+    <string name="title_section2">Bluetooth Stations</string>
     <string name="title_section3">Settings</string>
+    <string name="title_section4">Quit</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

@@ -386,8 +386,8 @@ public class BluetoothConnection {
                     String end = "_end";
                     StringBuilder curMsg = new StringBuilder();
 
-                    if (D)
-                        Log.i(TAG, "Before reading weather data part");
+//                    if (D)
+//                        Log.i(TAG, "Before reading weather data part");
 
                     if (!mmSocket.isConnected()) {
                         throw new IOException();
@@ -397,20 +397,20 @@ public class BluetoothConnection {
 
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
                         int endIdx = curMsg.indexOf(end);
-                        if (D)
-                            Log.i(TAG, "After reading weather data part");
+//                        if (D)
+//                            Log.i(TAG, "After reading weather data part");
 
                         if (endIdx != -1) {
-                            if (D)
-                                Log.i(TAG, "New weather data available");
+//                            if (D)
+//                                Log.i(TAG, "New weather data available");
                             String fullMessage = curMsg.substring(0, endIdx + end.length());
                             curMsg.delete(0, endIdx + end.length());
                             mHandler.obtainMessage(WeatherStationActivity.MESSAGE_READ, bytes, -1, fullMessage).sendToTarget();
                         }
                     }
 
-                    if (D)
-                        Log.i(TAG, "Sleeping the thread for 100");
+//                    if (D)
+//                        Log.i(TAG, "Sleeping the thread for 100");
 
                     Thread.sleep(100);
 

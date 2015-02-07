@@ -116,7 +116,6 @@ public class WeatherStationActivity extends ActionBarActivity
 
         // setting up sharedpreferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
     }
 
     @Override
@@ -132,7 +131,7 @@ public class WeatherStationActivity extends ActionBarActivity
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
 
-        if (bluetoothAdapter.isEnabled() && bluetoothConnection.getState() != BluetoothConnection.State.disconnected) {
+        if (bluetoothAdapter.isEnabled() && bluetoothConnection.getState() != BluetoothConnection.State.connected) {
             bluetoothConnection.start();
         }
     }
@@ -250,13 +249,13 @@ public class WeatherStationActivity extends ActionBarActivity
         switch (position) {
             case 0:
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, new BluetoothDeviceListFragment())
+                        .replace(R.id.container, new DashboardFragment())
                         .commit();
 
                 break;
             case 1:
                 fragmentManager.beginTransaction()
-                        .replace(R.id.container, new DashboardFragment())
+                        .replace(R.id.container, new BluetoothDeviceListFragment())
                         .commit();
 
                 break;
@@ -265,6 +264,14 @@ public class WeatherStationActivity extends ActionBarActivity
                         .replace(R.id.container, new SettingsFragment())
                         .commit();
 
+                break;
+            case 3:
+                if (bluetoothAdapter.isEnabled()) {
+                    Log.i(TAG, "Disabling bluetooth adapter");
+                    bluetoothAdapter.disable();
+                }
+
+                finish();
                 break;
         }
 
@@ -291,7 +298,6 @@ public class WeatherStationActivity extends ActionBarActivity
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -357,12 +363,24 @@ public class WeatherStationActivity extends ActionBarActivity
 
                 case MESSAGE_STATE:
 
+                    BluetoothConnection.State state = (BluetoothConnection.State) msg.obj;
+
+                    switch (state) {
+                        case connecting:
+                            Toast.makeText(getApplicationContext(), "Connecting to weather station", Toast.LENGTH_LONG).show();
+                            break;
+                        case disconnected:
+                            Toast.makeText(getApplicationContext(), "Disconnected from weather station", Toast.LENGTH_LONG).show();
+                            break;
+                    }
+
+
                     break;
 
                 case MESSAGE_CONNECTED:
 
-                    Toast.makeText(getApplicationContext(), "Connected to timer", Toast.LENGTH_LONG).show();
-                    mNavigationDrawerFragment.selectItem(1);
+                    Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
+                    mNavigationDrawerFragment.selectItem(0);
 
                     break;
             }

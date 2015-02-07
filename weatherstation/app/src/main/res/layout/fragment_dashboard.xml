@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:weightSum="11"
+    android:padding="5dp"
     tools:context="com.kresshy.weatherstation.fragment.DashboardFragment">
 
     <LinearLayout
