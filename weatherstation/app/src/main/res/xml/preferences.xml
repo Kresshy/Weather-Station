@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference
-        android:key="pref_reconnect"
-        android:title="@string/pref_reconnect"
-        android:summary="@string/pref_reconnect_summ"
-        android:defaultValue="true" />
+    <PreferenceCategory android:title="Connection Settings">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_reconnect"
+            android:summary="@string/pref_reconnect_summ"
+            android:title="@string/pref_reconnect" />
 
-    <ListPreference
-        android:key="pref_interval"
-        android:entryValues="@array/pref_interval_values"
-        android:entries="@array/pref_interval_entries"
-        android:defaultValue="300"
-        android:title="@string/pref_interval"
-        android:summary="@string/pref_interval_summ" />
+        <!--<ListPreference-->
+            <!--android:defaultValue="bluetooth"-->
+            <!--android:entries="@array/pref_connection_type_entries"-->
+            <!--android:entryValues="@array/pref_connection_type_values"-->
+            <!--android:key="pref_connection_type"-->
+            <!--android:summary="@string/pref_connection_type_summ"-->
+            <!--android:title="@string/pref_connection_type" />-->
+    </PreferenceCategory>
 
+    <!--<PreferenceCategory android:title="Wi-Fi Weather Station">-->
+        <!--<EditTextPreference-->
+            <!--android:key="pref_connection_ssid"-->
+            <!--android:summary="Weather Station name" />-->
+
+        <!--<EditTextPreference-->
+            <!--android:key="pref_connection_password"-->
+            <!--android:password="true"-->
+            <!--android:summary="Weather Station password" />-->
+    <!--</PreferenceCategory>-->
+
+    <PreferenceCategory android:title="Display Settings">
+        <ListPreference
+            android:defaultValue="300"
+            android:entries="@array/pref_interval_entries"
+            android:entryValues="@array/pref_interval_values"
+            android:key="pref_interval"
+            android:summary="@string/pref_interval_summ"
+            android:title="@string/pref_interval" />
+    </PreferenceCategory>
 </PreferenceScreen>

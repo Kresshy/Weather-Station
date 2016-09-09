@@ -19,8 +19,19 @@
     <string name="pref_reconnect_summ">Automatically reconnect on bluetooth connection interrupt</string>
     <string name="pref_interval">Interval</string>
     <string name="pref_interval_summ">The time interval to show on the graphs</string>
-    
+    <string name="pref_connection_type">Connection type</string>
+    <string name="pref_connection_type_summ">Choose the connetion type (Wi-Fi or Bluetooth)</string>
+    <string name="pref_wifi_station_title">WI-FI Weather Station</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="reconnect_message">Would you like to reconnect to your weather station?</string>
+
     <string name="PREFERENCE_FILE_KEY">com.kresshy.weatherstation.PREFERENCE_FILE_KEY</string>
     <string name="PREFERENCE_CONNECTED">CONNECTED</string>
     <string name="PREFERENCE_DEVICE_ADDRESS">CONNECTED_DEVICE_ADDRESS</string>
+    <string name="PREFERENCE_CONNECTION_TYPE">CONNECTION_TYPE</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

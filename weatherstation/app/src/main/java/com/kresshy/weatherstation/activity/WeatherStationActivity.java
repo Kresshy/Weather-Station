@@ -1,10 +1,12 @@
 package com.kresshy.weatherstation.activity;
 
+import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -133,6 +135,7 @@ public class WeatherStationActivity extends ActionBarActivity
 
         if (bluetoothAdapter.isEnabled() && bluetoothConnection.getState() != BluetoothConnection.State.connected) {
             bluetoothConnection.start();
+            reconnectPreviousWeatherStation();
         }
     }
 
@@ -187,6 +190,7 @@ public class WeatherStationActivity extends ActionBarActivity
                     break;
                 default:
                     bluetoothConnection.start();
+                    break;
             }
         }
     }
@@ -373,15 +377,12 @@ public class WeatherStationActivity extends ActionBarActivity
                             Toast.makeText(getApplicationContext(), "Disconnected from weather station", Toast.LENGTH_LONG).show();
                             break;
                     }
-
-
                     break;
 
                 case MESSAGE_CONNECTED:
 
                     Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
                     mNavigationDrawerFragment.selectItem(0);
-
                     break;
             }
         }
@@ -407,7 +408,7 @@ public class WeatherStationActivity extends ActionBarActivity
     @Override
     public void onDeviceSelectedToConnect(String address) {
 
-        sharedPreferences.edit().putString("CONNECTED_DEVICE_ADDRESS", address).commit();
+        sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).commit();
 
         BluetoothDevice mBluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
         Log.i(TAG, mBluetoothDevice.getName() + mBluetoothDevice.getAddress());
@@ -444,6 +445,8 @@ public class WeatherStationActivity extends ActionBarActivity
                 Log.v(TAG, "RECEIVED BLUETOOTH STATE CHANGE: STATE_ON");
 
                 bluetoothConnection.start();
+
+                reconnectPreviousWeatherStation();
 
                 pairedDevices = bluetoothAdapter.getBondedDevices();
 
@@ -484,6 +487,39 @@ public class WeatherStationActivity extends ActionBarActivity
             }
         }
     };
+
+    public void reconnectPreviousWeatherStation() {
+        if (sharedPreferences.getBoolean("pref_reconnect", false)) {
+            Log.i(TAG, "We should restore the connection");
+            final String address = sharedPreferences.getString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
+
+            if (address != "00:00:00:00:00:00") {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.reconnect_message);
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "The device address is valid, attempting to reconnect");
+                        bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
+                        bluetoothConnection.connect(bluetoothDevice);
+                    }
+                });
+                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.i(TAG, "We shouldn't restore the connection");
+                        dialog.cancel();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            } else {
+                Log.i(TAG, "The device address was invalid");
+            }
+        } else {
+            Log.i(TAG, "We shouldn't restore the connection");
+        }
+    }
 
 
 }

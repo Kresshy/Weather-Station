@@ -11,31 +11,18 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.activity.WeatherStationActivity;
+import com.kresshy.weatherstation.activity.WSActivity;
 
 
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     public final String TAG = "BluetoothDeviceListFragment";
 
-    /**
-     * The fragment's ListView/GridView.
-     */
-    private AbsListView mNewDeviceListView;
-    private AbsListView mPairedDeviceListView;
-    private TextView pairedDevices;
-    private TextView newDevices;
+    private AbsListView bluetoothDevicesListView;
+    private TextView bluetootDevicesTextView;
 
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
     private OnFragmentInteractionListener mListener;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public BluetoothDeviceListFragment() {
 
     }
@@ -63,17 +50,12 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         View view = inflater.inflate(R.layout.fragment_bluetoothdevice, container, false);
 
         // Set the adapter
-        mNewDeviceListView = (AbsListView) view.findViewById(R.id.listview_new_devices);
-        mPairedDeviceListView = (AbsListView) view.findViewById(R.id.listview_paired_devices);
-        pairedDevices = (TextView) view.findViewById(R.id.text_paired_devices);
-        newDevices = (TextView) view.findViewById(R.id.text_new_devices);
+        bluetoothDevicesListView = (AbsListView) view.findViewById(R.id.listview_bluetooth_devices);
+        bluetootDevicesTextView = (TextView) view.findViewById(R.id.text_bluetooth_devices);
 
-        mNewDeviceListView.setAdapter(((WeatherStationActivity) getActivity()).getNewDevicesArrayAdapter());
-        mPairedDeviceListView.setAdapter(((WeatherStationActivity) getActivity()).getPairedDevicesArrayAdapter());
+        bluetoothDevicesListView.setAdapter(((WSActivity) getActivity()).getPairedDevicesArrayAdapter());
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        mNewDeviceListView.setOnItemClickListener(this);
-        mPairedDeviceListView.setOnItemClickListener(this);
+        bluetoothDevicesListView.setOnItemClickListener(this);
 
         return view;
     }
@@ -82,8 +64,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public void onStart() {
         super.onStart();
 
-        if(((WeatherStationActivity) getActivity()).getPairedDevices() != null) {
-            pairedDevices.setVisibility(View.VISIBLE);
+        if(((WSActivity) getActivity()).getPairedDevices() != null) {
+            bluetootDevicesTextView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -100,37 +82,20 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
             // Cancel discovery because it's costly and we're about to connect
             mListener.stopBluetoothDiscovery();
 
-            // Get the device MAC address, which is the last 17 chars in the
-            // View
             String info = ((TextView) view).getText().toString();
             String address = info.substring(info.length() - 17);
             mListener.onDeviceSelectedToConnect(address);
         }
     }
 
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mNewDeviceListView.getEmptyView();
+        View emptyView = bluetoothDevicesListView.getEmptyView();
 
         if (emptyView instanceof TextView) {
             ((TextView) emptyView).setText(emptyText);
         }
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
 
         public void onDeviceSelectedToConnect(String address);

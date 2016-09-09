@@ -7,17 +7,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 
-import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
+import com.kresshy.weatherstation.connection.BluetoothConnection;
 
 public class BluetoothService extends Service {
 
     private static BluetoothConnection bluetoothConnection;
     private final IBinder mBinder = new BluetoothServiceBinder();
 
-    /**
-     * Class used for the client Binder.  Because we know this service always
-     * runs in the same process as its clients, we don't need to deal with IPC.
-     */
     public class BluetoothServiceBinder extends Binder {
         BluetoothService getService() {
             // Return this instance of LocalService so clients can call public methods

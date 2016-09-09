@@ -3,15 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="11"
     android:padding="5dp"
+    android:weightSum="105"
     tools:context="com.kresshy.weatherstation.fragment.DashboardFragment">
 
     <LinearLayout
         android:id="@+id/windSpeedContainer"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_weight="5"
+        android:layout_weight="55"
         android:orientation="vertical">
 
     </LinearLayout>
@@ -20,11 +20,12 @@
         android:id="@+id/temperatureContainer"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_weight="5"
+        android:layout_weight="50"
         android:orientation="vertical">
 
     </LinearLayout>
 
+    <!--
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,5 +47,5 @@
             android:layout_margin="20dp"
             android:text="temperature: 30 °C " />
 
-    </LinearLayout>
+    </LinearLayout>-->
 </LinearLayout>

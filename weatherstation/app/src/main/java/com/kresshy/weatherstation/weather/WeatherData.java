@@ -2,9 +2,7 @@ package com.kresshy.weatherstation.weather;
 
 import java.util.Date;
 
-/**
- * Created by Szabolcs on 2014.12.26..
- */
+
 public class WeatherData {
 
     private double windSpeed;

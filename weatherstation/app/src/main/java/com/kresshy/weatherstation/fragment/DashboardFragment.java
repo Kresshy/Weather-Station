@@ -31,9 +31,6 @@ public class DashboardFragment extends Fragment implements WeatherListener {
     private LineGraphView windSpeedGraph;
     private LineGraphView temperatureGraph;
 
-    private TextView windSpeedTextView;
-    private TextView temperatureTextView;
-
     private GraphViewData[] windSpeedData;
     private GraphViewData[] temperatureData;
 
@@ -48,6 +45,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
     private int NUM_SAMPLES = 300;
     private SharedPreferences sharedPreferences;
+
+    private WeatherData previousData;
 
 
     public DashboardFragment() {
@@ -115,11 +114,11 @@ public class DashboardFragment extends Fragment implements WeatherListener {
         graphViewStyle.setVerticalLabelsAlign(Paint.Align.LEFT);
         graphViewStyle.setVerticalLabelsWidth(80);
 
-        windSpeedTextView = (TextView) view.findViewById(R.id.windspeed);
-        temperatureTextView = (TextView) view.findViewById(R.id.temperature);
-
-        windSpeedTextView.setText("wind N/A m/s");
-        temperatureTextView.setText("temp N/A °C");
+//        windSpeedTextView = (TextView) view.findViewById(R.id.windspeed);
+//        temperatureTextView = (TextView) view.findViewById(R.id.temperature);
+//
+//        windSpeedTextView.setText("wind N/A m/s");
+//        temperatureTextView.setText("temp N/A °C");
 
         windSpeedGraph = new LineGraphView(getActivity().getApplicationContext(), "Wind Speed");
         windSpeedGraph.setScrollable(true);
@@ -136,6 +135,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
         temperatureGraph.setGraphViewStyle(graphViewStyle);
 
         temperatureGraph.setHorizontalLabels(horizontalLabels);
+        temperatureGraph.setShowHorizontalLabels(false);
 
         windSpeedData = new GraphViewData[1];
         temperatureData = new GraphViewData[1];
@@ -165,6 +165,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
     public void weatherDataReceived(WeatherData weatherData) {
         Log.i(TAG, "weatherDataCount: " + weatherDataCount);
         if( weatherDataCount == 1) {
+            previousData = weatherData;
 
             windSpeedData = new GraphViewData[1];
             temperatureData = new GraphViewData[1];
@@ -176,14 +177,21 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             temperatureSeries.resetData(temperatureData);
             weatherDataCount++;
         } else {
+            // prevent adding false measurements
+            if (Math.abs(weatherData.getTemperature() - previousData.getTemperature()) > 3) {
+//                previousData = weatherData;
+                return;
+            } else {
+                previousData = weatherData;
+            }
 
             windSpeedSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getWindSpeed()), true, NUM_SAMPLES);
             temperatureSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getTemperature()), true, NUM_SAMPLES);
             weatherDataCount++;
         }
 
-        windSpeedTextView.setText("wind " + weatherData.getWindSpeed() + " m/s");
-        temperatureTextView.setText("temp " + weatherData.getTemperature() + " °C");
+//        windSpeedTextView.setText("wind " + weatherData.getWindSpeed() + " m/s");
+//        temperatureTextView.setText("temp " + weatherData.getTemperature() + " °C");
     }
 
     public interface OnFragmentInteractionListener {

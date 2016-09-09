@@ -1,6 +1,7 @@
 package com.kresshy.weatherstation.fragment;
 
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.view.LayoutInflater;
@@ -13,17 +14,18 @@ public class SettingsFragment extends PreferenceFragment {
 
     public static final String KEY_PREF_INTERVAL = "pref_interval";
     public static final String KEY_PREF_RECONNECT = "pref_reconnect";
+    public static final String KEY_PREF_CONNECTION_TYPE = "pref_connection_type";
 
     public SettingsFragment() {
         // Required empty public constructor
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.preferences);
-
     }
 
     @Override
