@@ -35,4 +35,12 @@ public class WeatherData {
     public Date getTimestamp() {
         return timestamp;
     }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    public void setWindSpeed(double windSpeed) {
+        this.windSpeed = windSpeed;
+    }
 }
