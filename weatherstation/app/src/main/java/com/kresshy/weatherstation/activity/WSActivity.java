@@ -1,10 +1,8 @@
 package com.kresshy.weatherstation.activity;
 
-import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -23,20 +21,24 @@ import android.widget.Toast;
 
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.application.WSConstants;
-import com.kresshy.weatherstation.connection.BluetoothConnection;
-import com.kresshy.weatherstation.connection.BluetoothDiscoveryReceiver;
-import com.kresshy.weatherstation.connection.BluetoothStateReceiver;
+import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
+import com.kresshy.weatherstation.bluetooth.BluetoothDeviceItemAdapter;
+import com.kresshy.weatherstation.bluetooth.BluetoothDiscoveryReceiver;
+import com.kresshy.weatherstation.bluetooth.BluetoothStateReceiver;
 import com.kresshy.weatherstation.connection.ConnectionManager;
-import com.kresshy.weatherstation.connection.WifiDevice;
 import com.kresshy.weatherstation.fragment.BluetoothDeviceListFragment;
 import com.kresshy.weatherstation.fragment.DashboardFragment;
 import com.kresshy.weatherstation.fragment.NavigationDrawerFragment;
 import com.kresshy.weatherstation.fragment.SettingsFragment;
 import com.kresshy.weatherstation.fragment.WifiFragment;
-import com.kresshy.weatherstation.interfaces.WeatherListener;
 import com.kresshy.weatherstation.utils.ConnectionState;
 import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherListener;
+import com.kresshy.weatherstation.wifi.WifiDevice;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 
@@ -49,7 +51,9 @@ public class WSActivity extends ActionBarActivity implements
     private static final String TAG = "WSActivity";
 
     // Member fields
-    private static ArrayAdapter<String> bluetoothDevicesArrayAdapter;
+//    private static ArrayAdapter<String> bluetoothDevicesArrayAdapter;
+    private static BluetoothDeviceItemAdapter bluetoothDevicesArrayAdapter;
+    private static ArrayList<BluetoothDevice> bluetoothDevices;
     private static Set<BluetoothDevice> pairedDevices;
     private static ArrayAdapter<String> wifiDevicesArrayAdapter;
 
@@ -88,8 +92,9 @@ public class WSActivity extends ActionBarActivity implements
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
         // setting up bluetooth adapter, service and broadcast receivers
+        bluetoothDevices = new ArrayList<>();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        bluetoothDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
+        bluetoothDevicesArrayAdapter = new BluetoothDeviceItemAdapter(this, bluetoothDevices);
         connectionManager = ConnectionManager.getInstance(this, bluetoothDevicesArrayAdapter, messageHandler);
 
         // setting up sharedpreferences
@@ -116,32 +121,6 @@ public class WSActivity extends ActionBarActivity implements
             connectionManager.enableConnection();
         }
     }
-
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        Log.i(TAG, "ONRESTOREINSTANCE");
-//
-//        boolean isConnected = savedInstanceState.getBoolean(getString(R.string.PREFERENCE_CONNECTED));
-//
-//        if (isConnected && bluetoothAdapter.isEnabled()) {
-//            Log.i(TAG, "We should restore the connection");
-//            String address = sharedPreferences.getString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
-//
-//            if (address != "00:00:00:00:00:00")
-//                bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-//            else
-//                return;
-//
-//            if (connection.getState() != ConnectionState.disconnected) {
-//                connection.start();
-//            }
-//
-//            connection.connect(bluetoothDevice);
-//        } else {
-//            Log.i(TAG, "We shouldn't restore the connection");
-//        }
-//    }
 
     @Override
     protected void onResume() {
@@ -347,6 +326,9 @@ public class WSActivity extends ActionBarActivity implements
                     try {
                         windSpeed = Double.parseDouble(weather[0]);
                         temperature = Double.parseDouble(weather[1]);
+                        DecimalFormat df = new DecimalFormat("##.00");
+                        windSpeed = Double.valueOf(df.format(windSpeed));
+                        temperature = Double.valueOf(df.format(temperature));
                     } catch (Exception e) {
                         Log.e(TAG, "Cannot parse weather information");
                     }
@@ -380,7 +362,7 @@ public class WSActivity extends ActionBarActivity implements
         }
     };
 
-    public ArrayAdapter<String> getPairedDevicesArrayAdapter() {
+    public ArrayAdapter getPairedDevicesArrayAdapter() {
         return bluetoothDevicesArrayAdapter;
     }
 
@@ -388,6 +370,9 @@ public class WSActivity extends ActionBarActivity implements
         return bluetoothAdapter;
     }
 
+    public static ArrayList<BluetoothDevice> getBluetoothDevices() {
+        return bluetoothDevices;
+    }
 
     public static Set<BluetoothDevice> getPairedDevices() {
         return pairedDevices;
@@ -406,11 +391,13 @@ public class WSActivity extends ActionBarActivity implements
 
     @Override
     public void startBluetoothDiscovery() {
+        Log.i(TAG, "Starting bluetooth discovery");
         bluetoothAdapter.startDiscovery();
     }
 
     @Override
     public void stopBluetoothDiscovery() {
+        Log.i(TAG, "Stopping bluetooth discovery");
         bluetoothAdapter.cancelDiscovery();
     }
 

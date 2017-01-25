@@ -11,15 +11,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
-import com.jjoe64.graphview.GraphView.GraphViewData;
-import com.jjoe64.graphview.GraphViewSeries;
-import com.jjoe64.graphview.GraphViewStyle;
-import com.jjoe64.graphview.LineGraphView;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GridLabelRenderer;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.interfaces.WeatherListener;
 import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,16 +29,14 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
     private static final String TAG = "DashboardFragment";
 
-    private LineGraphView windSpeedGraph;
-    private LineGraphView temperatureGraph;
+    private GraphView windSpeedGraph;
+    private GraphView temperatureGraph;
 
-    private GraphViewData[] windSpeedData;
-    private GraphViewData[] temperatureData;
+    private DataPoint[] windSpeedData;
+    private DataPoint[] temperatureData;
 
-    private GraphViewSeries windSpeedSeries;
-    private GraphViewSeries temperatureSeries;
-
-    private GraphViewStyle graphViewStyle;
+    private LineGraphSeries<DataPoint> windSpeedSeries;
+    private LineGraphSeries<DataPoint> temperatureSeries;
 
     private int weatherDataCount = 1;
 
@@ -110,44 +108,75 @@ public class DashboardFragment extends Fragment implements WeatherListener {
                 Log.i(TAG, "Number of samples: 300");
         }
 
-        LinearLayout windSpeedContainer = (LinearLayout) view.findViewById(R.id.windSpeedContainer);
-        LinearLayout temperatureContainer = (LinearLayout) view.findViewById(R.id.temperatureContainer);
+        windSpeedGraph = (GraphView) view.findViewById(R.id.windSpeedGraph);
+        temperatureGraph = (GraphView) view.findViewById(R.id.temperatureGraph);
 
-        graphViewStyle = new GraphViewStyle(Color.BLACK, Color.BLACK, Color.GRAY);
-        graphViewStyle.setVerticalLabelsAlign(Paint.Align.LEFT);
-        graphViewStyle.setVerticalLabelsWidth(80);
+        windSpeedData = new DataPoint[1];
+        temperatureData = new DataPoint[1];
 
-        windSpeedGraph = new LineGraphView(getActivity().getApplicationContext(), "Wind Speed");
-        windSpeedGraph.setScrollable(true);
-        // windSpeedGraph.setScalable(true);
-        windSpeedGraph.setViewPort(0, NUM_SAMPLES);
-        windSpeedGraph.setGraphViewStyle(graphViewStyle);
+        windSpeedData[0] = new DataPoint(0, 0);
+        temperatureData[0] = new DataPoint(0, 0);
 
-        windSpeedGraph.setHorizontalLabels(horizontalLabels);
+//        graphViewStyle = new GraphViewStyle(Color.BLACK, Color.BLACK, Color.GRAY);
+//        graphViewStyle.setVerticalLabelsAlign(Paint.Align.LEFT);
+//        graphViewStyle.setVerticalLabelsWidth(80);
+//
+//        windSpeedGraph.setScrollable(true);
+//        windSpeedGraph.setViewPort(0, NUM_SAMPLES);
+//        windSpeedGraph.setGraphViewStyle(graphViewStyle);
+//
+//        windSpeedGraph.setHorizontalLabels(horizontalLabels);
+//
+//        temperatureGraph.setScrollable(true);
+//        temperatureGraph.setViewPort(0, NUM_SAMPLES);
+//        temperatureGraph.setGraphViewStyle(graphViewStyle);
+//
+//        temperatureGraph.setHorizontalLabels(horizontalLabels);
+//        temperatureGraph.setShowHorizontalLabels(false);
+//
+//
+        windSpeedSeries = new LineGraphSeries<>(windSpeedData);
+        temperatureSeries = new LineGraphSeries<>(temperatureData);
 
-        temperatureGraph = new LineGraphView(getActivity().getApplicationContext(), "Temperature");
-        temperatureGraph.setScrollable(true);
-        // temperatureGraph.setScalable(true);
-        temperatureGraph.setViewPort(0, NUM_SAMPLES);
-        temperatureGraph.setGraphViewStyle(graphViewStyle);
+        windSpeedSeries.setColor(Color.BLUE);
+        temperatureSeries.setColor(Color.RED);
 
-        temperatureGraph.setHorizontalLabels(horizontalLabels);
-        temperatureGraph.setShowHorizontalLabels(false);
+        windSpeedSeries.setThickness(7);
+        temperatureSeries.setThickness(7);
 
-        windSpeedData = new GraphViewData[1];
-        temperatureData = new GraphViewData[1];
+        GridLabelRenderer windGraphLabelRender = windSpeedGraph.getGridLabelRenderer();
+        GridLabelRenderer temperatureGraphLabelRender = temperatureGraph.getGridLabelRenderer();
 
-        windSpeedData[0] = new GraphViewData(0, 0);
-        temperatureData[0] = new GraphViewData(0, 0);
+        windGraphLabelRender.setVerticalLabelsAlign(Paint.Align.LEFT);
+        windGraphLabelRender.setLabelVerticalWidth(80);
 
-        windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, 3), windSpeedData);
-        temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(Color.RED, 3), temperatureData);
+        temperatureGraphLabelRender.setVerticalLabelsAlign(Paint.Align.LEFT);
+        temperatureGraphLabelRender.setLabelVerticalWidth(80);
+
+        windSpeedGraph.getViewport().setScrollable(true);
+        windSpeedGraph.getViewport().setXAxisBoundsManual(true);
+        windSpeedGraph.getViewport().setMinX(0);
+        windSpeedGraph.getViewport().setMaxX(NUM_SAMPLES);
+
+        temperatureGraph.getViewport().setScrollable(true);
+        temperatureGraph.getViewport().setXAxisBoundsManual(true);
+        temperatureGraph.getViewport().setMinX(0);
+        temperatureGraph.getViewport().setMaxX(NUM_SAMPLES);
+
+        StaticLabelsFormatter windGraphLabelFormatter = new StaticLabelsFormatter(windSpeedGraph);
+        StaticLabelsFormatter temperatureGraphLabelFormatter = new StaticLabelsFormatter(temperatureGraph);
+
+        windGraphLabelFormatter.setHorizontalLabels(horizontalLabels);
+        temperatureGraphLabelFormatter.setHorizontalLabels(horizontalLabels);
+
+        windGraphLabelFormatter.setViewport(windSpeedGraph.getViewport());
+        temperatureGraphLabelFormatter.setViewport(temperatureGraph.getViewport());
+
+        windGraphLabelRender.setLabelFormatter(windGraphLabelFormatter);
+        temperatureGraphLabelRender.setLabelFormatter(temperatureGraphLabelFormatter);
 
         windSpeedGraph.addSeries(windSpeedSeries);
         temperatureGraph.addSeries(temperatureSeries);
-
-        windSpeedContainer.addView(windSpeedGraph);
-        temperatureContainer.addView(temperatureGraph);
 
         return view;
     }
@@ -164,11 +193,11 @@ public class DashboardFragment extends Fragment implements WeatherListener {
         if (weatherDataCount == 1) {
             previousData = weatherData;
 
-            windSpeedData = new GraphViewData[1];
-            temperatureData = new GraphViewData[1];
+            windSpeedData = new DataPoint[1];
+            temperatureData = new DataPoint[1];
 
-            windSpeedData[0] = new GraphViewData(0, weatherData.getWindSpeed());
-            temperatureData[0] = new GraphViewData(0, weatherData.getTemperature());
+            windSpeedData[0] = new DataPoint(0, weatherData.getWindSpeed());
+            temperatureData[0] = new DataPoint(0, weatherData.getTemperature());
 
             windSpeedSeries.resetData(windSpeedData);
             temperatureSeries.resetData(temperatureData);
@@ -201,14 +230,13 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             double avarageWindSpeed = sum / slidingScreenItems.size();
             Log.i(TAG, "windspeed: " + avarageWindSpeed);
 
-            windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
-            temperatureSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getTemperature()), true, NUM_SAMPLES);
+            windSpeedSeries.appendData(new DataPoint(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
+            temperatureSeries.appendData(new DataPoint(weatherDataCount, weatherData.getTemperature()), true, NUM_SAMPLES);
             weatherDataCount++;
         }
     }
 
     public interface OnFragmentInteractionListener {
-
         public void registerWeatherDataReceiver(WeatherListener weatherListener);
     }
 

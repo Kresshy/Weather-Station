@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.connection;
+package com.kresshy.weatherstation.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,7 +10,7 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.kresshy.weatherstation.application.WSConstants;
-import com.kresshy.weatherstation.interfaces.Connection;
+import com.kresshy.weatherstation.connection.Connection;
 import com.kresshy.weatherstation.utils.ConnectionState;
 
 import java.io.IOException;
