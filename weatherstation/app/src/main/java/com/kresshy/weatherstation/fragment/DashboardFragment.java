@@ -2,7 +2,6 @@ package com.kresshy.weatherstation.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView.GraphViewData;
 import com.jjoe64.graphview.GraphViewSeries;
@@ -22,6 +20,9 @@ import com.jjoe64.graphview.LineGraphView;
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.interfaces.WeatherListener;
 import com.kresshy.weatherstation.weather.WeatherData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class DashboardFragment extends Fragment implements WeatherListener {
@@ -48,6 +49,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
     private WeatherData previousData;
 
+    private int slidingScreen = 5;
+    private List<Double> slidingScreenItems = new ArrayList<Double>(slidingScreen);
 
     public DashboardFragment() {
         // Required empty public constructor
@@ -114,12 +117,6 @@ public class DashboardFragment extends Fragment implements WeatherListener {
         graphViewStyle.setVerticalLabelsAlign(Paint.Align.LEFT);
         graphViewStyle.setVerticalLabelsWidth(80);
 
-//        windSpeedTextView = (TextView) view.findViewById(R.id.windspeed);
-//        temperatureTextView = (TextView) view.findViewById(R.id.temperature);
-//
-//        windSpeedTextView.setText("wind N/A m/s");
-//        temperatureTextView.setText("temp N/A °C");
-
         windSpeedGraph = new LineGraphView(getActivity().getApplicationContext(), "Wind Speed");
         windSpeedGraph.setScrollable(true);
         // windSpeedGraph.setScalable(true);
@@ -164,7 +161,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
     @Override
     public void weatherDataReceived(WeatherData weatherData) {
         Log.i(TAG, "weatherDataCount: " + weatherDataCount);
-        if( weatherDataCount == 1) {
+        if (weatherDataCount == 1) {
             previousData = weatherData;
 
             windSpeedData = new GraphViewData[1];
@@ -175,23 +172,39 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
             windSpeedSeries.resetData(windSpeedData);
             temperatureSeries.resetData(temperatureData);
+
+            slidingScreenItems.add(weatherData.getWindSpeed());
+
             weatherDataCount++;
         } else {
             // prevent adding false measurements
-            if (Math.abs(weatherData.getTemperature() - previousData.getTemperature()) > 3) {
-//                previousData = weatherData;
-                return;
+            if (weatherData.getTemperature() == 0.0) {
+                weatherData.setTemperature(previousData.getTemperature());
             } else {
                 previousData = weatherData;
             }
 
-            windSpeedSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getWindSpeed()), true, NUM_SAMPLES);
+            // the windspeed is an avarage of 3 measurements
+            if (slidingScreenItems.size() == slidingScreen + 1) {
+                double measurement = slidingScreenItems.remove(0);
+                Log.i(TAG, slidingScreenItems.toString());
+            }
+
+            slidingScreenItems.add(weatherData.getWindSpeed());
+
+            double sum = 0;
+
+            for (double item : slidingScreenItems) {
+                sum += item;
+            }
+
+            double avarageWindSpeed = sum / slidingScreenItems.size();
+            Log.i(TAG, "windspeed: " + avarageWindSpeed);
+
+            windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
             temperatureSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getTemperature()), true, NUM_SAMPLES);
             weatherDataCount++;
         }
-
-//        windSpeedTextView.setText("wind " + weatherData.getWindSpeed() + " m/s");
-//        temperatureTextView.setText("temp " + weatherData.getTemperature() + " °C");
     }
 
     public interface OnFragmentInteractionListener {
