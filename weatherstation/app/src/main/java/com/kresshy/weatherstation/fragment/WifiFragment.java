@@ -32,8 +32,8 @@ import java.util.List;
 
 public class WifiFragment extends Fragment implements AdapterView.OnItemClickListener {
 
-    private static final int SERVERPORT = 333;
-    private static final String SERVER_IP = "192.168.4.1";
+    private static final int SERVERPORT = 3000;
+    private static final String SERVER_IP = "192.168.100.248";
     private AbsListView wifiDeviceListView;
     private ArrayAdapter<String> wifiDeviceArrayAdapter;
 
