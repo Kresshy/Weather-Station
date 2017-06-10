@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 import com.jjoe64.graphview.GraphView.GraphViewData;
@@ -18,9 +19,9 @@ import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.GraphViewStyle;
 import com.jjoe64.graphview.LineGraphView;
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.interfaces.WeatherListener;
 import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +51,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
     private WeatherData previousData;
 
-    private int slidingScreen = 5;
-    private List<Double> slidingScreenItems = new ArrayList<Double>(slidingScreen);
+    private int screenSize = 5;
+    private List<WeatherData> slidingScreen = new ArrayList<>(screenSize);
 
     public DashboardFragment() {
         // Required empty public constructor
@@ -80,6 +81,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         NUM_SAMPLES = Integer.parseInt(sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));
@@ -141,8 +143,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
         windSpeedData[0] = new GraphViewData(0, 0);
         temperatureData[0] = new GraphViewData(0, 0);
 
-        windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, 3), windSpeedData);
-        temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(Color.RED, 3), temperatureData);
+        windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, 7), windSpeedData);
+        temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(Color.RED, 7), temperatureData);
 
         windSpeedGraph.addSeries(windSpeedSeries);
         temperatureGraph.addSeries(temperatureSeries);
@@ -156,6 +158,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
     @Override
     public void onDetach() {
         super.onDetach();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mListener = null;
     }
 
@@ -174,36 +177,39 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             windSpeedSeries.resetData(windSpeedData);
             temperatureSeries.resetData(temperatureData);
 
-            slidingScreenItems.add(weatherData.getWindSpeed());
+            slidingScreen.add(weatherData);
 
             weatherDataCount++;
         } else {
             // prevent adding false measurements
-            if (weatherData.getTemperature() == 0.0) {
+            if (weatherData.getTemperature() == 0.0 || (weatherData.getTemperature() - previousData.getTemperature() > 1.0)) {
                 weatherData.setTemperature(previousData.getTemperature());
             } else {
                 previousData = weatherData;
             }
 
-            // the windspeed is an avarage of 3 measurements
-            if (slidingScreenItems.size() == slidingScreen + 1) {
-                double measurement = slidingScreenItems.remove(0);
-                Log.i(TAG, slidingScreenItems.toString());
+            // the windspeed is an avarage of 5 measurements
+            if (slidingScreen.size() == screenSize + 1) {
+                slidingScreen.remove(0);
             }
 
-            slidingScreenItems.add(weatherData.getWindSpeed());
+            slidingScreen.add(weatherData);
 
-            double sum = 0;
+            double sumWindSpeed = 0;
+            double sumTemperature = 0;
 
-            for (double item : slidingScreenItems) {
-                sum += item;
+            for (WeatherData wData : slidingScreen) {
+                sumWindSpeed += wData.getWindSpeed();
+                sumTemperature += wData.getTemperature();
             }
 
-            double avarageWindSpeed = sum / slidingScreenItems.size();
+            double avarageWindSpeed = sumWindSpeed / slidingScreen.size();
+            double avarageTemperature = sumTemperature / slidingScreen.size();
             Log.i(TAG, "windspeed: " + avarageWindSpeed);
+            Log.i(TAG, "temperature: " + avarageTemperature);
 
             windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
-            temperatureSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getTemperature()), true, NUM_SAMPLES);
+            temperatureSeries.appendData(new GraphViewData(weatherDataCount, avarageTemperature), true, NUM_SAMPLES);
             weatherDataCount++;
         }
     }

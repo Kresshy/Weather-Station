@@ -2,6 +2,7 @@ package com.kresshy.weatherstation.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.activity.WSActivity;
+
+import java.util.ArrayList;
 
 
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
@@ -51,7 +54,6 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
         // Set the adapter
         bluetoothDevicesListView = (AbsListView) view.findViewById(R.id.listview_bluetooth_devices);
-        bluetootDevicesTextView = (TextView) view.findViewById(R.id.text_bluetooth_devices);
 
         bluetoothDevicesListView.setAdapter(((WSActivity) getActivity()).getPairedDevicesArrayAdapter());
 
@@ -82,9 +84,10 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
             // Cancel discovery because it's costly and we're about to connect
             mListener.stopBluetoothDiscovery();
 
-            String info = ((TextView) view).getText().toString();
-            String address = info.substring(info.length() - 17);
-            mListener.onDeviceSelectedToConnect(address);
+//            String info = ((TextView) view).getText().toString();
+//            String address = info.substring(info.length() - 17);
+            ArrayList<BluetoothDevice> devices = ((WSActivity) getActivity()).getBluetoothDevices();
+            mListener.onDeviceSelectedToConnect(devices.get(position).getAddress());
         }
     }
 

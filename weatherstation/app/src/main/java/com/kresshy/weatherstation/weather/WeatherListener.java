@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.interfaces;
+package com.kresshy.weatherstation.weather;
 
 import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;

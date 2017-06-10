@@ -1,6 +1,7 @@
 package com.kresshy.weatherstation.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -19,7 +20,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kresshy.weatherstation.R;
 
@@ -94,10 +98,9 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+
+        mDrawerListView.setAdapter(new NavigationDrawerItemAdapter(
                 getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
                 new String[]{
                         getString(R.string.title_section1),
                         getString(R.string.title_section2),
@@ -106,6 +109,7 @@ public class NavigationDrawerFragment extends Fragment {
                         "Wifi Stations",
                         "Multi-Station View"
                 }));
+
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -273,5 +277,38 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
+    }
+
+    public class NavigationDrawerItemAdapter extends ArrayAdapter<String> {
+Context context;
+        String[] menuItems;
+
+        public NavigationDrawerItemAdapter(Context context, String[] items) {
+            super(context, 0, items);
+
+            this.context = context;
+
+            this.menuItems = items;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = convertView;
+
+            if (v == null) {
+                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.fragment_navigation_drawer_menu_item, null);
+            }
+
+            String menuItem = menuItems[position];
+
+            ImageView icon = (ImageView) v.findViewById(R.id.navigation_drawer_menu_icon);
+            TextView name = (TextView) v.findViewById(R.id.navigation_drawer_menu_name);
+
+            if (name != null) {
+                name.setText(menuItem);
+            }
+            return v;
+        }
     }
 }

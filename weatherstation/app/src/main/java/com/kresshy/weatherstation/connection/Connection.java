@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.interfaces;
+package com.kresshy.weatherstation.connection;
 
 import android.os.Handler;
 import android.os.Parcelable;

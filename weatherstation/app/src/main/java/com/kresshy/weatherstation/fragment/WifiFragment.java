@@ -25,15 +25,15 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.connection.WifiConnection;
-import com.kresshy.weatherstation.connection.WifiDevice;
+import com.kresshy.weatherstation.wifi.WifiConnection;
+import com.kresshy.weatherstation.wifi.WifiDevice;
 
 import java.util.List;
 
 public class WifiFragment extends Fragment implements AdapterView.OnItemClickListener {
 
-    private static final int SERVERPORT = 333;
-    private static final String SERVER_IP = "192.168.4.1";
+    private static final int SERVERPORT = 3000;
+    private static final String SERVER_IP = "192.168.100.248";
     private AbsListView wifiDeviceListView;
     private ArrayAdapter<String> wifiDeviceArrayAdapter;
 

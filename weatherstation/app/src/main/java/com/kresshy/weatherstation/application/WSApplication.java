@@ -2,7 +2,7 @@ package com.kresshy.weatherstation.application;
 
 import android.app.Application;
 
-import com.kresshy.weatherstation.connection.BluetoothConnection;
+import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
 import com.kresshy.weatherstation.utils.ConnectionState;
 
 public class WSApplication extends Application {
