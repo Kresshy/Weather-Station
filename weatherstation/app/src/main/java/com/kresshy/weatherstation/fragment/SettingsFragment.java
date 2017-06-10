@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import com.kresshy.weatherstation.R;
 
+
 public class SettingsFragment extends PreferenceFragment {
 
     public static final String KEY_PREF_INTERVAL = "pref_interval";

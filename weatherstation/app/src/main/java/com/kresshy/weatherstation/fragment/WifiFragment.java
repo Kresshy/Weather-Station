@@ -30,6 +30,7 @@ import com.kresshy.weatherstation.wifi.WifiDevice;
 
 import java.util.List;
 
+
 public class WifiFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private static final int SERVERPORT = 3000;

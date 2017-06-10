@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
 
+
 public class WifiConnection implements Connection {
 
     private static final String TAG = "WiFiConnection";

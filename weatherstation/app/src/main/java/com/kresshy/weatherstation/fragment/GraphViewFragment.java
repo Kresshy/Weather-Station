@@ -18,9 +18,9 @@ import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.GraphViewStyle;
 import com.jjoe64.graphview.LineGraphView;
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.interfaces.WeatherListener;
 import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherListener;
 
 import java.util.ArrayList;
 import java.util.List;

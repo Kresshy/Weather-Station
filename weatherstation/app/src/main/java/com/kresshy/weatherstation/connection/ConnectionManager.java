@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.kresshy.weatherstation.application.WSConstants;
