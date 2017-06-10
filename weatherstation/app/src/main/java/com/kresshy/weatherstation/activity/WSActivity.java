@@ -30,6 +30,7 @@ import com.kresshy.weatherstation.connection.ConnectionManager;
 import com.kresshy.weatherstation.connection.WifiDevice;
 import com.kresshy.weatherstation.fragment.BluetoothDeviceListFragment;
 import com.kresshy.weatherstation.fragment.DashboardFragment;
+import com.kresshy.weatherstation.fragment.GraphViewFragment;
 import com.kresshy.weatherstation.fragment.NavigationDrawerFragment;
 import com.kresshy.weatherstation.fragment.SettingsFragment;
 import com.kresshy.weatherstation.fragment.WifiFragment;
@@ -38,7 +39,6 @@ import com.kresshy.weatherstation.utils.ConnectionState;
 import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 
-import java.text.ParseException;
 import java.util.Set;
 
 
@@ -235,6 +235,10 @@ public class WSActivity extends ActionBarActivity implements
                         .replace(R.id.container, new WifiFragment())
                         .commit();
                 break;
+            case 5:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.container, new GraphViewFragment())
+                        .commit();
         }
 
         onSectionAttached(position);
@@ -318,29 +322,29 @@ public class WSActivity extends ActionBarActivity implements
 
                     double windSpeed = 0;
                     double temperature = 0;
+                    WeatherData weatherData;
                     Measurement measurement;
 
                     try {
                         Gson gson = new Gson();
                         measurement = gson.fromJson(pdu, Measurement.class);
+                        weatherData = measurement.getWeatherDataForNode(1);
                     } catch (JsonSyntaxException e) {
                         String[] weather = pdu.split(" ");
                         windSpeed = Double.parseDouble(weather[0]);
                         temperature = Double.parseDouble(weather[1]);
-                        WeatherData weatherData = new WeatherData(windSpeed, temperature);
+                        weatherData = new WeatherData(windSpeed, temperature);
                         Log.i(TAG, weatherData.toString());
-
                         measurement = new Measurement();
                         measurement.setVersion(1);
                         measurement.addWeatherDataToMeasurement(weatherData);
                     } catch (NumberFormatException e) {
                         Log.i(TAG, "Cannot parse weather data");
                         measurement = new Measurement();
+                        weatherData = new WeatherData();
                     }
 
-
-
-                    // weatherListener.weatherDataReceived(weatherData);
+                    weatherListener.weatherDataReceived(weatherData);
                     weatherListener.measurementReceived(measurement);
                     break;
 

@@ -64,7 +64,7 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public void onStart() {
         super.onStart();
 
-        if(((WSActivity) getActivity()).getPairedDevices() != null) {
+        if (((WSActivity) getActivity()).getPairedDevices() != null) {
             bluetootDevicesTextView.setVisibility(View.VISIBLE);
         }
     }
@@ -99,7 +99,9 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     public interface OnFragmentInteractionListener {
 
         public void onDeviceSelectedToConnect(String address);
+
         public void startBluetoothDiscovery();
+
         public void stopBluetoothDiscovery();
     }
 }

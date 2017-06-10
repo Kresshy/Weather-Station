@@ -1,15 +1,12 @@
 package com.kresshy.weatherstation.utils;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.kresshy.weatherstation.R;
 
-/**
- * Created by Szabolcs on 2015.04.06..
- */
+
 public class ReconnectHandler {
 
     private Context context;

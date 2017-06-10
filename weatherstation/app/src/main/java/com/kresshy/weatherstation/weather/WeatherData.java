@@ -19,7 +19,8 @@ public class WeatherData {
     @Getter
     private Date timestamp;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private int nodeId;
 
     public WeatherData() {

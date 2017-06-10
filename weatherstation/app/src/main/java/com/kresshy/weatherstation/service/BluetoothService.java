@@ -51,9 +51,9 @@ public class BluetoothService extends Service {
 
         @Override
         public void handleMessage(Message msg) {
-            switch(msg.what) {
+            switch (msg.what) {
 
-            };
+            }
         }
     };
 }
