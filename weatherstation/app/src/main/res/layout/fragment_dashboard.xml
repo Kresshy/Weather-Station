@@ -7,15 +7,21 @@
     android:weightSum="105"
     tools:context="com.kresshy.weatherstation.fragment.DashboardFragment">
 
-    <com.jjoe64.graphview.GraphView
-        android:id="@+id/windSpeedGraph"
+    <LinearLayout
+        android:id="@+id/windSpeedContainer"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_weight="50" />
+        android:layout_weight="55"
+        android:orientation="vertical">
 
-    <com.jjoe64.graphview.GraphView
-        android:id="@+id/temperatureGraph"
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/temperatureContainer"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_weight="50" />
+        android:layout_weight="50"
+        android:orientation="vertical">
+
+    </LinearLayout>
 </LinearLayout>
