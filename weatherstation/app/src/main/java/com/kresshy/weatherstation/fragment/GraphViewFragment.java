@@ -123,34 +123,36 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
             try {
                 windSpeedData = windSpeedDataList.get(i);
+                windSpeedData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getWindSpeed());
             } catch (IndexOutOfBoundsException e) {
+                windSpeedData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getWindSpeed());
                 windSpeedDataList.add(i, windSpeedData);
             }
 
             try {
                 temperatureData = temperatureDataList.get(i);
+                temperatureData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getTemperature());
             } catch (IndexOutOfBoundsException e) {
+                temperatureData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getTemperature());
                 temperatureDataList.add(i, temperatureData);
             }
-
-            windSpeedData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getWindSpeed());
-            temperatureData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getTemperature());
 
             GraphViewSeries windSpeedSeries;
             GraphViewSeries temperatureSeries;
 
-            windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), 3), windSpeedDataList.get(i));
-            temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), 3), temperatureDataList.get(i));
-
             try {
                 windSpeedSeries = windSpeedSeriesList.get(i);
+                windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), 3), windSpeedDataList.get(i));
             } catch (IndexOutOfBoundsException e) {
+                windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), 3), windSpeedDataList.get(i));
                 windSpeedSeriesList.add(i, windSpeedSeries);
             }
 
             try {
                 temperatureSeries = windSpeedSeriesList.get(i);
+                temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), 3), temperatureDataList.get(i));
             } catch (IndexOutOfBoundsException e) {
+                temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), 3), temperatureDataList.get(i));
                 temperatureSeriesList.add(i, temperatureSeries);
             }
 
