@@ -1,10 +1,8 @@
 package com.kresshy.weatherstation.activity;
 
-import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -21,6 +19,8 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.connection.BluetoothConnection;
@@ -35,8 +35,10 @@ import com.kresshy.weatherstation.fragment.SettingsFragment;
 import com.kresshy.weatherstation.fragment.WifiFragment;
 import com.kresshy.weatherstation.interfaces.WeatherListener;
 import com.kresshy.weatherstation.utils.ConnectionState;
+import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 
+import java.text.ParseException;
 import java.util.Set;
 
 
@@ -103,7 +105,6 @@ public class WSActivity extends ActionBarActivity implements
             connectionManager.enableConnection();
             requestedEnableBluetooth = true;
         }
-
     }
 
     @Override
@@ -116,32 +117,6 @@ public class WSActivity extends ActionBarActivity implements
             connectionManager.enableConnection();
         }
     }
-
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        Log.i(TAG, "ONRESTOREINSTANCE");
-//
-//        boolean isConnected = savedInstanceState.getBoolean(getString(R.string.PREFERENCE_CONNECTED));
-//
-//        if (isConnected && bluetoothAdapter.isEnabled()) {
-//            Log.i(TAG, "We should restore the connection");
-//            String address = sharedPreferences.getString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
-//
-//            if (address != "00:00:00:00:00:00")
-//                bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-//            else
-//                return;
-//
-//            if (connection.getState() != ConnectionState.disconnected) {
-//                connection.start();
-//            }
-//
-//            connection.connect(bluetoothDevice);
-//        } else {
-//            Log.i(TAG, "We shouldn't restore the connection");
-//        }
-//    }
 
     @Override
     protected void onResume() {
@@ -340,21 +315,33 @@ public class WSActivity extends ActionBarActivity implements
                     // [start, pdu, end]
                     String pdu = message.split("_")[1];
                     Log.i(TAG, "PDU of the message " + pdu + " message " + message);
-                    String[] weather = pdu.split(" ");
+
                     double windSpeed = 0;
                     double temperature = 0;
+                    Measurement measurement;
 
                     try {
+                        Gson gson = new Gson();
+                        measurement = gson.fromJson(pdu, Measurement.class);
+                    } catch (JsonSyntaxException e) {
+                        String[] weather = pdu.split(" ");
                         windSpeed = Double.parseDouble(weather[0]);
                         temperature = Double.parseDouble(weather[1]);
-                    } catch (Exception e) {
-                        Log.e(TAG, "Cannot parse weather information");
+                        WeatherData weatherData = new WeatherData(windSpeed, temperature);
+                        Log.i(TAG, weatherData.toString());
+
+                        measurement = new Measurement();
+                        measurement.setVersion(1);
+                        measurement.addWeatherDataToMeasurement(weatherData);
+                    } catch (NumberFormatException e) {
+                        Log.i(TAG, "Cannot parse weather data");
+                        measurement = new Measurement();
                     }
 
-                    WeatherData weatherData = new WeatherData(windSpeed, temperature);
-                    Log.i(TAG, weatherData.toString());
 
-                    weatherListener.weatherDataReceived(weatherData);
+
+                    // weatherListener.weatherDataReceived(weatherData);
+                    weatherListener.measurementReceived(measurement);
                     break;
 
                 case WSConstants.MESSAGE_STATE:

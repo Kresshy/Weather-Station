@@ -3,10 +3,18 @@ package com.kresshy.weatherstation.connection;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import lombok.Getter;
+import lombok.Setter;
+
 
 public class WifiDevice implements Parcelable {
 
+    @Getter
+    @Setter
     private String ip;
+
+    @Getter
+    @Setter
     private int port;
 
     public WifiDevice(String ip, int port) {
@@ -37,21 +45,5 @@ public class WifiDevice implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 }

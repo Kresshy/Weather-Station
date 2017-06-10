@@ -26,22 +26,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DashboardFragment extends Fragment implements WeatherListener {
+public class GraphViewFragment extends Fragment implements WeatherListener {
 
-    private static final String TAG = "DashboardFragment";
+    private static final String TAG = "GraphViewFragment";
 
     private LineGraphView windSpeedGraph;
     private LineGraphView temperatureGraph;
 
+    private List<GraphViewData[]> windSpeedDataList;
+    private List<GraphViewData[]> temperatureDataList;
+
     private GraphViewData[] windSpeedData;
     private GraphViewData[] temperatureData;
+
+    private List<GraphViewSeries> windSpeedSeriesList;
+    private List<GraphViewSeries> temperatureSeriesList;
 
     private GraphViewSeries windSpeedSeries;
     private GraphViewSeries temperatureSeries;
 
     private GraphViewStyle graphViewStyle;
 
-    private int weatherDataCount = 1;
+    private int measurementCount = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -49,11 +55,12 @@ public class DashboardFragment extends Fragment implements WeatherListener {
     private SharedPreferences sharedPreferences;
 
     private WeatherData previousData;
+    private Measurement previousMeasurement;
 
     private int slidingScreen = 5;
     private List<Double> slidingScreenItems = new ArrayList<Double>(slidingScreen);
 
-    public DashboardFragment() {
+    public GraphViewFragment() {
         // Required empty public constructor
     }
 
@@ -161,8 +168,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
     @Override
     public void weatherDataReceived(WeatherData weatherData) {
-        Log.i(TAG, "weatherDataCount: " + weatherDataCount);
-        if (weatherDataCount == 1) {
+        Log.i(TAG, "measurementCount: " + measurementCount);
+        if (measurementCount == 1) {
             previousData = weatherData;
 
             windSpeedData = new GraphViewData[1];
@@ -176,7 +183,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
             slidingScreenItems.add(weatherData.getWindSpeed());
 
-            weatherDataCount++;
+            measurementCount++;
         } else {
             // prevent adding false measurements
             if (weatherData.getTemperature() == 0.0) {
@@ -202,15 +209,15 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             double avarageWindSpeed = sum / slidingScreenItems.size();
             Log.i(TAG, "windspeed: " + avarageWindSpeed);
 
-            windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
-            temperatureSeries.appendData(new GraphViewData(weatherDataCount, weatherData.getTemperature()), true, NUM_SAMPLES);
-            weatherDataCount++;
+            windSpeedSeries.appendData(new GraphViewData(measurementCount, avarageWindSpeed), true, NUM_SAMPLES);
+            temperatureSeries.appendData(new GraphViewData(measurementCount, weatherData.getTemperature()), true, NUM_SAMPLES);
+            measurementCount++;
         }
     }
 
     @Override
     public void measurementReceived(Measurement measurement) {
-
+        
     }
 
     public interface OnFragmentInteractionListener {
