@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.connection;
+package com.kresshy.weatherstation.wifi;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,7 +9,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.kresshy.weatherstation.application.WSConstants;
-import com.kresshy.weatherstation.interfaces.Connection;
+import com.kresshy.weatherstation.connection.Connection;
 import com.kresshy.weatherstation.utils.ConnectionState;
 
 import java.io.IOException;

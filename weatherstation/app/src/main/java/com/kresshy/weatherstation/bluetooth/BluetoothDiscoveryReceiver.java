@@ -1,28 +1,29 @@
-package com.kresshy.weatherstation.connection;
+package com.kresshy.weatherstation.bluetooth;
 
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
 
     private static BluetoothDiscoveryReceiver instance = null;
-    private ArrayAdapter<String> bluetoothDevices;
+    private ArrayAdapter bluetoothDevices;
     private ActionBarActivity activity;
+    private String TAG = "BluetoothDiscoveryReceiver";
 
-    protected BluetoothDiscoveryReceiver(ArrayAdapter<String> bluetoothDevices, ActionBarActivity activity) {
+    protected BluetoothDiscoveryReceiver(ArrayAdapter bluetoothDevices, ActionBarActivity activity) {
         this.bluetoothDevices = bluetoothDevices;
         this.activity = activity;
     }
 
-    public static BluetoothDiscoveryReceiver getInstance(ArrayAdapter<String> bluetoothDevices, ActionBarActivity activity) {
+    public static BluetoothDiscoveryReceiver getInstance(ArrayAdapter bluetoothDevices, ActionBarActivity activity) {
         if (instance == null) {
             return new BluetoothDiscoveryReceiver(bluetoothDevices, activity);
         } else {
@@ -42,7 +43,8 @@ public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
             // If it's already paired, skip it, because it's been listed
             // already
             if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-                bluetoothDevices.add(device.getName() + "\n" + device.getAddress());
+                bluetoothDevices.add(device);
+                Log.i(TAG, "Bluetooth Device added: " + device.getName());
             }
             // When discovery is finished, change the Activity fragmentTitle
         } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {

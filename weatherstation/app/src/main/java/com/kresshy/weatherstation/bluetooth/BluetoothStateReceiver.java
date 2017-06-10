@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.connection;
+package com.kresshy.weatherstation.bluetooth;
 
 
 import android.app.AlertDialog;
@@ -9,13 +9,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.interfaces.Connection;
+import com.kresshy.weatherstation.connection.Connection;
 
 import java.util.Set;
 
@@ -25,20 +24,20 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
 
     private static BluetoothStateReceiver instance = null;
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    private ArrayAdapter<String> bluetoothDevices;
+    private ArrayAdapter bluetoothDevices;
     private Set<BluetoothDevice> pairedDevices;
     private ActionBarActivity activity;
     private Connection connection;
     private SharedPreferences sharedPreferences;
 
-    protected BluetoothStateReceiver(Connection connection, ArrayAdapter<String> bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
+    protected BluetoothStateReceiver(Connection connection, ArrayAdapter bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
         this.bluetoothDevices = bluetoothDevices;
         this.activity = activity;
         this.connection = connection;
         this.sharedPreferences = sharedPreferences;
     }
 
-    public static BluetoothStateReceiver getInstance(Connection connection, ArrayAdapter<String> bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
+    public static BluetoothStateReceiver getInstance(Connection connection, ArrayAdapter bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
         if (instance == null) {
             return new BluetoothStateReceiver(connection, bluetoothDevices, activity, sharedPreferences);
         } else {
@@ -64,7 +63,7 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
             // If there are paired devices, add each one to the ArrayAdapter
             if (pairedDevices.size() > 0) {
                 for (BluetoothDevice device : pairedDevices) {
-                    bluetoothDevices.add(device.getName() + "\n" + device.getAddress());
+                    bluetoothDevices.add(device);
                 }
             }
         }

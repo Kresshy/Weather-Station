@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.service;
+package com.kresshy.weatherstation.bluetooth;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,8 +6,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-
-import com.kresshy.weatherstation.connection.BluetoothConnection;
 
 public class BluetoothService extends Service {
 

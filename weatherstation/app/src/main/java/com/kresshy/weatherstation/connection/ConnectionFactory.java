@@ -3,7 +3,8 @@ package com.kresshy.weatherstation.connection;
 import android.app.Activity;
 import android.os.Handler;
 
-import com.kresshy.weatherstation.interfaces.Connection;
+import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
+import com.kresshy.weatherstation.wifi.WifiConnection;
 
 public class ConnectionFactory {
 

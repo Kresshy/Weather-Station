@@ -78,7 +78,7 @@ category#android.intent.category.LAUNCHER
 ADDED from AndroidManifest.xml:27:17
 	android:name
 		ADDED from AndroidManifest.xml:27:27
-service#com.kresshy.weatherstation.service.BluetoothService
+service#com.kresshy.weatherstation.bluetooth.BluetoothService
 ADDED from AndroidManifest.xml:31:9
 	android:enabled
 		ADDED from AndroidManifest.xml:33:13

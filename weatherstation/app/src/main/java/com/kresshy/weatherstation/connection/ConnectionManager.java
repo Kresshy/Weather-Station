@@ -13,11 +13,13 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.kresshy.weatherstation.application.WSConstants;
-import com.kresshy.weatherstation.interfaces.Connection;
+import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
 import com.kresshy.weatherstation.utils.ConnectionState;
+import com.kresshy.weatherstation.wifi.WifiConnection;
 
 import java.util.Set;
 
@@ -33,22 +35,22 @@ public class ConnectionManager {
     public Connection connection;
 
     private ActionBarActivity activity;
-    private ArrayAdapter<String> bluetoothDevices;
+    private ArrayAdapter adapter;
     private boolean requestedEnableBluetooth = false;
     private Handler handler;
 
-    protected ConnectionManager(ActionBarActivity activity, ArrayAdapter<String> bluetoothDevices, Handler handler) {
+    protected ConnectionManager(ActionBarActivity activity, ArrayAdapter adapter, Handler handler) {
         this.activity = activity;
-        this.bluetoothDevices = bluetoothDevices;
+        this.adapter = adapter;
         this.connection = ConnectionFactory.getConnection(handler, activity);
         this.handler = handler;
 
         this.wifiManager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
-    public static ConnectionManager getInstance(ActionBarActivity activity, ArrayAdapter<String> bluetoothDevices, Handler handler) {
+    public static ConnectionManager getInstance(ActionBarActivity activity, ArrayAdapter adapter, Handler handler) {
         if (instance == null) {
-            return new ConnectionManager(activity, bluetoothDevices, handler);
+            return new ConnectionManager(activity, adapter, handler);
         } else {
             return instance;
         }
@@ -71,7 +73,7 @@ public class ConnectionManager {
                 // If there are paired devices, add each one to the ArrayAdapter
                 if (pairedDevices.size() > 0) {
                     for (BluetoothDevice device : pairedDevices) {
-                        bluetoothDevices.add(device.getName() + "\n" + device.getAddress());
+                        adapter.add(device);
                     }
                 }
             }
