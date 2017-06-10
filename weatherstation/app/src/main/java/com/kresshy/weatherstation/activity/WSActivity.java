@@ -127,32 +127,6 @@ public class WSActivity extends ActionBarActivity implements
         }
     }
 
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        Log.i(TAG, "ONRESTOREINSTANCE");
-//
-//        boolean isConnected = savedInstanceState.getBoolean(getString(R.string.PREFERENCE_CONNECTED));
-//
-//        if (isConnected && bluetoothAdapter.isEnabled()) {
-//            Log.i(TAG, "We should restore the connection");
-//            String address = sharedPreferences.getString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
-//
-//            if (address != "00:00:00:00:00:00")
-//                bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-//            else
-//                return;
-//
-//            if (connection.getState() != ConnectionState.disconnected) {
-//                connection.start();
-//            }
-//
-//            connection.connect(bluetoothDevice);
-//        } else {
-//            Log.i(TAG, "We shouldn't restore the connection");
-//        }
-//    }
-
     @Override
     protected void onResume() {
         super.onResume();
