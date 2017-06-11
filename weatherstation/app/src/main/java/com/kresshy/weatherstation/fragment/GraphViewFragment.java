@@ -224,11 +224,11 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     private int getColorForWindSpeedByNode(int i) {
         switch (i) {
-            case 1:
+            case 0:
                 return Color.BLUE;
-            case 2:
+            case 1:
                 return Color.GREEN;
-            case 3:
+            case 2:
                 return Color.CYAN;
             default:
                 return Color.BLACK;
@@ -237,12 +237,12 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     private int getColorForTemperatureByNode(int i) {
         switch (i) {
-            case 1:
+            case 0:
                 return Color.RED;
-            case 2:
-                return Color.YELLOW;
-            case 3:
+            case 1:
                 return Color.MAGENTA;
+            case 2:
+                return Color.DKGRAY;
             default:
                 return Color.BLACK;
         }

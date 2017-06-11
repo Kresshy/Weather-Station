@@ -341,7 +341,7 @@ public class WSActivity extends ActionBarActivity implements
                         Gson gson = new Gson();
                         measurement = gson.fromJson(pdu, Measurement.class);
                         Log.i(TAG, measurement.toString());
-                        weatherData = measurement.getWeatherDataForNode(1);
+                        weatherData = measurement.getWeatherDataForNode(0);
                         Log.i(TAG, weatherData.toString());
                     } catch (JsonSyntaxException e) {
                         Log.i(TAG, "JsonSyntaxException");
