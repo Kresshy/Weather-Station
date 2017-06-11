@@ -51,6 +51,7 @@ public class WSActivity extends ActionBarActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         BluetoothDeviceListFragment.OnFragmentInteractionListener,
         DashboardFragment.OnFragmentInteractionListener,
+        GraphViewFragment.OnFragmentInteractionListener,
         WifiFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "WSActivity";
@@ -327,18 +328,23 @@ public class WSActivity extends ActionBarActivity implements
 
                     // [start, pdu, end]
                     String pdu = message.split("_")[1];
-                    Log.i(TAG, "PDU of the message " + pdu + " message " + message);
+                    Log.i(TAG, "PDU of the message");
+                    Log.i(TAG, pdu);
 
                     double windSpeed = 0;
                     double temperature = 0;
+
                     WeatherData weatherData;
                     Measurement measurement;
 
                     try {
                         Gson gson = new Gson();
                         measurement = gson.fromJson(pdu, Measurement.class);
+                        Log.i(TAG, measurement.toString());
                         weatherData = measurement.getWeatherDataForNode(1);
+                        Log.i(TAG, weatherData.toString());
                     } catch (JsonSyntaxException e) {
+                        Log.i(TAG, "JsonSyntaxException");
                         String[] weather = pdu.split(" ");
                         windSpeed = Double.parseDouble(weather[0]);
                         temperature = Double.parseDouble(weather[1]);
@@ -347,12 +353,14 @@ public class WSActivity extends ActionBarActivity implements
                         measurement = new Measurement();
                         measurement.setVersion(1);
                         measurement.addWeatherDataToMeasurement(weatherData);
+                        Log.i(TAG, measurement.toString());
                     } catch (NumberFormatException e) {
                         Log.i(TAG, "Cannot parse weather data");
                         measurement = new Measurement();
                         weatherData = new WeatherData();
                     }
 
+                    Log.i(TAG, "Transferring new measurement / weatherData");
                     weatherListener.weatherDataReceived(weatherData);
                     weatherListener.measurementReceived(measurement);
                     break;
@@ -374,7 +382,7 @@ public class WSActivity extends ActionBarActivity implements
                 case WSConstants.MESSAGE_CONNECTED:
 
                     Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
-                    navigationDrawerFragment.selectItem(0);
+                    navigationDrawerFragment.selectItem(5);
                     break;
             }
         }

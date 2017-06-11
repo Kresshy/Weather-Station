@@ -2,38 +2,31 @@ package com.kresshy.weatherstation.weather;
 
 import java.util.Date;
 
+import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
-
+@Data
 public class WeatherData {
 
-    @Getter
-    @Setter
     private double windSpeed;
-
-    @Getter
-    @Setter
     private double temperature;
+    private int nodeId;
 
     @Getter
     private Date timestamp;
 
-    @Getter
-    @Setter
-    private int nodeId;
 
     public WeatherData() {
         this.windSpeed = 0;
         this.temperature = 0;
-        this.nodeId = 1;
+        this.nodeId = 0;
         this.timestamp = new Date();
     }
 
     public WeatherData(double windSpeed, double temperature) {
         this.windSpeed = windSpeed;
         this.temperature = temperature;
-        this.nodeId = 1;
+        this.nodeId = 0;
         this.timestamp = new Date();
     }
 

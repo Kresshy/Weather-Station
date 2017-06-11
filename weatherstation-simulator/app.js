@@ -4,38 +4,66 @@ var HOST = '0.0.0.0';
 var PORT = 3000;
 
 var socket;
+var previousTemperatureNode0 = Math.floor((Math.random() * 30) + 1);
+var previousTemperatureNode1 = Math.floor((Math.random() * 30) + 1);
 
 net.createServer(function (sock) {
 
-    socket = sock;
+  socket = sock;
 
-    // We have a connection - a socket object is assigned to the connection automatically
-    console.log('CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
+  // We have a connection - a socket object is assigned to the connection automatically
+  console.log('CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
 
-    // Add a 'data' event handler to this instance of socket
-    sock.on('data', function (data) {
+  // Add a 'data' event handler to this instance of socket
+  sock.on('data', function (data) {
 
-        console.log('DATA ' + sock.remoteAddress + ': ' + data);
-        // Write the data back to the socket, the client will receive it as data from the server
-        sock.write('You said "' + data + '"');
+    console.log('DATA ' + sock.remoteAddress + ': ' + data);
+    // Write the data back to the socket, the client will receive it as data from the server
+    sock.write('You said "' + data + '"');
 
-    });
+  });
 
-    // Add a 'close' event handler to this instance of socket
-    sock.on('close', function (data) {
-        console.log('CLOSED: ' + sock.remoteAddress + ' ' + sock.remotePort);
-    });
+  // Add a 'close' event handler to this instance of socket
+  sock.on('close', function (data) {
+    console.log('CLOSED: ' + sock.remoteAddress + ' ' + sock.remotePort);
+  });
 
-    sendWeatherData();
+  sendWeatherData();
 
 }).listen(PORT, HOST);
 
-
 function sendWeatherData() {
-    setTimeout(function () {
-        socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
-        sendWeatherData();
-    }, 1000);
+  setTimeout(function () {
+    var negateRandomForNode0 = Math.random() > 0.5? -1: 1;
+    var negateRandomForNode1 = Math.random() > 0.5? -1: 1;
+
+    var temperatureForNode0 = previousTemperatureNode0 + (Math.random() * negateRandomForNode0);
+    var temperatureForNode1 = previousTemperatureNode1 + (Math.random() * negateRandomForNode1);
+
+    previousTemperatureNode0 = temperatureForNode0;
+    previousTemperatureNode1 = temperatureForNode1;
+
+    var JSONString = `{
+      version: 2,
+        numberOfNodes: 2,
+        measurements: [
+          {
+              windSpeed: ${Math.floor((Math.random() * 30) + 1)},
+              temperature: ${temperatureForNode0},
+              nodeId: 0
+          },
+          {
+              windSpeed: ${Math.floor((Math.random() * 30) + 1)},
+              temperature: ${temperatureForNode1},
+              nodeId: 1
+          }
+      ]
+    }`;
+
+    // socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
+    socket.write('start_' + JSONString + '_end');
+    sendWeatherData();
+  }, 1000);
 }
 
 console.log('Server listening on ' + HOST + ':' + PORT);

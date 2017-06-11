@@ -11,34 +11,34 @@ import lombok.Data;
 public class Measurement {
     private int version;
     private int numberOfNodes;
-    private List<WeatherData> weatherDataList;
+    private List<WeatherData> measurements;
 
     public Measurement() {
         this.version = 1;
         this.numberOfNodes = 1;
-        this.weatherDataList = new ArrayList<>();
+        this.measurements = new ArrayList<>();
     }
 
     public Measurement(int version, int numberOfNodes) {
         this.version = version;
         this.numberOfNodes = numberOfNodes;
-        this.weatherDataList = new ArrayList<>();
+        this.measurements = new ArrayList<>();
     }
 
-    public Measurement(int version, int numberOfNodes, List<WeatherData> weatherDataList) {
+    public Measurement(int version, int numberOfNodes, List<WeatherData> measurements) {
         this.version = version;
         this.numberOfNodes = numberOfNodes;
-        this.weatherDataList = weatherDataList;
+        this.measurements = measurements;
     }
 
     public void addWeatherDataToMeasurement(WeatherData weatherData) {
-        weatherDataList.add(weatherData);
+        measurements.add(weatherData);
     }
 
     public WeatherData getWeatherDataForNode(int nodeId) {
         WeatherData weatherData = null;
 
-        for (WeatherData data : weatherDataList) {
+        for (WeatherData data : measurements) {
             if (data.getNodeId() == nodeId) {
                 weatherData = data;
             }
