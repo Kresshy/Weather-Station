@@ -60,8 +60,8 @@ function sendWeatherData() {
       ]
     }`;
 
-    // socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
-    socket.write('start_' + JSONString + '_end');
+    socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
+    // socket.write('start_' + JSONString + '_end');
     sendWeatherData();
   }, 1000);
 }

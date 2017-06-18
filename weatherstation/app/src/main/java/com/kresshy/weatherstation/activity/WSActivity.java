@@ -16,7 +16,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -41,9 +40,7 @@ import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
 import com.kresshy.weatherstation.wifi.WifiDevice;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 
@@ -215,22 +212,22 @@ public class WSActivity extends ActionBarActivity implements
 
         switch (position) {
             case 0:
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, new DashboardFragment())
+//                fragmentManager.beginTransaction()
+//                        .replace(R.id.container, new DashboardFragment())
+//                        .commit();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.container, new GraphViewFragment())
                         .commit();
-
                 break;
             case 1:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, new BluetoothDeviceListFragment())
                         .commit();
-
                 break;
             case 2:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new SettingsFragment())
                         .commit();
-
                 break;
             case 3:
                 if (bluetoothAdapter.isEnabled()) {
@@ -382,7 +379,7 @@ public class WSActivity extends ActionBarActivity implements
                 case WSConstants.MESSAGE_CONNECTED:
 
                     Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
-                    navigationDrawerFragment.selectItem(5);
+                    navigationDrawerFragment.selectItem(0);
                     break;
             }
         }

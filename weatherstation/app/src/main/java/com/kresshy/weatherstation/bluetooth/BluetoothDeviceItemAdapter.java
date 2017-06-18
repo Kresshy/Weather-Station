@@ -58,8 +58,8 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
             }
 
             if (status != null) {
-                if(bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED)
-                status.setText("paired");
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED)
+                    status.setText("paired");
             }
         }
         return v;

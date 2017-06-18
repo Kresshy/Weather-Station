@@ -104,9 +104,9 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.title_section1),
                         getString(R.string.title_section2),
                         getString(R.string.title_section3),
-                        getString(R.string.title_section4),
-                        "Wifi Stations",
-                        "Multi-Station View"
+                        getString(R.string.title_section4)
+//                        "Wifi Stations",
+//                        "Multi-Station View"
                 }));
 
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
@@ -279,7 +279,7 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     public class NavigationDrawerItemAdapter extends ArrayAdapter<String> {
-Context context;
+        Context context;
         String[] menuItems;
 
         public NavigationDrawerItemAdapter(Context context, String[] items) {
