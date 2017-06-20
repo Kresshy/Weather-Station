@@ -313,17 +313,15 @@ public class WSActivity extends ActionBarActivity implements
             switch (msg.what) {
 
                 case WSConstants.MESSAGE_TOAST:
-
                     message = (String) msg.obj;
                     Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
                     break;
 
                 case WSConstants.MESSAGE_READ:
-
                     message = (String) msg.obj;
 
-                    // [start, pdu, end]
+                    // [start_pdu_end]
                     String pdu = message.split("_")[1];
                     Log.i(TAG, "PDU of the message");
                     Log.i(TAG, pdu);
@@ -340,30 +338,35 @@ public class WSActivity extends ActionBarActivity implements
                         Log.i(TAG, measurement.toString());
                         weatherData = measurement.getWeatherDataForNode(0);
                         Log.i(TAG, weatherData.toString());
-                    } catch (JsonSyntaxException e) {
-                        Log.i(TAG, "JsonSyntaxException");
-                        String[] weather = pdu.split(" ");
-                        windSpeed = Double.parseDouble(weather[0]);
-                        temperature = Double.parseDouble(weather[1]);
-                        weatherData = new WeatherData(windSpeed, temperature);
-                        Log.i(TAG, weatherData.toString());
-                        measurement = new Measurement();
-                        measurement.setVersion(1);
-                        measurement.addWeatherDataToMeasurement(weatherData);
-                        Log.i(TAG, measurement.toString());
-                    } catch (NumberFormatException e) {
-                        Log.i(TAG, "Cannot parse weather data");
-                        measurement = new Measurement();
-                        weatherData = new WeatherData();
+                        Log.i(TAG, "Transferring new measurement / weatherData");
+                        weatherListener.weatherDataReceived(weatherData);
+                        weatherListener.measurementReceived(measurement);
+                        break;
+                    } catch (JsonSyntaxException jse) {
+                        try {
+                            Log.i(TAG, "JsonSyntaxException");
+                            String[] weather = pdu.split(" ");
+                            windSpeed = Double.parseDouble(weather[0]);
+                            temperature = Double.parseDouble(weather[1]);
+                            weatherData = new WeatherData(windSpeed, temperature);
+                            Log.i(TAG, weatherData.toString());
+                            measurement = new Measurement();
+                            measurement.setVersion(1);
+                            measurement.setNumberOfNodes(1);
+                            measurement.addWeatherDataToMeasurement(weatherData);
+                            Log.i(TAG, measurement.toString());
+                            Log.i(TAG, "Transferring new measurement / weatherData");
+                            weatherListener.weatherDataReceived(weatherData);
+                            weatherListener.measurementReceived(measurement);
+                            break;
+                        } catch (NumberFormatException nfe) {
+                            Log.i(TAG, "Cannot parse weather data");
+                        }
                     }
 
-                    Log.i(TAG, "Transferring new measurement / weatherData");
-                    weatherListener.weatherDataReceived(weatherData);
-                    weatherListener.measurementReceived(measurement);
                     break;
 
                 case WSConstants.MESSAGE_STATE:
-
                     ConnectionState state = (ConnectionState) msg.obj;
 
                     switch (state) {
@@ -374,12 +377,13 @@ public class WSActivity extends ActionBarActivity implements
                             Toast.makeText(getApplicationContext(), "Disconnected from weather station", Toast.LENGTH_LONG).show();
                             break;
                     }
+
                     break;
 
                 case WSConstants.MESSAGE_CONNECTED:
-
                     Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
                     navigationDrawerFragment.selectItem(0);
+
                     break;
             }
         }

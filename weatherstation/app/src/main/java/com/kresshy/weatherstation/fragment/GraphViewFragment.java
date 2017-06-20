@@ -207,8 +207,10 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             double sumTemperature = 0;
 
             for (Measurement m : lastMeasurementsList) {
-                sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
-                sumTemperature += m.getWeatherDataForNode(i).getTemperature();
+                if (!(m.getNumberOfNodes() < i)) {
+                    sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
+                    sumTemperature += m.getWeatherDataForNode(i).getTemperature();
+                }
             }
 
             double avarageWindSpeed = sumWindSpeed / lastMeasurementsList.size();

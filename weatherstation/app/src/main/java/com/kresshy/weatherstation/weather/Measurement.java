@@ -15,7 +15,7 @@ public class Measurement {
 
     public Measurement() {
         this.version = 1;
-        this.numberOfNodes = 1;
+        this.numberOfNodes = 0;
         this.measurements = new ArrayList<>();
     }
 
