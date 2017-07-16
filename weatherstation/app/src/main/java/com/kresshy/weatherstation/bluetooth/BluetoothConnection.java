@@ -371,13 +371,16 @@ public class BluetoothConnection implements Connection {
                     }
 
                     while (-1 != (bytes = inputStream.read(buffer))) {
+                        Log.i(TAG, "Bytes incoming");
 
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
                         int endIdx = curMsg.indexOf(end);
+                        Log.i(TAG, curMsg.toString());
 
                         if (endIdx != -1) {
-                            String fullMessage = curMsg.substring(endIdx - 16, endIdx + end.length());
-                            Log.i(TAG, "Message " + fullMessage);
+                            Log.i(TAG, "Found endIdx");
+                            String fullMessage = curMsg.substring(0, endIdx + end.length());
+                            Log.i(TAG, "New weather data available " + fullMessage);
                             curMsg.delete(0, endIdx + end.length());
                             handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage).sendToTarget();
                         }
@@ -385,10 +388,7 @@ public class BluetoothConnection implements Connection {
 
                     Thread.sleep(100);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     break;
                 }

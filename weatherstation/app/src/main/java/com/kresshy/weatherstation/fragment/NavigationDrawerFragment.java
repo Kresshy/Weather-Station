@@ -104,8 +104,8 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.title_section1),
                         getString(R.string.title_section2),
                         getString(R.string.title_section3),
-                        getString(R.string.title_section4)
-//                        "Wifi Stations",
+                        getString(R.string.title_section4),
+//                        "Wifi Stations"
 //                        "Multi-Station View"
                 }));
 

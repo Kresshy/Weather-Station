@@ -44,24 +44,25 @@ function sendWeatherData() {
     previousTemperatureNode1 = temperatureForNode1;
 
     var JSONString = `{
-      version: 2,
-        numberOfNodes: 2,
-        measurements: [
+      "version": 2,
+        "numberOfNodes": 2,
+        "measurements": [
           {
-              windSpeed: ${Math.floor((Math.random() * 30) + 1)},
-              temperature: ${temperatureForNode0},
-              nodeId: 0
+              "windSpeed": ${Math.floor((Math.random() * 30) + 1)},
+              "temperature": ${temperatureForNode0},
+              "nodeId": 0
           },
           {
-              windSpeed: ${Math.floor((Math.random() * 30) + 1)},
-              temperature: ${temperatureForNode1},
-              nodeId: 1
+              "windSpeed": ${Math.floor((Math.random() * 30) + 1)},
+              "temperature": ${temperatureForNode1},
+              "nodeId": 1
           }
       ]
     }`;
 
-    socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
-    // socket.write('start_' + JSONString + '_end');
+    // socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
+    console.log(JSONString);
+    socket.write('start_' + JSONString + '_end');
     sendWeatherData();
   }, 1000);
 }
