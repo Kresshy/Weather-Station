@@ -240,8 +240,8 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                 }
             }
 
-            double averageWindSpeed = sumWindSpeed / lastMeasurementsList.size() - missingMeasurements;
-            double averageTemperature = sumTemperature / lastMeasurementsList.size() - missingMeasurements;
+            double averageWindSpeed = sumWindSpeed / (lastMeasurementsList.size() - missingMeasurements);
+            double averageTemperature = sumTemperature / (lastMeasurementsList.size() - missingMeasurements);
 
             Log.i(TAG, "Adding data in Series for nodeId: " + i);
             try {
