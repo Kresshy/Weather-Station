@@ -344,7 +344,7 @@ public class WSActivity extends ActionBarActivity implements
                         break;
                     } catch (JsonSyntaxException jse) {
                         try {
-                            Log.i(TAG, "JsonSyntaxException");
+                            Log.i(TAG, "JsonSyntaxException, parsing as version 1 pdu");
                             String[] weather = pdu.split(" ");
                             windSpeed = Double.parseDouble(weather[0]);
                             temperature = Double.parseDouble(weather[1]);
@@ -360,8 +360,10 @@ public class WSActivity extends ActionBarActivity implements
                             weatherListener.measurementReceived(measurement);
                             break;
                         } catch (NumberFormatException nfe) {
-                            Log.i(TAG, "Cannot parse weather data");
+                            Log.i(TAG, "Cannot parse weather data: " + pdu);
                         }
+                    } catch (NumberFormatException nfe) {
+                        Log.i(TAG, "Cannot parse weather data: " + pdu);
                     }
 
                     break;

@@ -46,4 +46,14 @@ public class Measurement {
 
         return weatherData;
     }
+
+    public boolean hasNodeId(int nodeId) {
+        for (WeatherData data : measurements) {
+            if (data.getNodeId() == nodeId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

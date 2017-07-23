@@ -33,7 +33,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     private int measurementCount = 1;
     private int numberOfSamples = 300;
-    private final int avarageBucketSize = 5;
+    private final int averageBucketSize = 5;
     private final int lineWidth = 7;
 
     private LineGraphView windSpeedGraph;
@@ -48,7 +48,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
     private OnFragmentInteractionListener mListener;
 
     private Measurement previousMeasurement;
-    private List<Measurement> lastMeasurementsList = new ArrayList<>(avarageBucketSize);
+    private List<Measurement> lastMeasurementsList = new ArrayList<>(averageBucketSize);
 
     public GraphViewFragment() {
         // Required empty public constructor
@@ -76,8 +76,14 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-        numberOfSamples = Integer.parseInt(sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(
+                getActivity().getApplicationContext()
+        );
+
+        numberOfSamples = Integer.parseInt(
+                sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300")
+        );
 
         // keep screen on
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -153,8 +159,17 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             GraphViewSeries windSpeedSeries;
             GraphViewSeries temperatureSeries;
 
-            windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), lineWidth), windSpeedDataList.get(i));
-            temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), lineWidth), temperatureDataList.get(i));
+            windSpeedSeries = new GraphViewSeries(
+                    "Wind Speed",
+                    new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), lineWidth),
+                    windSpeedDataList.get(i)
+            );
+
+            temperatureSeries = new GraphViewSeries(
+                    "Temperature",
+                    new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), lineWidth),
+                    temperatureDataList.get(i)
+            );
 
             try {
                 windSpeedSeries = windSpeedSeriesList.get(i);
@@ -187,8 +202,14 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         // prevent adding false zero temperature measurements
         Log.i(TAG, "Filtering wrong measurements and load previous values");
         for (int j = 0; j < measurement.getNumberOfNodes(); j++) {
-            if (measurement.getWeatherDataForNode(j).getTemperature() == 0.0 || (measurement.getWeatherDataForNode(j).getTemperature() - previousMeasurement.getWeatherDataForNode(j).getTemperature() > 1.0)) {
-                measurement.getWeatherDataForNode(j).setTemperature(previousMeasurement.getWeatherDataForNode(j).getTemperature());
+            if (previousMeasurement.hasNodeId(j) && measurement.hasNodeId(j)) {
+                if (measurement.getWeatherDataForNode(j).getTemperature() == 0.0 || (
+                        measurement.getWeatherDataForNode(j).getTemperature() -
+                                previousMeasurement.getWeatherDataForNode(j).getTemperature() > 1.0)) {
+                    measurement.getWeatherDataForNode(j).setTemperature(
+                            previousMeasurement.getWeatherDataForNode(j).getTemperature()
+                    );
+                }
             }
         }
 
@@ -196,7 +217,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         previousMeasurement = measurement;
 
         // maintaining bucket for avarage calculation
-        if (lastMeasurementsList.size() == avarageBucketSize + 1) {
+        if (lastMeasurementsList.size() == averageBucketSize + 1) {
             lastMeasurementsList.remove(0);
         }
 
@@ -206,19 +227,60 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             double sumWindSpeed = 0;
             double sumTemperature = 0;
 
+            int missingMeasurements = 0;
+
             for (Measurement m : lastMeasurementsList) {
-                if (!(m.getNumberOfNodes() < i)) {
-                    sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
-                    sumTemperature += m.getWeatherDataForNode(i).getTemperature();
+                if (!(m.getNumberOfNodes() < i)) {  // if measurement has missing data of nodes
+                    if (m.hasNodeId(i)) {   // ensuring node exists
+                        sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
+                        sumTemperature += m.getWeatherDataForNode(i).getTemperature();
+                    } else { // else doesn't count in the average calc
+                        missingMeasurements++;
+                    }
                 }
             }
 
-            double avarageWindSpeed = sumWindSpeed / lastMeasurementsList.size();
-            double avarageTemperature = sumTemperature / lastMeasurementsList.size();
+            double averageWindSpeed = sumWindSpeed / lastMeasurementsList.size() - missingMeasurements;
+            double averageTemperature = sumTemperature / lastMeasurementsList.size() - missingMeasurements;
 
             Log.i(TAG, "Adding data in Series for nodeId: " + i);
-            windSpeedSeriesList.get(i).appendData(new GraphViewData(measurementCount, avarageWindSpeed), true, numberOfSamples);
-            temperatureSeriesList.get(i).appendData(new GraphViewData(measurementCount, avarageTemperature), true, numberOfSamples);
+            try {
+                windSpeedSeriesList.get(i).appendData(new GraphViewData(measurementCount, averageWindSpeed), true, numberOfSamples);
+            } catch (IndexOutOfBoundsException e) {
+                Log.i(TAG, "Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
+                GraphViewData[] windSpeedData = new GraphViewData[1];
+                windSpeedData[0] = new GraphViewData(measurementCount, measurement.getWeatherDataForNode(i).getWindSpeed());
+
+                windSpeedDataList.add(i, windSpeedData);
+                GraphViewSeries windSpeedSeries = new GraphViewSeries(
+                        "Wind Speed",
+                        new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), lineWidth),
+                        windSpeedDataList.get(i)
+                );
+
+                windSpeedSeriesList.add(i, windSpeedSeries);
+                windSpeedSeriesList.get(i).resetData(windSpeedDataList.get(i));
+                windSpeedGraph.addSeries(windSpeedSeriesList.get(i));
+            }
+
+            try {
+                temperatureSeriesList.get(i).appendData(new GraphViewData(measurementCount, averageTemperature), true, numberOfSamples);
+            } catch (IndexOutOfBoundsException e) {
+                Log.i(TAG, "Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
+                GraphViewData[] temperatureData = new GraphViewData[1];
+                temperatureData[0] = new GraphViewData(measurementCount, measurement.getWeatherDataForNode(i).getTemperature());
+
+                temperatureDataList.add(i, temperatureData);
+                GraphViewSeries temperatureSeries = new GraphViewSeries(
+                        "Temperature",
+                        new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), lineWidth),
+                        temperatureDataList.get(i)
+                );
+
+                temperatureSeriesList.add(i, temperatureSeries);
+                temperatureSeriesList.get(i).resetData(temperatureDataList.get(i));
+                temperatureGraph.addSeries(temperatureSeriesList.get(i));
+            }
         }
 
         measurementCount++;
@@ -229,9 +291,9 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             case 0:
                 return Color.BLUE;
             case 1:
-                return Color.GREEN;
+                return Color.rgb(0, 100, 7); // Dark Green
             case 2:
-                return Color.CYAN;
+                return Color.rgb(130, 0, 200); // Dark Purple
             default:
                 return Color.BLACK;
         }
@@ -264,7 +326,12 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         windSpeedData[0] = new GraphViewData(0, 0);
         windSpeedDataList.add(windSpeedData);
 
-        GraphViewSeries windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, lineWidth), windSpeedData);
+        GraphViewSeries windSpeedSeries = new GraphViewSeries(
+                "Wind Speed",
+                new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, lineWidth),
+                windSpeedData
+        );
+
         windSpeedSeriesList.add(windSpeedSeries);
         windSpeedGraph.addSeries(windSpeedSeries);
 
@@ -287,7 +354,12 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         temperatureData[0] = new GraphViewData(0, 0);
         temperatureDataList.add(temperatureData);
 
-        GraphViewSeries temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(Color.RED, lineWidth), temperatureData);
+        GraphViewSeries temperatureSeries = new GraphViewSeries(
+                "Temperature",
+                new GraphViewSeries.GraphViewSeriesStyle(Color.RED, lineWidth),
+                temperatureData
+        );
+
         temperatureSeriesList.add(temperatureSeries);
         temperatureGraph.addSeries(temperatureSeries);
 
