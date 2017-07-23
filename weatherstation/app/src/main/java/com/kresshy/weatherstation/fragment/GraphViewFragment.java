@@ -108,7 +108,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         // release flag to keep screen on
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mListener = null;
-    }g
+    }
 
     @Override
     public void weatherDataReceived(WeatherData weatherData) {
