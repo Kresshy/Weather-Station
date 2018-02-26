@@ -34,7 +34,6 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
     private int measurementCount = 1;
     private int numberOfSamples = 300;
     private final int averageBucketSize = 5;
-    private final int lineWidth = 7;
 
     private LineGraphView windSpeedGraph;
     private LineGraphView temperatureGraph;
@@ -161,13 +160,13 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
             windSpeedSeries = new GraphViewSeries(
                     "Wind Speed",
-                    new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), lineWidth),
+                    new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), getLineWidthByNode(i)),
                     windSpeedDataList.get(i)
             );
 
             temperatureSeries = new GraphViewSeries(
                     "Temperature",
-                    new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), lineWidth),
+                    new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), getLineWidthByNode(i)),
                     temperatureDataList.get(i)
             );
 
@@ -200,21 +199,30 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     private void handleIncomingMeasurement(Measurement measurement) {
         // prevent adding false zero temperature measurements
+        boolean storeAsPreviousMeasurement = true;
+
         Log.i(TAG, "Filtering wrong measurements and load previous values");
         for (int j = 0; j < measurement.getNumberOfNodes(); j++) {
             if (previousMeasurement.hasNodeId(j) && measurement.hasNodeId(j)) {
-                if (measurement.getWeatherDataForNode(j).getTemperature() == 0.0 || (
-                        measurement.getWeatherDataForNode(j).getTemperature() -
-                                previousMeasurement.getWeatherDataForNode(j).getTemperature() > 1.0)) {
+                if (
+                        measurement.getWeatherDataForNode(j).getTemperature() == 0.0
+                                ||
+                        (measurement.getWeatherDataForNode(j).getTemperature() - previousMeasurement.getWeatherDataForNode(j).getTemperature() > 3.0)
+                    ) {
                     measurement.getWeatherDataForNode(j).setTemperature(
                             previousMeasurement.getWeatherDataForNode(j).getTemperature()
                     );
+
+//                    storeAsPreviousMeasurement = false;
                 }
             }
         }
 
-        // saving corrected measurement as previous
-        previousMeasurement = measurement;
+//        if (storeAsPreviousMeasurement) {
+            // saving original measurement as previous if the measurement was not corrected
+            previousMeasurement = measurement;
+//        }
+
 
         // maintaining bucket for avarage calculation
         if (lastMeasurementsList.size() == averageBucketSize + 1) {
@@ -254,7 +262,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                 windSpeedDataList.add(i, windSpeedData);
                 GraphViewSeries windSpeedSeries = new GraphViewSeries(
                         "Wind Speed",
-                        new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), lineWidth),
+                        new GraphViewSeries.GraphViewSeriesStyle(getColorForWindSpeedByNode(i), getLineWidthByNode(i)),
                         windSpeedDataList.get(i)
                 );
 
@@ -273,7 +281,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                 temperatureDataList.add(i, temperatureData);
                 GraphViewSeries temperatureSeries = new GraphViewSeries(
                         "Temperature",
-                        new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), lineWidth),
+                        new GraphViewSeries.GraphViewSeriesStyle(getColorForTemperatureByNode(i), getLineWidthByNode(i)),
                         temperatureDataList.get(i)
                 );
 
@@ -289,11 +297,11 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
     private int getColorForWindSpeedByNode(int i) {
         switch (i) {
             case 0:
-                return Color.BLUE;
+                return Color.RED;
             case 1:
-                return Color.rgb(0, 100, 7); // Dark Green
+                return Color.BLUE;
             case 2:
-                return Color.rgb(130, 0, 200); // Dark Purple
+                return Color.DKGRAY;
             default:
                 return Color.BLACK;
         }
@@ -304,11 +312,24 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             case 0:
                 return Color.RED;
             case 1:
-                return Color.MAGENTA;
+                return Color.BLUE;
             case 2:
                 return Color.DKGRAY;
             default:
                 return Color.BLACK;
+        }
+    }
+
+    private int getLineWidthByNode(int i) {
+        switch (i) {
+            case 0:
+                return 9;
+            case 1:
+                return 6;
+            case 2:
+                return 3;
+            default:
+                return 6;
         }
     }
 
@@ -328,7 +349,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
         GraphViewSeries windSpeedSeries = new GraphViewSeries(
                 "Wind Speed",
-                new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, lineWidth),
+                new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, getLineWidthByNode(0)),
                 windSpeedData
         );
 
@@ -356,7 +377,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
         GraphViewSeries temperatureSeries = new GraphViewSeries(
                 "Temperature",
-                new GraphViewSeries.GraphViewSeriesStyle(Color.RED, lineWidth),
+                new GraphViewSeries.GraphViewSeriesStyle(Color.RED, getLineWidthByNode(0)),
                 temperatureData
         );
 

@@ -77,7 +77,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         wifiReceiver = new WifiReceiver();
         getActivity().registerReceiver(wifiReceiver, new IntentFilter(
@@ -190,7 +190,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
         conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 
-        WifiManager wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.addNetwork(conf);
         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
         for (WifiConfiguration i : list) {

@@ -35,7 +35,6 @@ public class ConnectionManager {
 
     private ActionBarActivity activity;
     private ArrayAdapter adapter;
-    private boolean requestedEnableBluetooth = false;
     private Handler handler;
 
     protected ConnectionManager(ActionBarActivity activity, ArrayAdapter adapter, Handler handler) {
@@ -60,19 +59,20 @@ public class ConnectionManager {
 
         if (connectionType.equals("bluetooth")) {
             if (bluetoothAdapter == null) {
+                Log.i(TAG, "Bluetooth is not supported, shutting down application");
                 Toast.makeText(activity, "Bluetooth is not supported", Toast.LENGTH_LONG).show();
                 activity.finish();
-            }
+            } else {
+                enableBluetooth();
 
-            enableBluetooth();
+                if (bluetoothAdapter.isEnabled()) {
+                    Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
-            if (bluetoothAdapter.isEnabled()) {
-                Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-                // If there are paired devices, add each one to the ArrayAdapter
-                if (pairedDevices.size() > 0) {
-                    for (BluetoothDevice device : pairedDevices) {
-                        adapter.add(device);
+                    // If there are paired devices, add each one to the ArrayAdapter
+                    if (pairedDevices.size() > 0) {
+                        for (BluetoothDevice device : pairedDevices) {
+                            adapter.add(device);
+                        }
                     }
                 }
             }

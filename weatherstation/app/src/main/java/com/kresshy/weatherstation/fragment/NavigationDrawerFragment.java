@@ -101,10 +101,11 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerListView.setAdapter(new NavigationDrawerItemAdapter(
                 getActionBar().getThemedContext(),
                 new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                        getString(R.string.title_section4),
+                        getString(R.string.single_sensor_view),
+                        getString(R.string.multi_sensor_view),
+                        getString(R.string.bluetooth_weather_station_connect_view),
+                        getString(R.string.settings_view),
+                        getString(R.string.quit_view),
 //                        "Wifi Stations"
 //                        "Multi-Station View"
                 }));

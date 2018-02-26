@@ -212,24 +212,26 @@ public class WSActivity extends ActionBarActivity implements
 
         switch (position) {
             case 0:
-//                fragmentManager.beginTransaction()
-//                        .replace(R.id.container, new DashboardFragment())
-//                        .commit();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.container, new DashboardFragment())
+                        .commit();
+                break;
+            case 1:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new GraphViewFragment())
                         .commit();
                 break;
-            case 1:
+            case 2:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, new BluetoothDeviceListFragment())
                         .commit();
                 break;
-            case 2:
+            case 3:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new SettingsFragment())
                         .commit();
                 break;
-            case 3:
+            case 4:
                 if (bluetoothAdapter.isEnabled()) {
                     Log.i(TAG, "Disabling bluetooth adapter");
                     bluetoothAdapter.disable();
@@ -237,12 +239,12 @@ public class WSActivity extends ActionBarActivity implements
 
                 finish();
                 break;
-            case 4:
+            case 5:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new WifiFragment())
                         .commit();
                 break;
-            case 5:
+            case 6:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new GraphViewFragment())
                         .commit();
@@ -254,13 +256,13 @@ public class WSActivity extends ActionBarActivity implements
     public void onSectionAttached(int number) {
         switch (number) {
             case 0:
-                fragmentTitle = getString(R.string.title_section1);
+                fragmentTitle = getString(R.string.single_sensor_view);
                 break;
             case 1:
-                fragmentTitle = getString(R.string.title_section2);
+                fragmentTitle = getString(R.string.bluetooth_weather_station_connect_view);
                 break;
             case 2:
-                fragmentTitle = getString(R.string.title_section3);
+                fragmentTitle = getString(R.string.settings_view);
                 break;
         }
     }
