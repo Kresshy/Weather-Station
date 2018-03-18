@@ -73,7 +73,6 @@ public class DashboardFragment extends Fragment implements WeatherListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override

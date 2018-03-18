@@ -3,8 +3,7 @@
 
     <string name="app_name">Weather Station</string>
 
-    <string name="single_sensor_view">Single-Sensor View</string>
-    <string name="multi_sensor_view">Multi-Sensor View</string>
+    <string name="dashboard_view">Dashboard View</string>
     <string name="bluetooth_weather_station_connect_view">Bluetooth Stations</string>
     <string name="settings_view">Settings</string>
     <string name="quit_view">Quit</string>

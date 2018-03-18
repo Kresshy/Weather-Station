@@ -19,6 +19,7 @@ import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.GraphViewStyle;
 import com.jjoe64.graphview.LineGraphView;
 import com.kresshy.weatherstation.R;
+import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
@@ -48,6 +49,9 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     private Measurement previousMeasurement;
     private List<Measurement> lastMeasurementsList = new ArrayList<>(averageBucketSize);
+
+    private double correctionWind = 0.0;
+    private double correctionTemp = 0.0;
 
     public GraphViewFragment() {
         // Required empty public constructor
@@ -83,6 +87,16 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         numberOfSamples = Integer.parseInt(
                 sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300")
         );
+
+        correctionWind = Double.parseDouble(
+                sharedPreferences.getString(WSConstants.KEY_WIND_DIFF, "0.0")
+        );
+
+        correctionTemp = Double.parseDouble(
+                sharedPreferences.getString(WSConstants.KEY_TEMP_DIFF, "0.0")
+        );
+
+        Log.i(TAG, "Correction values - wind: " + correctionWind + ", temp: " + correctionTemp);
 
         // keep screen on
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -138,8 +152,14 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         for (int i = 0; i < measurement.getNumberOfNodes(); i++) {
             GraphViewData[] windSpeedData = new GraphViewData[1];
             GraphViewData[] temperatureData = new GraphViewData[1];
-            windSpeedData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getWindSpeed());
-            temperatureData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getTemperature());
+
+            if (i > 0) {
+                windSpeedData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getWindSpeed() + correctionWind);
+                temperatureData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getTemperature() + correctionTemp);
+            } else {
+                windSpeedData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getWindSpeed());
+                temperatureData[0] = new GraphViewData(0, measurement.getWeatherDataForNode(i).getTemperature());
+            }
 
             try {
                 windSpeedData = windSpeedDataList.get(i);
@@ -207,8 +227,8 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                 if (
                         measurement.getWeatherDataForNode(j).getTemperature() == 0.0
                                 ||
-                        (measurement.getWeatherDataForNode(j).getTemperature() - previousMeasurement.getWeatherDataForNode(j).getTemperature() > 3.0)
-                    ) {
+                                (measurement.getWeatherDataForNode(j).getTemperature() - previousMeasurement.getWeatherDataForNode(j).getTemperature() > 3.0)
+                        ) {
                     measurement.getWeatherDataForNode(j).setTemperature(
                             previousMeasurement.getWeatherDataForNode(j).getTemperature()
                     );
@@ -219,8 +239,8 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         }
 
 //        if (storeAsPreviousMeasurement) {
-            // saving original measurement as previous if the measurement was not corrected
-            previousMeasurement = measurement;
+        // saving original measurement as previous if the measurement was not corrected
+        previousMeasurement = measurement;
 //        }
 
 
@@ -240,8 +260,13 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             for (Measurement m : lastMeasurementsList) {
                 if (!(m.getNumberOfNodes() < i)) {  // if measurement has missing data of nodes
                     if (m.hasNodeId(i)) {   // ensuring node exists
-                        sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
-                        sumTemperature += m.getWeatherDataForNode(i).getTemperature();
+                        if (i > 0) {
+                            sumWindSpeed += (m.getWeatherDataForNode(i).getWindSpeed() + correctionWind);
+                            sumTemperature += (m.getWeatherDataForNode(i).getTemperature() + correctionWind);
+                        } else {
+                            sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
+                            sumTemperature += m.getWeatherDataForNode(i).getTemperature();
+                        }
                     } else { // else doesn't count in the average calc
                         missingMeasurements++;
                     }

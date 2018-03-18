@@ -29,6 +29,7 @@ import com.kresshy.weatherstation.bluetooth.BluetoothDiscoveryReceiver;
 import com.kresshy.weatherstation.bluetooth.BluetoothStateReceiver;
 import com.kresshy.weatherstation.connection.ConnectionManager;
 import com.kresshy.weatherstation.fragment.BluetoothDeviceListFragment;
+import com.kresshy.weatherstation.fragment.CalibrationFragment;
 import com.kresshy.weatherstation.fragment.DashboardFragment;
 import com.kresshy.weatherstation.fragment.GraphViewFragment;
 import com.kresshy.weatherstation.fragment.NavigationDrawerFragment;
@@ -49,12 +50,11 @@ public class WSActivity extends ActionBarActivity implements
         BluetoothDeviceListFragment.OnFragmentInteractionListener,
         DashboardFragment.OnFragmentInteractionListener,
         GraphViewFragment.OnFragmentInteractionListener,
-        WifiFragment.OnFragmentInteractionListener {
+        WifiFragment.OnFragmentInteractionListener,
+        CalibrationFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "WSActivity";
 
-    // Member fields
-//    private static ArrayAdapter<String> bluetoothDevicesArrayAdapter;
     private static BluetoothDeviceItemAdapter bluetoothDevicesArrayAdapter;
     private static ArrayList<BluetoothDevice> bluetoothDevices;
     private static Set<BluetoothDevice> pairedDevices;
@@ -111,7 +111,6 @@ public class WSActivity extends ActionBarActivity implements
             connectionManager.enableConnection();
             requestedEnableBluetooth = true;
         }
-
     }
 
     @Override
@@ -212,26 +211,21 @@ public class WSActivity extends ActionBarActivity implements
 
         switch (position) {
             case 0:
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, new DashboardFragment())
-                        .commit();
-                break;
-            case 1:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new GraphViewFragment())
                         .commit();
                 break;
-            case 2:
+            case 1:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, new BluetoothDeviceListFragment())
                         .commit();
                 break;
-            case 3:
+            case 2:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new SettingsFragment())
                         .commit();
                 break;
-            case 4:
+            case 3:
                 if (bluetoothAdapter.isEnabled()) {
                     Log.i(TAG, "Disabling bluetooth adapter");
                     bluetoothAdapter.disable();
@@ -239,12 +233,12 @@ public class WSActivity extends ActionBarActivity implements
 
                 finish();
                 break;
-            case 5:
+            case 4:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new WifiFragment())
                         .commit();
                 break;
-            case 6:
+            default:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new GraphViewFragment())
                         .commit();
@@ -256,7 +250,7 @@ public class WSActivity extends ActionBarActivity implements
     public void onSectionAttached(int number) {
         switch (number) {
             case 0:
-                fragmentTitle = getString(R.string.single_sensor_view);
+                fragmentTitle = getString(R.string.dashboard_view);
                 break;
             case 1:
                 fragmentTitle = getString(R.string.bluetooth_weather_station_connect_view);
@@ -386,8 +380,10 @@ public class WSActivity extends ActionBarActivity implements
 
                 case WSConstants.MESSAGE_CONNECTED:
                     Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
-                    navigationDrawerFragment.selectItem(0);
-
+//                    navigationDrawerFragment.selectItem(0);
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.container, new CalibrationFragment())
+                            .commit();
                     break;
             }
         }
@@ -412,7 +408,7 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     public void onDeviceSelectedToConnect(String address) {
 
-        sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).commit();
+        sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).apply();
 
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
         Log.i(TAG, bluetoothDevice.getName() + bluetoothDevice.getAddress());
@@ -435,6 +431,11 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     public void registerWeatherDataReceiver(WeatherListener weatherListener) {
         this.weatherListener = weatherListener;
+    }
+
+    @Override
+    public void startDashboardAfterCalibration() {
+        navigationDrawerFragment.selectItem(0);
     }
 
     @Override

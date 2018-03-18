@@ -1,55 +1,117 @@
 package com.kresshy.weatherstation.fragment;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.kresshy.weatherstation.R;
+import com.kresshy.weatherstation.application.WSConstants;
+import com.kresshy.weatherstation.weather.Measurement;
+import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherListener;
 
 
-public class CalibrationFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class CalibrationFragment extends Fragment implements WeatherListener, View.OnClickListener {
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String TAG = "CalibrationFragment";
+    private OnFragmentInteractionListener mListener;
+    private TextView windSpeedDiffView;
+    private TextView tempDiffView;
+    private double windSpeedDiff = 0.0;
+    private double tempDiff = 0.0;
 
     public CalibrationFragment() {
         // Required empty public constructor
     }
 
-    public static CalibrationFragment newInstance(String param1, String param2) {
-        CalibrationFragment fragment = new CalibrationFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+            mListener.registerWeatherDataReceiver(this);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_calibration, container, false);
+        View view = inflater.inflate(R.layout.fragment_calibration, container, false);
+
+        windSpeedDiffView = (TextView) view.findViewById(R.id.windspeed_diff);
+        tempDiffView = (TextView) view.findViewById(R.id.temperature_diff);
+
+        Button calibrateButton = (Button) view.findViewById(R.id.calibrate_button);
+        calibrateButton.setOnClickListener(this);
+
+        return view;
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void weatherDataReceived(WeatherData weatherData) {
+
+    }
+
+    @Override
+    public void measurementReceived(Measurement measurement) {
+        WeatherData data = measurement.getWeatherDataForNode(0);
+
+        if (measurement.getNumberOfNodes() > 1) {
+            WeatherData data2 = measurement.getWeatherDataForNode(1);
+            windSpeedDiff = data.getWindSpeed() - data2.getWindSpeed();
+            tempDiff = data.getTemperature() - data2.getTemperature();
+        } else {
+            mListener.startDashboardAfterCalibration();
+        }
+
+        windSpeedDiffView.setText(Double.toString(windSpeedDiff));
+        tempDiffView.setText(Double.toString(tempDiff));
+    }
+
+    @Override
+    public void onClick(View v) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(
+                getActivity().getApplicationContext()
+        );
+
+        sharedPreferences.edit().putString(
+                WSConstants.KEY_WIND_DIFF, Double.toString(windSpeedDiff)
+        ).commit();
+
+        sharedPreferences.edit().putString(
+                WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff)
+        ).commit();
+
+        Log.i(TAG, "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+
+        mListener.startDashboardAfterCalibration();
+    }
+
+    public interface OnFragmentInteractionListener {
+        void registerWeatherDataReceiver(WeatherListener weatherListener);
+
+        void startDashboardAfterCalibration();
     }
 }
