@@ -19,6 +19,8 @@ public class WSApplication extends Application {
 
         Timber.plant(new Timber.DebugTree());
         Timber.plant(new FileLoggingTree(getApplicationContext()));
+
+        Timber.d("Application starting");
     }
 
     public BluetoothConnection getConnectionService() {

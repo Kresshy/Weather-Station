@@ -21,7 +21,6 @@ import timber.log.Timber;
 public class FileLoggingTree extends Timber.DebugTree {
 
     private static final String TAG = FileLoggingTree.class.getSimpleName();
-
     private Context context;
 
     public FileLoggingTree(Context context) {
@@ -67,7 +66,7 @@ public class FileLoggingTree extends Timber.DebugTree {
 
             if (file.exists()) {
                 OutputStream fileOutputStream = new FileOutputStream(file, true);
-                fileOutputStream.write(("<p style=\"background:lightgray; padding:10px;\"><strong style=\"background:lightblue;\"> " + logTimeStamp + " :</strong> " + message + "</p>").getBytes());
+                fileOutputStream.write(("<p style=\"background:lightgray; padding:10px;\"><strong style=\"background:lightblue;\"> " + logTimeStamp + " | " + tag + ":</strong> " + message + "</p>").getBytes());
                 fileOutputStream.close();
             }
         } catch (Exception e) {
