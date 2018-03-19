@@ -364,7 +364,6 @@ public class BluetoothConnection implements Connection {
             // Keep listening to the InputStream until an exception occurs
             while (true) {
                 try {
-
                     String end = "_end";
                     StringBuilder curMsg = new StringBuilder();
 
@@ -377,10 +376,8 @@ public class BluetoothConnection implements Connection {
 
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
                         int endIdx = curMsg.indexOf(end);
-                        Timber.d( curMsg.toString());
 
                         if (endIdx != -1) {
-                            Timber.d( "Found endIdx");
                             String fullMessage = curMsg.substring(0, endIdx + end.length());
                             Timber.d( "New weather data available " + fullMessage);
                             curMsg.delete(0, endIdx + end.length());
@@ -389,7 +386,6 @@ public class BluetoothConnection implements Connection {
                     }
 
                     Thread.sleep(100);
-
                 } catch (Exception e) {
                     e.printStackTrace();
                     break;

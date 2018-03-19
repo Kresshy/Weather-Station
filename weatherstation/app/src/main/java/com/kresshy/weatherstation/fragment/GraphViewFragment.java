@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,7 +97,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                 sharedPreferences.getString(WSConstants.KEY_TEMP_DIFF, "0.0")
         );
 
-        Timber.d( "Correction values - wind: " + correctionWind + ", temp: " + correctionTemp);
+        Timber.d("Correction values - wind: " + correctionWind + ", temp: " + correctionTemp);
 
         // keep screen on
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -132,7 +131,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     @Override
     public void measurementReceived(Measurement measurement) {
-        Timber.d( "measurementCount: " + measurementCount);
+        Timber.d("measurementCount: " + measurementCount);
         if (measurementCount == 1) {
             handleFirstIncomingMeasurement(measurement);
         } else {
@@ -141,9 +140,9 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
     }
 
     private void handleFirstIncomingMeasurement(Measurement measurement) {
-        Timber.d( "Handling the (1st) first incoming message");
+        Timber.d("Handling the (1st) first incoming message");
         previousMeasurement = measurement;
-        Timber.d( "Cleaning the graphViews");
+        Timber.d("Cleaning the graphViews");
         windSpeedGraph.removeAllSeries();
         temperatureGraph.removeAllSeries();
         windSpeedDataList = new ArrayList<>();
@@ -166,14 +165,14 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             try {
                 windSpeedData = windSpeedDataList.get(i);
             } catch (IndexOutOfBoundsException e) {
-                Timber.d( "Cannot find windSpeedData for nodeId: " + i + " creating new GraphViewDataArray");
+                Timber.d("Cannot find windSpeedData for nodeId: " + i + " creating new GraphViewDataArray");
                 windSpeedDataList.add(i, windSpeedData);
             }
 
             try {
                 temperatureData = temperatureDataList.get(i);
             } catch (IndexOutOfBoundsException e) {
-                Timber.d( "Cannot find temperatureData for nodeId: " + i + " creating new GraphViewDataArray");
+                Timber.d("Cannot find temperatureData for nodeId: " + i + " creating new GraphViewDataArray");
                 temperatureDataList.add(i, temperatureData);
             }
 
@@ -195,22 +194,22 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             try {
                 windSpeedSeries = windSpeedSeriesList.get(i);
             } catch (IndexOutOfBoundsException e) {
-                Timber.d( "Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
+                Timber.d("Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
                 windSpeedSeriesList.add(i, windSpeedSeries);
             }
 
             try {
                 temperatureSeries = temperatureSeriesList.get(i);
             } catch (IndexOutOfBoundsException e) {
-                Timber.d( "Cannot find temperatureSeries for nodeId: " + i + " creating new GraphViewSeries");
+                Timber.d("Cannot find temperatureSeries for nodeId: " + i + " creating new GraphViewSeries");
                 temperatureSeriesList.add(i, temperatureSeries);
             }
 
-            Timber.d( "Reset data in new Series for nodeId: " + i);
+            Timber.d("Reset data in new Series for nodeId: " + i);
             windSpeedSeriesList.get(i).resetData(windSpeedDataList.get(i));
             temperatureSeriesList.get(i).resetData(temperatureDataList.get(i));
 
-            Timber.d( "Adding Series for GraphView for nodeId: " + i);
+            Timber.d("Adding Series for GraphView for nodeId: " + i);
             windSpeedGraph.addSeries(windSpeedSeriesList.get(i));
             temperatureGraph.addSeries(temperatureSeriesList.get(i));
         }
@@ -221,32 +220,23 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
 
     private void handleIncomingMeasurement(Measurement measurement) {
         // prevent adding false zero temperature measurements
-        boolean storeAsPreviousMeasurement = true;
-
-        Timber.d( "Filtering wrong measurements and load previous values");
+        Timber.d("Filtering wrong measurements and load previous values");
         for (int j = 0; j < measurement.getNumberOfNodes(); j++) {
             if (previousMeasurement.hasNodeId(j) && measurement.hasNodeId(j)) {
-                if (
-                        measurement.getWeatherDataForNode(j).getTemperature() == 0.0
-                                ||
-                                (measurement.getWeatherDataForNode(j).getTemperature() - previousMeasurement.getWeatherDataForNode(j).getTemperature() > 3.0)
+                if (measurement.getWeatherDataForNode(j).getTemperature() == 0.0 ||
+                        (measurement.getWeatherDataForNode(j).getTemperature() -
+                                previousMeasurement.getWeatherDataForNode(j).getTemperature() > 3.0)
                         ) {
                     measurement.getWeatherDataForNode(j).setTemperature(
                             previousMeasurement.getWeatherDataForNode(j).getTemperature()
                     );
-
-//                    storeAsPreviousMeasurement = false;
                 }
             }
         }
 
-//        if (storeAsPreviousMeasurement) {
-        // saving original measurement as previous if the measurement was not corrected
         previousMeasurement = measurement;
-//        }
 
-
-        // maintaining bucket for avarage calculation
+        // maintaining bucket for average calculation
         if (lastMeasurementsList.size() == averageBucketSize + 1) {
             lastMeasurementsList.remove(0);
         }
@@ -278,11 +268,17 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             double averageWindSpeed = sumWindSpeed / (lastMeasurementsList.size() - missingMeasurements);
             double averageTemperature = sumTemperature / (lastMeasurementsList.size() - missingMeasurements);
 
-            Timber.d( "Adding data in Series for nodeId: " + i);
+            Timber.d("SumWindSpeed: " + sumWindSpeed + ", sumTemp: " + sumTemperature);
+            Timber.d("Missing measurements: " + missingMeasurements);
+            Timber.d("LastMeasurementList: " + lastMeasurementsList.toString());
+            Timber.d("AverageWindSpeed: " + averageWindSpeed + ", AverageTemp: " + averageTemperature);
+            Timber.d("Adding data in Series for nodeId: " + i);
+            Timber.d("Number of samples: " + numberOfSamples);
+
             try {
                 windSpeedSeriesList.get(i).appendData(new GraphViewData(measurementCount, averageWindSpeed), true, numberOfSamples);
             } catch (IndexOutOfBoundsException e) {
-                Timber.d( "Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
+                Timber.d("Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
                 GraphViewData[] windSpeedData = new GraphViewData[1];
                 windSpeedData[0] = new GraphViewData(measurementCount, measurement.getWeatherDataForNode(i).getWindSpeed());
 
@@ -301,7 +297,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
             try {
                 temperatureSeriesList.get(i).appendData(new GraphViewData(measurementCount, averageTemperature), true, numberOfSamples);
             } catch (IndexOutOfBoundsException e) {
-                Timber.d( "Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
+                Timber.d("Cannot find windSpeedSeries for nodeId: " + i + " creating new GraphViewSeries");
                 GraphViewData[] temperatureData = new GraphViewData[1];
                 temperatureData[0] = new GraphViewData(measurementCount, measurement.getWeatherDataForNode(i).getTemperature());
 
@@ -361,7 +357,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
     }
 
     private void createViewForWindSpeedGraph(LinearLayout container) {
-        Timber.d( "Creating GraphView For WindSpeed");
+        Timber.d("Creating GraphView For WindSpeed");
         windSpeedGraph = new LineGraphView(getActivity().getApplicationContext(), "Wind Speed");
         windSpeedGraph.setScrollable(true);
         // windSpeedGraph.setScalable(true);
@@ -383,12 +379,12 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         windSpeedSeriesList.add(windSpeedSeries);
         windSpeedGraph.addSeries(windSpeedSeries);
 
-        Timber.d( "Adding GraphView For WindSpeed to LayoutContainer");
+        Timber.d("Adding GraphView For WindSpeed to LayoutContainer");
         container.addView(windSpeedGraph);
     }
 
     private void createViewForTemperatureGraph(LinearLayout container) {
-        Timber.d( "Creating GraphView For Temperature");
+        Timber.d("Creating GraphView For Temperature");
         temperatureGraph = new LineGraphView(getActivity().getApplicationContext(), "Temperature");
         temperatureGraph.setScrollable(true);
         // temperatureGraph.setScalable(true);
@@ -411,7 +407,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
         temperatureSeriesList.add(temperatureSeries);
         temperatureGraph.addSeries(temperatureSeries);
 
-        Timber.d( "Adding GraphView For Temperature to LayoutContainer");
+        Timber.d("Adding GraphView For Temperature to LayoutContainer");
         container.addView(temperatureGraph);
     }
 
