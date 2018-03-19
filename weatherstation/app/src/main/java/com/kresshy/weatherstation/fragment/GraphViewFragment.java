@@ -254,7 +254,7 @@ public class GraphViewFragment extends Fragment implements WeatherListener {
                     if (m.hasNodeId(i)) {   // ensuring node exists
                         if (i > 0) {
                             sumWindSpeed += (m.getWeatherDataForNode(i).getWindSpeed() + correctionWind);
-                            sumTemperature += (m.getWeatherDataForNode(i).getTemperature() + correctionWind);
+                            sumTemperature += (m.getWeatherDataForNode(i).getTemperature() + correctionTemp);
                         } else {
                             sumWindSpeed += m.getWeatherDataForNode(i).getWindSpeed();
                             sumTemperature += m.getWeatherDataForNode(i).getTemperature();
