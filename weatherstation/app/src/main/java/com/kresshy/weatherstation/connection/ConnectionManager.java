@@ -22,6 +22,8 @@ import com.kresshy.weatherstation.wifi.WifiConnection;
 
 import java.util.Set;
 
+import timber.log.Timber;
+
 public class ConnectionManager {
 
     private static final String TAG = "ConnectionManager";
@@ -59,7 +61,7 @@ public class ConnectionManager {
 
         if (connectionType.equals("bluetooth")) {
             if (bluetoothAdapter == null) {
-                Log.i(TAG, "Bluetooth is not supported, shutting down application");
+                Timber.d( "Bluetooth is not supported, shutting down application");
                 Toast.makeText(activity, "Bluetooth is not supported", Toast.LENGTH_LONG).show();
                 activity.finish();
             } else {
@@ -97,7 +99,7 @@ public class ConnectionManager {
 
     private void enableBluetooth() {
         if (!bluetoothAdapter.isEnabled()) {
-            Log.i(TAG, "Enabling bluetooth adapter");
+            Timber.d( "Enabling bluetooth adapter");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             activity.startActivityForResult(enableIntent, WSConstants.REQUEST_ENABLE_BT);
         }
@@ -105,7 +107,7 @@ public class ConnectionManager {
 
     private void disableBluetooth() {
         if (bluetoothAdapter.isEnabled()) {
-            Log.i(TAG, "Disabling bluetooth adapter");
+            Timber.d( "Disabling bluetooth adapter");
             bluetoothAdapter.disable();
         }
     }

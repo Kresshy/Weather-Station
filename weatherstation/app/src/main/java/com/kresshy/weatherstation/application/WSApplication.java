@@ -3,7 +3,10 @@ package com.kresshy.weatherstation.application;
 import android.app.Application;
 
 import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
+import com.kresshy.weatherstation.logging.FileLoggingTree;
 import com.kresshy.weatherstation.utils.ConnectionState;
+
+import timber.log.Timber;
 
 public class WSApplication extends Application {
 
@@ -13,6 +16,9 @@ public class WSApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Timber.plant(new Timber.DebugTree());
+        Timber.plant(new FileLoggingTree(getApplicationContext()));
     }
 
     public BluetoothConnection getConnectionService() {

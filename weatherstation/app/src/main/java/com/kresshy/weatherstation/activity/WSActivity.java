@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -43,6 +42,8 @@ import com.kresshy.weatherstation.wifi.WifiDevice;
 
 import java.util.ArrayList;
 import java.util.Set;
+
+import timber.log.Timber;
 
 
 public class WSActivity extends ActionBarActivity implements
@@ -78,7 +79,7 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "ONCREATE");
+        Timber.d( "ONCREATE");
 
         // setting up view
         setContentView(R.layout.activity_main);
@@ -116,7 +117,7 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        Log.v(TAG, "ONSTART");
+        Timber.d( "ONSTART");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
         if (!requestedEnableBluetooth) {
@@ -127,7 +128,7 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "ONRESUME");
+        Timber.d( "ONRESUME");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
         if (!bluetoothAdapter.isEnabled() && !requestedEnableBluetooth) {
@@ -158,13 +159,13 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.i(TAG, "ONSAVEDINSTANCE");
+        Timber.d( "ONSAVEDINSTANCE");
 
         if (connectionManager.getConnectionState() == ConnectionState.connected) {
-            Log.i(TAG, "Connected to a device");
+            Timber.d( "Connected to a device");
             outState.putBoolean(getString(R.string.PREFERENCE_CONNECTED), true);
         } else {
-            Log.i(TAG, "Not connected to a device");
+            Timber.d( "Not connected to a device");
             outState.putBoolean(getString(R.string.PREFERENCE_CONNECTED), false);
         }
     }
@@ -172,14 +173,14 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG, "ONPAUSE");
+        Timber.d( "ONPAUSE");
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "ONDESTROY");
+        Timber.d( "ONDESTROY");
 
         connectionManager.stopConnection();
         BluetoothConnection.destroyInstance();
@@ -187,13 +188,13 @@ public class WSActivity extends ActionBarActivity implements
         try {
             unregisterReceiver(BluetoothStateReceiver.getInstance(connectionManager.connection, bluetoothDevicesArrayAdapter, this, sharedPreferences));
         } catch (IllegalArgumentException ie) {
-            Log.i(TAG, "BluetoothReceiver was not registered");
+            Timber.d( "BluetoothReceiver was not registered");
         }
 
         try {
             unregisterReceiver(BluetoothDiscoveryReceiver.getInstance(bluetoothDevicesArrayAdapter, this));
         } catch (IllegalArgumentException ie) {
-            Log.i(TAG, "bluetoothDiscoveryRegister was not registered");
+            Timber.d( "bluetoothDiscoveryRegister was not registered");
         }
 
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
@@ -227,7 +228,7 @@ public class WSActivity extends ActionBarActivity implements
                 break;
             case 3:
                 if (bluetoothAdapter.isEnabled()) {
-                    Log.i(TAG, "Disabling bluetooth adapter");
+                    Timber.d( "Disabling bluetooth adapter");
                     bluetoothAdapter.disable();
                 }
 
@@ -290,7 +291,7 @@ public class WSActivity extends ActionBarActivity implements
             return true;
         } else if (id == R.id.action_quit) {
             if (bluetoothAdapter.isEnabled()) {
-                Log.i(TAG, "Disabling bluetooth adapter");
+                Timber.d( "Disabling bluetooth adapter");
                 bluetoothAdapter.disable();
             }
 
@@ -319,8 +320,8 @@ public class WSActivity extends ActionBarActivity implements
 
                     // [start_pdu_end]
                     String pdu = message.split("_")[1];
-                    Log.i(TAG, "PDU of the message");
-                    Log.i(TAG, pdu);
+                    Timber.d( "PDU of the message");
+                    Timber.d( pdu);
 
                     double windSpeed = 0;
                     double temperature = 0;
@@ -331,35 +332,35 @@ public class WSActivity extends ActionBarActivity implements
                     try {
                         Gson gson = new Gson();
                         measurement = gson.fromJson(pdu, Measurement.class);
-                        Log.i(TAG, measurement.toString());
+                        Timber.d( measurement.toString());
                         weatherData = measurement.getWeatherDataForNode(0);
-                        Log.i(TAG, weatherData.toString());
-                        Log.i(TAG, "Transferring new measurement / weatherData");
+                        Timber.d( weatherData.toString());
+                        Timber.d( "Transferring new measurement / weatherData");
                         weatherListener.weatherDataReceived(weatherData);
                         weatherListener.measurementReceived(measurement);
                         break;
                     } catch (JsonSyntaxException jse) {
                         try {
-                            Log.i(TAG, "JsonSyntaxException, parsing as version 1 pdu");
+                            Timber.d( "JsonSyntaxException, parsing as version 1 pdu");
                             String[] weather = pdu.split(" ");
                             windSpeed = Double.parseDouble(weather[0]);
                             temperature = Double.parseDouble(weather[1]);
                             weatherData = new WeatherData(windSpeed, temperature);
-                            Log.i(TAG, weatherData.toString());
+                            Timber.d( weatherData.toString());
                             measurement = new Measurement();
                             measurement.setVersion(1);
                             measurement.setNumberOfNodes(1);
                             measurement.addWeatherDataToMeasurement(weatherData);
-                            Log.i(TAG, measurement.toString());
-                            Log.i(TAG, "Transferring new measurement / weatherData");
+                            Timber.d( measurement.toString());
+                            Timber.d( "Transferring new measurement / weatherData");
                             weatherListener.weatherDataReceived(weatherData);
                             weatherListener.measurementReceived(measurement);
                             break;
                         } catch (NumberFormatException nfe) {
-                            Log.i(TAG, "Cannot parse weather data: " + pdu);
+                            Timber.d( "Cannot parse weather data: " + pdu);
                         }
                     } catch (NumberFormatException nfe) {
-                        Log.i(TAG, "Cannot parse weather data: " + pdu);
+                        Timber.d( "Cannot parse weather data: " + pdu);
                     }
 
                     break;
@@ -411,20 +412,20 @@ public class WSActivity extends ActionBarActivity implements
         sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).apply();
 
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-        Log.i(TAG, bluetoothDevice.getName() + bluetoothDevice.getAddress());
+        Timber.d( bluetoothDevice.getName() + bluetoothDevice.getAddress());
 
         connectionManager.connectToDevice(bluetoothDevice);
     }
 
     @Override
     public void startBluetoothDiscovery() {
-        Log.i(TAG, "Starting bluetooth discovery");
+        Timber.d( "Starting bluetooth discovery");
         bluetoothAdapter.startDiscovery();
     }
 
     @Override
     public void stopBluetoothDiscovery() {
-        Log.i(TAG, "Stopping bluetooth discovery");
+        Timber.d( "Stopping bluetooth discovery");
         bluetoothAdapter.cancelDiscovery();
     }
 

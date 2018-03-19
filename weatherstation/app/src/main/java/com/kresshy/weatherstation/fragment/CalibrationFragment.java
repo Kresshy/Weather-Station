@@ -18,6 +18,8 @@ import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
 
+import timber.log.Timber;
+
 
 public class CalibrationFragment extends Fragment implements WeatherListener, View.OnClickListener {
 
@@ -104,7 +106,7 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
                 WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff)
         ).commit();
 
-        Log.i(TAG, "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+        Timber.d( "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
 
         mListener.startDashboardAfterCalibration();
     }

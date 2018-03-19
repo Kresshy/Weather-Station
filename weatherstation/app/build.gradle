@@ -8,8 +8,8 @@ android {
         applicationId "com.kresshy.weatherstation"
         minSdkVersion 14
         targetSdkVersion 20
-        versionCode 37
-        versionName "2.0.11"
+        versionCode 38
+        versionName "2.0.12"
     }
 
     buildTypes {
@@ -29,6 +29,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.google.dagger:dagger:2.11'
     compile 'com.google.dagger:dagger-android:2.11'
+    compile 'com.jakewharton.timber:timber:4.5.1'
     annotationProcessor 'org.projectlombok:lombok:1.16.16'
     annotationProcessor 'com.google.dagger:dagger-android-processor:2.11'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.11'

@@ -30,6 +30,8 @@ import com.kresshy.weatherstation.wifi.WifiDevice;
 
 import java.util.List;
 
+import timber.log.Timber;
+
 
 public class WifiFragment extends Fragment implements AdapterView.OnItemClickListener {
 
@@ -133,7 +135,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "Clicked on connect Button");
+                Timber.d( "Clicked on connect Button");
                 mListener.onDeviceSelectedToConnect(new WifiDevice(SERVER_IP, SERVERPORT));
             }
         });

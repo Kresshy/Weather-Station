@@ -18,6 +18,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
 
+import timber.log.Timber;
+
 
 public class WifiConnection implements Connection {
 
@@ -182,7 +184,7 @@ public class WifiConnection implements Connection {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 mmSocket = new Socket(mmDevice.getIp(), mmDevice.getPort());
-                Log.i(TAG, "CONNECT_OK");
+                Timber.d( "CONNECT_OK");
 
             } catch (IOException connectException) {
                 connectException.printStackTrace();
@@ -222,7 +224,7 @@ public class WifiConnection implements Connection {
 
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-                Log.i(TAG, "STREAMS_OK");
+                Timber.d( "STREAMS_OK");
             } catch (IOException e) {
                 Log.e(TAG, "STREAMS_FAIL " + e.getMessage());
             }
@@ -236,7 +238,7 @@ public class WifiConnection implements Connection {
             byte[] buffer = new byte[1024]; // buffer store for the stream
             int bytes = 0; // bytes returned from read()
 
-            Log.i(TAG, "Runing Connected Thread");
+            Timber.d( "Runing Connected Thread");
 
             while (true) {
                 try {
@@ -249,20 +251,20 @@ public class WifiConnection implements Connection {
                     }
 
                     while (-1 != (bytes = mmInStream.read(buffer))) {
-                        Log.i(TAG, "Read from inputstream");
+                        Timber.d( "Read from inputstream");
 
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
-                        Log.i(TAG, "Append to current message" + curMsg);
+                        Timber.d( "Append to current message" + curMsg);
 
                         int endIdx = curMsg.indexOf(end);
                         if (endIdx != -1) {
-                            Log.i(TAG, "Found endIdx");
+                            Timber.d( "Found endIdx");
                             String fullMessage = curMsg.substring(0, endIdx + end.length());
-                            Log.i(TAG, "New weather data available " + fullMessage);
+                            Timber.d( "New weather data available " + fullMessage);
                             curMsg.delete(0, endIdx + end.length());
                             handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage).sendToTarget();
                         } else {
-                            Log.i(TAG, "NOT Found endIdx");
+                            Timber.d( "NOT Found endIdx");
                         }
                     }
 
@@ -281,7 +283,7 @@ public class WifiConnection implements Connection {
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
-                Log.i(TAG, "WRITE_OK");
+                Timber.d( "WRITE_OK");
             } catch (IOException e) {
                 // TODO here we should reconnect to the device if the stream is interrupted
                 Log.e(TAG, "WRITE_FAIL " + e.getMessage());
