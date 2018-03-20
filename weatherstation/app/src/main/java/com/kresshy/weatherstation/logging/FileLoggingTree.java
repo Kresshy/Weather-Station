@@ -44,13 +44,11 @@ public class FileLoggingTree extends Timber.DebugTree {
             deleteLogFilesOld(files);
 
             String fileNameTimeStamp = new SimpleDateFormat(
-                    "dd-MM-yyyy",
-                    Locale.getDefault()
+                    "dd-MM-yyyy_hh-mm"
             ).format(new Date());
 
             String logTimeStamp = new SimpleDateFormat(
-                    "E MMM dd yyyy 'at' hh:mm:ss:SSS aaa",
-                    Locale.getDefault()
+                    "E MMM dd yyyy 'at' hh:mm:ss:SSS aaa"
             ).format(new Date());
 
             String fileName = fileNameTimeStamp + ".html";
@@ -103,7 +101,7 @@ public class FileLoggingTree extends Timber.DebugTree {
         for (File file : files) {
             if (file.exists()) {
                 Calendar time = Calendar.getInstance();
-                time.add(Calendar.DAY_OF_YEAR, -7);
+                time.add(Calendar.DAY_OF_YEAR, -3);
 
                 //I store the required attributes here and delete them
                 Date lastModified = new Date(file.lastModified());

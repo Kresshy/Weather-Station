@@ -321,7 +321,7 @@ public class WSActivity extends ActionBarActivity implements
                     // [start_pdu_end]
                     String pdu = message.split("_")[1];
                     Timber.d( "PDU of the message");
-                    Timber.d( pdu);
+                    Timber.d(pdu);
 
                     double windSpeed = 0;
                     double temperature = 0;

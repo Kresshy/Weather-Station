@@ -51,11 +51,11 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_TURNING_ON) {
-            Log.v(TAG, "RECEIVED BLUETOOTH STATE CHANGE: STATE_TURNING_ON");
+            Timber.d("RECEIVED BLUETOOTH STATE CHANGE: STATE_TURNING_ON");
         }
 
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-            Log.v(TAG, "RECEIVED BLUETOOTH STATE CHANGE: STATE_ON");
+            Timber.d("RECEIVED BLUETOOTH STATE CHANGE: STATE_ON");
 
             connection.start();
             reconnectPreviousWeatherStation();

@@ -372,8 +372,6 @@ public class BluetoothConnection implements Connection {
                     }
 
                     while (-1 != (bytes = inputStream.read(buffer))) {
-                        Timber.d( "Bytes incoming");
-
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
                         int endIdx = curMsg.indexOf(end);
 

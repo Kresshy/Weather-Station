@@ -8,8 +8,8 @@ android {
         applicationId "com.kresshy.weatherstation"
         minSdkVersion 14
         targetSdkVersion 20
-        versionCode 40
-        versionName "2.0.14"
+        versionCode 42
+        versionName "2.0.16"
     }
 
     buildTypes {
