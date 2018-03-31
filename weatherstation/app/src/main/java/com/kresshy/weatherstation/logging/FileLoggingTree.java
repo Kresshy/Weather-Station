@@ -44,7 +44,7 @@ public class FileLoggingTree extends Timber.DebugTree {
             deleteLogFilesOld(files);
 
             String fileNameTimeStamp = new SimpleDateFormat(
-                    "dd-MM-yyyy_hh-mm"
+                    "dd-MM-yyyy-hh"
             ).format(new Date());
 
             String logTimeStamp = new SimpleDateFormat(
