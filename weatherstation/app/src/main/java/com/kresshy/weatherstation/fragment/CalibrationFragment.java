@@ -5,12 +5,12 @@ import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.application.WSConstants;
@@ -57,8 +57,8 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_calibration, container, false);
 
-        windSpeedDiffView = (TextView) view.findViewById(R.id.windspeed_diff);
-        tempDiffView = (TextView) view.findViewById(R.id.temperature_diff);
+        windSpeedDiffView = (TextView) view.findViewById(R.id.windspeed_diff_value);
+        tempDiffView = (TextView) view.findViewById(R.id.temperature_diff_value);
 
         Button calibrateButton = (Button) view.findViewById(R.id.calibrate_button);
         calibrateButton.setOnClickListener(this);
@@ -85,11 +85,12 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
             windSpeedDiff = data.getWindSpeed() - data2.getWindSpeed();
             tempDiff = data.getTemperature() - data2.getTemperature();
         } else {
+            Toast.makeText(getActivity().getApplicationContext(), "Skipping calibration, only one station", Toast.LENGTH_SHORT).show();
             mListener.startDashboardAfterCalibration();
         }
 
         windSpeedDiffView.setText(Double.toString(windSpeedDiff));
-        tempDiffView.setText(Double.toString(tempDiff));
+        tempDiffView.setText(Double.toString(tempDiff) + "°C");
     }
 
     @Override
@@ -99,7 +100,7 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
         );
 
         sharedPreferences.edit().putString(
-                WSConstants.KEY_WIND_DIFF, Double.toString(windSpeedDiff)
+                WSConstants.KEY_WIND_DIFF, Double.toString(0.0)
         ).commit();
 
         sharedPreferences.edit().putString(

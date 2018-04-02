@@ -44,22 +44,22 @@ function sendWeatherData() {
 
     var windspeed = Math.floor((Math.random() * 30) + 1);
 
-    // var JSONString = `{
-    //   "version": 2,
-    //     "numberOfNodes": 2,
-    //     "measurements": [
-    //       {
-    //           "windSpeed": ${windspeed},
-    //           "temperature": ${temperatureForNode0},
-    //           "nodeId": 0
-    //       },
-    //       {
-    //           "windSpeed": ${windspeed + 2},
-    //           "temperature": ${temperatureForNode0 + 2},
-    //           "nodeId": 1
-    //       }
-    //   ]
-    // }`;
+     var JSONString = `{
+       "version": 2,
+         "numberOfNodes": 2,
+         "measurements": [
+           {
+               "windSpeed": ${windspeed},
+               "temperature": ${temperatureForNode0},
+               "nodeId": 0
+           },
+           {
+               "windSpeed": ${windspeed + 2},
+               "temperature": ${temperatureForNode0 + 2},
+               "nodeId": 1
+           }
+       ]
+     }`;
 
     // var JSONString = `{
     //   "version": 2,
@@ -73,9 +73,9 @@ function sendWeatherData() {
     //   ]
     // }`;
 
-    var JSONString = `${windspeed} ${temperatureForNode0}`;
+    //var JSONString = `${windspeed} ${temperatureForNode0}`;
 
-    // socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
+    //socket.write('start_' + Math.floor((Math.random() * 30) + 1) + ' ' + Math.floor((Math.random() * 30) + 1) + '_end');
     console.log(JSONString);
     socket.write('start_' + JSONString + '_end');
     sendWeatherData();

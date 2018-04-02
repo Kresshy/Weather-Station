@@ -2,7 +2,9 @@ package com.kresshy.weatherstation.logging;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.File;
@@ -44,11 +46,11 @@ public class FileLoggingTree extends Timber.DebugTree {
             deleteLogFilesOld(files);
 
             String fileNameTimeStamp = new SimpleDateFormat(
-                    "dd-MM-yyyy-hh"
+                    "dd-MM-yyyy-HH"
             ).format(new Date());
 
             String logTimeStamp = new SimpleDateFormat(
-                    "E MMM dd yyyy 'at' hh:mm:ss:SSS aaa"
+                    "E MMM dd yyyy 'at' HH:mm:ss:SSS aaa"
             ).format(new Date());
 
             String fileName = fileNameTimeStamp + ".html";
@@ -101,7 +103,10 @@ public class FileLoggingTree extends Timber.DebugTree {
         for (File file : files) {
             if (file.exists()) {
                 Calendar time = Calendar.getInstance();
-                time.add(Calendar.DAY_OF_YEAR, -3);
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+                int daystokeep = Integer.parseInt(sharedPreferences.getString("pref_logging_days", "-1"));
+                time.add(Calendar.DAY_OF_YEAR, daystokeep);
 
                 //I store the required attributes here and delete them
                 Date lastModified = new Date(file.lastModified());

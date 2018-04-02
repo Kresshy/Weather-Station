@@ -130,7 +130,6 @@ public class ConnectionManager {
 
     public SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener =
             new SharedPreferences.OnSharedPreferenceChangeListener() {
-
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 

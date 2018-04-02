@@ -36,4 +36,22 @@
             android:summary="@string/pref_interval_summ"
             android:title="@string/pref_interval" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="Logging Settings">
+        <ListPreference
+            android:defaultValue="false"
+            android:entries="@array/pref_logging_entries"
+            android:entryValues="@array/pref_logging_values"
+            android:key="pref_logging_enabled"
+            android:summary="@string/pref_logging_sum"
+            android:title="@string/pref_logging_title" />
+
+        <ListPreference
+            android:defaultValue="-1"
+            android:entries="@array/pref_logging_days_to_keep_entries"
+            android:entryValues="@array/pref_logging_days_to_keep_values"
+            android:key="pref_logging_days"
+            android:summary="@string/pref_logging_days_to_keep_sum"
+            android:title="@string/pref_logging_days_to_keep_title" />
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Weather Station</string>
 
     <string name="dashboard_view">Dashboard View</string>
@@ -22,6 +21,10 @@
     <string name="pref_connection_type">Connection type</string>
     <string name="pref_connection_type_summ">Choose the connetion type (Wi-Fi or Bluetooth)</string>
     <string name="pref_wifi_station_title">WI-FI Weather Station</string>
+    <string name="pref_logging_title">Application logging enabled (restart needed)</string>
+    <string name="pref_logging_sum">Write application logs to storage, find logs in Downloads folder</string>
+    <string name="pref_logging_days_to_keep_title">Days to keep logs</string>
+    <string name="pref_logging_days_to_keep_sum">Maximum days to keep logs, older logs will be deleted</string>
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -31,7 +34,4 @@
     <string name="PREFERENCE_CONNECTED">CONNECTED</string>
     <string name="PREFERENCE_DEVICE_ADDRESS">CONNECTED_DEVICE_ADDRESS</string>
     <string name="PREFERENCE_CONNECTION_TYPE">CONNECTION_TYPE</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

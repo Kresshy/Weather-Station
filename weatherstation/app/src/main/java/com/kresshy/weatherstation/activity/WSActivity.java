@@ -370,7 +370,7 @@ public class WSActivity extends ActionBarActivity implements
 
                     switch (state) {
                         case connecting:
-                            Toast.makeText(getApplicationContext(), "Connecting to weather station", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Connecting to weather station", Toast.LENGTH_SHORT).show();
                             break;
                         case disconnected:
                             Toast.makeText(getApplicationContext(), "Disconnected from weather station", Toast.LENGTH_LONG).show();
@@ -380,7 +380,7 @@ public class WSActivity extends ActionBarActivity implements
                     break;
 
                 case WSConstants.MESSAGE_CONNECTED:
-                    Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_SHORT).show();
 //                    navigationDrawerFragment.selectItem(0);
                     getFragmentManager().beginTransaction()
                             .replace(R.id.container, new CalibrationFragment())
@@ -408,7 +408,6 @@ public class WSActivity extends ActionBarActivity implements
 
     @Override
     public void onDeviceSelectedToConnect(String address) {
-
         sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).apply();
 
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
