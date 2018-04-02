@@ -26,4 +26,25 @@
         <item>wi-fi</item>
     </string-array>
 
+    <string-array name="pref_logging_entries">
+        <item>true</item>
+        <item>false</item>
+    </string-array>
+
+    <string-array name="pref_logging_values">
+        <item>true</item>
+        <item>false</item>
+    </string-array>
+
+    <string-array name="pref_logging_days_to_keep_entries">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="pref_logging_days_to_keep_values">
+        <item>-1</item>
+        <item>-2</item>
+        <item>-3</item>
+    </string-array>
 </resources>

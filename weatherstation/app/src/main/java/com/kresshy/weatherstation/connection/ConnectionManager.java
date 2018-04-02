@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.kresshy.weatherstation.application.WSConstants;
@@ -22,6 +21,8 @@ import com.kresshy.weatherstation.utils.ConnectionState;
 import com.kresshy.weatherstation.wifi.WifiConnection;
 
 import java.util.Set;
+
+import timber.log.Timber;
 
 public class ConnectionManager {
 
@@ -36,7 +37,6 @@ public class ConnectionManager {
 
     private ActionBarActivity activity;
     private ArrayAdapter adapter;
-    private boolean requestedEnableBluetooth = false;
     private Handler handler;
 
     protected ConnectionManager(ActionBarActivity activity, ArrayAdapter adapter, Handler handler) {
@@ -61,19 +61,20 @@ public class ConnectionManager {
 
         if (connectionType.equals("bluetooth")) {
             if (bluetoothAdapter == null) {
+                Timber.d( "Bluetooth is not supported, shutting down application");
                 Toast.makeText(activity, "Bluetooth is not supported", Toast.LENGTH_LONG).show();
                 activity.finish();
-            }
+            } else {
+                enableBluetooth();
 
-            enableBluetooth();
+                if (bluetoothAdapter.isEnabled()) {
+                    Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
-            if (bluetoothAdapter.isEnabled()) {
-                Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-                // If there are paired devices, add each one to the ArrayAdapter
-                if (pairedDevices.size() > 0) {
-                    for (BluetoothDevice device : pairedDevices) {
-                        adapter.add(device);
+                    // If there are paired devices, add each one to the ArrayAdapter
+                    if (pairedDevices.size() > 0) {
+                        for (BluetoothDevice device : pairedDevices) {
+                            adapter.add(device);
+                        }
                     }
                 }
             }
@@ -98,7 +99,7 @@ public class ConnectionManager {
 
     private void enableBluetooth() {
         if (!bluetoothAdapter.isEnabled()) {
-            Log.i(TAG, "Enabling bluetooth adapter");
+            Timber.d( "Enabling bluetooth adapter");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             activity.startActivityForResult(enableIntent, WSConstants.REQUEST_ENABLE_BT);
         }
@@ -106,7 +107,7 @@ public class ConnectionManager {
 
     private void disableBluetooth() {
         if (bluetoothAdapter.isEnabled()) {
-            Log.i(TAG, "Disabling bluetooth adapter");
+            Timber.d( "Disabling bluetooth adapter");
             bluetoothAdapter.disable();
         }
     }
@@ -129,7 +130,6 @@ public class ConnectionManager {
 
     public SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener =
             new SharedPreferences.OnSharedPreferenceChangeListener() {
-
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 

@@ -1,6 +1,5 @@
 package com.kresshy.weatherstation.bluetooth;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -59,8 +58,8 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
             }
 
             if (status != null) {
-                if(bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED)
-                status.setText("paired");
+                if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED)
+                    status.setText("paired");
             }
         }
         return v;

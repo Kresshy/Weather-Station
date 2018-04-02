@@ -30,10 +30,13 @@ import com.kresshy.weatherstation.wifi.WifiDevice;
 
 import java.util.List;
 
+import timber.log.Timber;
+
+
 public class WifiFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private static final int SERVERPORT = 3000;
-    private static final String SERVER_IP = "192.168.100.248";
+    private static final String SERVER_IP = "192.168.100.155";
     private AbsListView wifiDeviceListView;
     private ArrayAdapter<String> wifiDeviceArrayAdapter;
 
@@ -76,7 +79,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         wifiReceiver = new WifiReceiver();
         getActivity().registerReceiver(wifiReceiver, new IntentFilter(
@@ -132,7 +135,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "Clicked on connect Button");
+                Timber.d( "Clicked on connect Button");
                 mListener.onDeviceSelectedToConnect(new WifiDevice(SERVER_IP, SERVERPORT));
             }
         });
@@ -189,7 +192,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
         conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 
-        WifiManager wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.addNetwork(conf);
         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
         for (WifiConfiguration i : list) {

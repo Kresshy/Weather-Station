@@ -23,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.kresshy.weatherstation.R;
 
@@ -102,13 +101,12 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerListView.setAdapter(new NavigationDrawerItemAdapter(
                 getActionBar().getThemedContext(),
                 new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                        getString(R.string.title_section4),
+                        getString(R.string.dashboard_view),
+                        getString(R.string.bluetooth_weather_station_connect_view),
+                        getString(R.string.settings_view),
+                        getString(R.string.quit_view),
 //                        "Wifi Stations"
                 }));
-
 
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
@@ -280,7 +278,7 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     public class NavigationDrawerItemAdapter extends ArrayAdapter<String> {
-Context context;
+        Context context;
         String[] menuItems;
 
         public NavigationDrawerItemAdapter(Context context, String[] items) {

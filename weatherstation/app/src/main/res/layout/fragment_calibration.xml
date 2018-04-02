@@ -1,0 +1,61 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.kresshy.weatherstation.fragment.CalibrationFragment">
+
+    <ImageView
+        android:id="@+id/calibrate_image"
+        android:layout_width="255dp"
+        android:layout_height="316dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/calibration_background" />
+
+    <TextView
+        android:id="@+id/windspeed_diff_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/calibrate_image"
+        android:text="Windspeed difference:"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/windspeed_diff_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/windspeed_diff_label"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/calibrate_message_label"
+        android:padding="20dp"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/windspeed_diff_value"
+        android:text="If you have a multi-node weather station setup please keep your weather stations close to each other, then touch calibrate." />
+
+    <TextView
+        android:id="@+id/temperature_diff_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/calibrate_message_label"
+        android:textAlignment="center"
+        android:text="Temperature difference:" />
+
+    <TextView
+        android:id="@+id/temperature_diff_value"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/temperature_diff_label" />
+
+    <Button
+        android:id="@+id/calibrate_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="Calibrate" />
+</RelativeLayout>

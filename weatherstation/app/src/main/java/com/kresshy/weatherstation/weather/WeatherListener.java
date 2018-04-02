@@ -1,8 +1,7 @@
 package com.kresshy.weatherstation.weather;
 
-import com.kresshy.weatherstation.weather.WeatherData;
-
 public interface WeatherListener {
+    void weatherDataReceived(WeatherData weatherData);
 
-    public void weatherDataReceived(WeatherData weatherData);
+    void measurementReceived(Measurement measurement);
 }

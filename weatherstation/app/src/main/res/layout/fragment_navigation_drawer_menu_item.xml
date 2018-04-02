@@ -17,7 +17,7 @@
         android:id="@+id/navigation_drawer_menu_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20dp"
+        android:textSize="18dp"
         android:layout_margin="7dp"
         android:layout_toRightOf="@id/navigation_drawer_menu_icon"
         android:text="Menu item" />

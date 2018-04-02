@@ -11,6 +11,8 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import timber.log.Timber;
+
 public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
 
     private static BluetoothDiscoveryReceiver instance = null;
@@ -44,7 +46,7 @@ public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
             // already
             if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
                 bluetoothDevices.add(device);
-                Log.i(TAG, "Bluetooth Device added: " + device.getName());
+                Timber.d( "Bluetooth Device added: " + device.getName());
             }
             // When discovery is finished, change the Activity fragmentTitle
         } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {

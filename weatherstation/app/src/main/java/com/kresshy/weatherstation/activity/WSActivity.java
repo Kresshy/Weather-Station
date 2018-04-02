@@ -13,13 +13,13 @@ import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
@@ -28,31 +28,34 @@ import com.kresshy.weatherstation.bluetooth.BluetoothDiscoveryReceiver;
 import com.kresshy.weatherstation.bluetooth.BluetoothStateReceiver;
 import com.kresshy.weatherstation.connection.ConnectionManager;
 import com.kresshy.weatherstation.fragment.BluetoothDeviceListFragment;
+import com.kresshy.weatherstation.fragment.CalibrationFragment;
 import com.kresshy.weatherstation.fragment.DashboardFragment;
+import com.kresshy.weatherstation.fragment.GraphViewFragment;
 import com.kresshy.weatherstation.fragment.NavigationDrawerFragment;
 import com.kresshy.weatherstation.fragment.SettingsFragment;
 import com.kresshy.weatherstation.fragment.WifiFragment;
 import com.kresshy.weatherstation.utils.ConnectionState;
+import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
 import com.kresshy.weatherstation.wifi.WifiDevice;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+
+import timber.log.Timber;
 
 
 public class WSActivity extends ActionBarActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         BluetoothDeviceListFragment.OnFragmentInteractionListener,
         DashboardFragment.OnFragmentInteractionListener,
-        WifiFragment.OnFragmentInteractionListener {
+        GraphViewFragment.OnFragmentInteractionListener,
+        WifiFragment.OnFragmentInteractionListener,
+        CalibrationFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "WSActivity";
 
-    // Member fields
-//    private static ArrayAdapter<String> bluetoothDevicesArrayAdapter;
     private static BluetoothDeviceItemAdapter bluetoothDevicesArrayAdapter;
     private static ArrayList<BluetoothDevice> bluetoothDevices;
     private static Set<BluetoothDevice> pairedDevices;
@@ -76,7 +79,7 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "ONCREATE");
+        Timber.d( "ONCREATE");
 
         // setting up view
         setContentView(R.layout.activity_main);
@@ -109,13 +112,12 @@ public class WSActivity extends ActionBarActivity implements
             connectionManager.enableConnection();
             requestedEnableBluetooth = true;
         }
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.v(TAG, "ONSTART");
+        Timber.d( "ONSTART");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
         if (!requestedEnableBluetooth) {
@@ -126,7 +128,7 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "ONRESUME");
+        Timber.d( "ONRESUME");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
         if (!bluetoothAdapter.isEnabled() && !requestedEnableBluetooth) {
@@ -157,13 +159,13 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.i(TAG, "ONSAVEDINSTANCE");
+        Timber.d( "ONSAVEDINSTANCE");
 
         if (connectionManager.getConnectionState() == ConnectionState.connected) {
-            Log.i(TAG, "Connected to a device");
+            Timber.d( "Connected to a device");
             outState.putBoolean(getString(R.string.PREFERENCE_CONNECTED), true);
         } else {
-            Log.i(TAG, "Not connected to a device");
+            Timber.d( "Not connected to a device");
             outState.putBoolean(getString(R.string.PREFERENCE_CONNECTED), false);
         }
     }
@@ -171,14 +173,14 @@ public class WSActivity extends ActionBarActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG, "ONPAUSE");
+        Timber.d( "ONPAUSE");
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "ONDESTROY");
+        Timber.d( "ONDESTROY");
 
         connectionManager.stopConnection();
         BluetoothConnection.destroyInstance();
@@ -186,13 +188,13 @@ public class WSActivity extends ActionBarActivity implements
         try {
             unregisterReceiver(BluetoothStateReceiver.getInstance(connectionManager.connection, bluetoothDevicesArrayAdapter, this, sharedPreferences));
         } catch (IllegalArgumentException ie) {
-            Log.i(TAG, "BluetoothReceiver was not registered");
+            Timber.d( "BluetoothReceiver was not registered");
         }
 
         try {
             unregisterReceiver(BluetoothDiscoveryReceiver.getInstance(bluetoothDevicesArrayAdapter, this));
         } catch (IllegalArgumentException ie) {
-            Log.i(TAG, "bluetoothDiscoveryRegister was not registered");
+            Timber.d( "bluetoothDiscoveryRegister was not registered");
         }
 
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
@@ -210,26 +212,23 @@ public class WSActivity extends ActionBarActivity implements
 
         switch (position) {
             case 0:
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, new DashboardFragment())
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.container, new GraphViewFragment())
                         .commit();
-
                 break;
             case 1:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, new BluetoothDeviceListFragment())
                         .commit();
-
                 break;
             case 2:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, new SettingsFragment())
                         .commit();
-
                 break;
             case 3:
                 if (bluetoothAdapter.isEnabled()) {
-                    Log.i(TAG, "Disabling bluetooth adapter");
+                    Timber.d( "Disabling bluetooth adapter");
                     bluetoothAdapter.disable();
                 }
 
@@ -240,6 +239,10 @@ public class WSActivity extends ActionBarActivity implements
                         .replace(R.id.container, new WifiFragment())
                         .commit();
                 break;
+            default:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.container, new GraphViewFragment())
+                        .commit();
         }
 
         onSectionAttached(position);
@@ -248,13 +251,13 @@ public class WSActivity extends ActionBarActivity implements
     public void onSectionAttached(int number) {
         switch (number) {
             case 0:
-                fragmentTitle = getString(R.string.title_section1);
+                fragmentTitle = getString(R.string.dashboard_view);
                 break;
             case 1:
-                fragmentTitle = getString(R.string.title_section2);
+                fragmentTitle = getString(R.string.bluetooth_weather_station_connect_view);
                 break;
             case 2:
-                fragmentTitle = getString(R.string.title_section3);
+                fragmentTitle = getString(R.string.settings_view);
                 break;
         }
     }
@@ -288,7 +291,7 @@ public class WSActivity extends ActionBarActivity implements
             return true;
         } else if (id == R.id.action_quit) {
             if (bluetoothAdapter.isEnabled()) {
-                Log.i(TAG, "Disabling bluetooth adapter");
+                Timber.d( "Disabling bluetooth adapter");
                 bluetoothAdapter.disable();
             }
 
@@ -307,57 +310,81 @@ public class WSActivity extends ActionBarActivity implements
             switch (msg.what) {
 
                 case WSConstants.MESSAGE_TOAST:
-
                     message = (String) msg.obj;
                     Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
                     break;
 
                 case WSConstants.MESSAGE_READ:
-
                     message = (String) msg.obj;
 
-                    // [start, pdu, end]
+                    // [start_pdu_end]
                     String pdu = message.split("_")[1];
-                    Log.i(TAG, "PDU of the message " + pdu + " message " + message);
-                    String[] weather = pdu.split(" ");
+                    Timber.d( "PDU of the message");
+                    Timber.d(pdu);
+
                     double windSpeed = 0;
                     double temperature = 0;
 
+                    WeatherData weatherData;
+                    Measurement measurement;
+
                     try {
-                        windSpeed = Double.parseDouble(weather[0]);
-                        temperature = Double.parseDouble(weather[1]);
-                        DecimalFormat df = new DecimalFormat("##.00");
-                        windSpeed = Double.valueOf(df.format(windSpeed));
-                        temperature = Double.valueOf(df.format(temperature));
-                    } catch (Exception e) {
-                        Log.e(TAG, "Cannot parse weather information");
+                        Gson gson = new Gson();
+                        measurement = gson.fromJson(pdu, Measurement.class);
+                        Timber.d( measurement.toString());
+                        weatherData = measurement.getWeatherDataForNode(0);
+                        Timber.d( weatherData.toString());
+                        Timber.d( "Transferring new measurement / weatherData");
+                        weatherListener.weatherDataReceived(weatherData);
+                        weatherListener.measurementReceived(measurement);
+                        break;
+                    } catch (JsonSyntaxException jse) {
+                        try {
+                            Timber.d( "JsonSyntaxException, parsing as version 1 pdu");
+                            String[] weather = pdu.split(" ");
+                            windSpeed = Double.parseDouble(weather[0]);
+                            temperature = Double.parseDouble(weather[1]);
+                            weatherData = new WeatherData(windSpeed, temperature);
+                            Timber.d( weatherData.toString());
+                            measurement = new Measurement();
+                            measurement.setVersion(1);
+                            measurement.setNumberOfNodes(1);
+                            measurement.addWeatherDataToMeasurement(weatherData);
+                            Timber.d( measurement.toString());
+                            Timber.d( "Transferring new measurement / weatherData");
+                            weatherListener.weatherDataReceived(weatherData);
+                            weatherListener.measurementReceived(measurement);
+                            break;
+                        } catch (NumberFormatException nfe) {
+                            Timber.d( "Cannot parse weather data: " + pdu);
+                        }
+                    } catch (NumberFormatException nfe) {
+                        Timber.d( "Cannot parse weather data: " + pdu);
                     }
 
-                    WeatherData weatherData = new WeatherData(windSpeed, temperature);
-                    Log.i(TAG, weatherData.toString());
-
-                    weatherListener.weatherDataReceived(weatherData);
                     break;
 
                 case WSConstants.MESSAGE_STATE:
-
                     ConnectionState state = (ConnectionState) msg.obj;
 
                     switch (state) {
                         case connecting:
-                            Toast.makeText(getApplicationContext(), "Connecting to weather station", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Connecting to weather station", Toast.LENGTH_SHORT).show();
                             break;
                         case disconnected:
                             Toast.makeText(getApplicationContext(), "Disconnected from weather station", Toast.LENGTH_LONG).show();
                             break;
                     }
+
                     break;
 
                 case WSConstants.MESSAGE_CONNECTED:
-
-                    Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_LONG).show();
-                    navigationDrawerFragment.selectItem(0);
+                    Toast.makeText(getApplicationContext(), "Connected to weather station", Toast.LENGTH_SHORT).show();
+//                    navigationDrawerFragment.selectItem(0);
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.container, new CalibrationFragment())
+                            .commit();
                     break;
             }
         }
@@ -381,30 +408,34 @@ public class WSActivity extends ActionBarActivity implements
 
     @Override
     public void onDeviceSelectedToConnect(String address) {
-
-        sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).commit();
+        sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).apply();
 
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-        Log.i(TAG, bluetoothDevice.getName() + bluetoothDevice.getAddress());
+        Timber.d( bluetoothDevice.getName() + bluetoothDevice.getAddress());
 
         connectionManager.connectToDevice(bluetoothDevice);
     }
 
     @Override
     public void startBluetoothDiscovery() {
-        Log.i(TAG, "Starting bluetooth discovery");
+        Timber.d( "Starting bluetooth discovery");
         bluetoothAdapter.startDiscovery();
     }
 
     @Override
     public void stopBluetoothDiscovery() {
-        Log.i(TAG, "Stopping bluetooth discovery");
+        Timber.d( "Stopping bluetooth discovery");
         bluetoothAdapter.cancelDiscovery();
     }
 
     @Override
     public void registerWeatherDataReceiver(WeatherListener weatherListener) {
         this.weatherListener = weatherListener;
+    }
+
+    @Override
+    public void startDashboardAfterCalibration() {
+        navigationDrawerFragment.selectItem(0);
     }
 
     @Override

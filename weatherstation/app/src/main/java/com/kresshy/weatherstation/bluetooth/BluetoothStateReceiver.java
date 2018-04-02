@@ -18,6 +18,8 @@ import com.kresshy.weatherstation.connection.Connection;
 
 import java.util.Set;
 
+import timber.log.Timber;
+
 public class BluetoothStateReceiver extends BroadcastReceiver {
 
     private static final String TAG = "BluetoothStateReceiver";
@@ -49,11 +51,11 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_TURNING_ON) {
-            Log.v(TAG, "RECEIVED BLUETOOTH STATE CHANGE: STATE_TURNING_ON");
+            Timber.d("RECEIVED BLUETOOTH STATE CHANGE: STATE_TURNING_ON");
         }
 
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-            Log.v(TAG, "RECEIVED BLUETOOTH STATE CHANGE: STATE_ON");
+            Timber.d("RECEIVED BLUETOOTH STATE CHANGE: STATE_ON");
 
             connection.start();
             reconnectPreviousWeatherStation();
@@ -71,7 +73,7 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
 
     public void reconnectPreviousWeatherStation() {
         if (sharedPreferences.getBoolean("pref_reconnect", false)) {
-            Log.i(TAG, "We should restore the connection");
+            Timber.d( "We should restore the connection");
             final String address = sharedPreferences.getString(activity.getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
 
             if (!address.equals("00:00:00:00:00:00")) {
@@ -80,14 +82,14 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
                 builder.setMessage(R.string.reconnect_message);
                 builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Log.i(TAG, "The device address is valid, attempting to reconnect");
+                        Timber.d( "The device address is valid, attempting to reconnect");
                         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
                         connection.connect(bluetoothDevice);
                     }
                 });
                 builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Log.i(TAG, "We couldn't restore the connection");
+                        Timber.d( "We couldn't restore the connection");
                         dialog.cancel();
                     }
                 });
@@ -95,10 +97,10 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
                 AlertDialog dialog = builder.create();
                 dialog.show();
             } else {
-                Log.i(TAG, "The device address was invalid");
+                Timber.d( "The device address was invalid");
             }
         } else {
-            Log.i(TAG, "We shouldn't restore the connection");
+            Timber.d( "We shouldn't restore the connection");
         }
     }
 }
