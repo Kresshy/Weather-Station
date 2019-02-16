@@ -12,19 +12,13 @@ import com.kresshy.weatherstation.R;
 
 public class SettingsFragment extends PreferenceFragment {
 
-    public static final String KEY_PREF_INTERVAL = "pref_interval";
-    public static final String KEY_PREF_RECONNECT = "pref_reconnect";
-    public static final String KEY_PREF_CONNECTION_TYPE = "pref_connection_type";
-
     public SettingsFragment() {
         // Required empty public constructor
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         addPreferencesFromResource(R.xml.preferences);
     }
 
@@ -32,7 +26,6 @@ public class SettingsFragment extends PreferenceFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         view.setBackgroundColor(getResources().getColor(android.R.color.white));
-
         return view;
     }
 }

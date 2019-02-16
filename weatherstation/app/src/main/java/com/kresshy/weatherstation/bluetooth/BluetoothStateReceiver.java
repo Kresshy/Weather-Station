@@ -14,6 +14,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.kresshy.weatherstation.R;
+import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.connection.Connection;
 
 import java.util.Set;
@@ -32,14 +33,24 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
     private Connection connection;
     private SharedPreferences sharedPreferences;
 
-    protected BluetoothStateReceiver(Connection connection, ArrayAdapter bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
+    protected BluetoothStateReceiver(
+            Connection connection,
+            ArrayAdapter bluetoothDevices,
+            ActionBarActivity activity,
+            SharedPreferences sharedPreferences
+    ) {
         this.bluetoothDevices = bluetoothDevices;
         this.activity = activity;
         this.connection = connection;
         this.sharedPreferences = sharedPreferences;
     }
 
-    public static BluetoothStateReceiver getInstance(Connection connection, ArrayAdapter bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
+    public static BluetoothStateReceiver getInstance(
+            Connection connection,
+            ArrayAdapter bluetoothDevices,
+            ActionBarActivity activity,
+            SharedPreferences sharedPreferences
+    ) {
         if (instance == null) {
             return new BluetoothStateReceiver(connection, bluetoothDevices, activity, sharedPreferences);
         } else {
@@ -51,11 +62,11 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_TURNING_ON) {
-            Timber.d("RECEIVED BLUETOOTH STATE CHANGE: STATE_TURNING_ON");
+            Timber.d("Received bluetooth state change: STATE_TURNING_ON");
         }
 
         if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-            Timber.d("RECEIVED BLUETOOTH STATE CHANGE: STATE_ON");
+            Timber.d("Received bluetooth state change: STATE_ON");
 
             connection.start();
             reconnectPreviousWeatherStation();
@@ -72,24 +83,31 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
     }
 
     public void reconnectPreviousWeatherStation() {
-        if (sharedPreferences.getBoolean("pref_reconnect", false)) {
-            Timber.d( "We should restore the connection");
-            final String address = sharedPreferences.getString(activity.getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
+        if (sharedPreferences.getBoolean(WSConstants.KEY_PREF_RECONNECT, false)) {
+            Timber.d("We should restore the connection");
 
-            if (!address.equals("00:00:00:00:00:00")) {
+            final String address = sharedPreferences.getString(
+                    activity.getString(R.string.PREFERENCE_DEVICE_ADDRESS),
+                    WSConstants.BT_NULL_ADDRESS
+            );
 
+            if (!address.equals(WSConstants.BT_NULL_ADDRESS)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                 builder.setMessage(R.string.reconnect_message);
+
                 builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
                     public void onClick(DialogInterface dialog, int id) {
-                        Timber.d( "The device address is valid, attempting to reconnect");
+                        Timber.d("The device address is valid, attempting to reconnect");
                         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
                         connection.connect(bluetoothDevice);
                     }
                 });
+
                 builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+
                     public void onClick(DialogInterface dialog, int id) {
-                        Timber.d( "We couldn't restore the connection");
+                        Timber.d("We couldn't restore the connection");
                         dialog.cancel();
                     }
                 });
@@ -97,10 +115,10 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
                 AlertDialog dialog = builder.create();
                 dialog.show();
             } else {
-                Timber.d( "The device address was invalid");
+                Timber.d("The device address was invalid");
             }
         } else {
-            Timber.d( "We shouldn't restore the connection");
+            Timber.d("We shouldn't restore the connection");
         }
     }
 }

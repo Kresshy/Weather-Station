@@ -42,8 +42,7 @@ public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            // If it's already paired, skip it, because it's been listed
-            // already
+            // If it's already paired, skip it, because it's been listed already
             if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
                 bluetoothDevices.add(device);
                 Timber.d( "Bluetooth Device added: " + device.getName());

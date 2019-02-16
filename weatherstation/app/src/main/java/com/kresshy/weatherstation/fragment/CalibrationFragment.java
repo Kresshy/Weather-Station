@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.application.WSConstants;
-import com.kresshy.weatherstation.weather.Measurement;
+import com.kresshy.weatherstation.weather.WeatherMeasurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
 
@@ -77,15 +77,19 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
     }
 
     @Override
-    public void measurementReceived(Measurement measurement) {
-        WeatherData data = measurement.getWeatherDataForNode(0);
+    public void measurementReceived(WeatherMeasurement weatherMeasurement) {
+        WeatherData data = weatherMeasurement.getWeatherDataForNode(0);
 
-        if (measurement.getNumberOfNodes() > 1) {
-            WeatherData data2 = measurement.getWeatherDataForNode(1);
+        if (weatherMeasurement.getNumberOfNodes() > 1) {
+            WeatherData data2 = weatherMeasurement.getWeatherDataForNode(1);
             windSpeedDiff = data.getWindSpeed() - data2.getWindSpeed();
             tempDiff = data.getTemperature() - data2.getTemperature();
         } else {
-            Toast.makeText(getActivity().getApplicationContext(), "Skipping calibration, only one station", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    getActivity().getApplicationContext(),
+                    getString(R.string.calibration_skip),
+                    Toast.LENGTH_SHORT
+            ).show();
             mListener.startDashboardAfterCalibration();
         }
 
@@ -107,7 +111,7 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
                 WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff)
         ).commit();
 
-        Timber.d( "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+        Timber.d("Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
 
         mListener.startDashboardAfterCalibration();
     }

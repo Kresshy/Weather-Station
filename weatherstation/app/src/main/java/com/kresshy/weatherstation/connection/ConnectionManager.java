@@ -26,8 +26,6 @@ import timber.log.Timber;
 
 public class ConnectionManager {
 
-    private static final String TAG = "ConnectionManager";
-
     private static ConnectionManager instance = null;
     private static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     WifiManager wifiManager;
@@ -85,7 +83,6 @@ public class ConnectionManager {
 
     public static String getConnectionType(Activity activity) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
-
         return sharedPreferences.getString("pref_connection_type", "bluetooth");
     }
 

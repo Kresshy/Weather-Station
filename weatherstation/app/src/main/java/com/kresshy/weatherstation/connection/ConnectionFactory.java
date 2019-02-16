@@ -9,7 +9,6 @@ import com.kresshy.weatherstation.wifi.WifiConnection;
 public class ConnectionFactory {
 
     public static Connection getConnection(Handler handler, Activity activity) {
-
         String connectionType = ConnectionManager.getConnectionType(activity);
 
         if (connectionType.equals("bluetooth")) {

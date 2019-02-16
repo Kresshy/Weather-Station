@@ -7,15 +7,15 @@ import com.kresshy.weatherstation.utils.ConnectionState;
 
 
 public interface Connection {
-    public void setHandler(Handler handler);
+    void setHandler(Handler handler);
 
-    public void start();
+    void start();
 
-    public void connect(Parcelable device);
+    void connect(Parcelable device);
 
-    public void stop();
+    void stop();
 
-    public void write(byte[] out);
+    void write(byte[] out);
 
-    public ConnectionState getState();
+    ConnectionState getState();
 }

@@ -29,4 +29,5 @@ public class WSConstants {
     public static final String KEY_WIND_DIFF = "KEY_WIND_DIFF";
     public static final String KEY_TEMP_DIFF = "KEY_TEMP_DIFF";
 
+    public static final String BT_NULL_ADDRESS = "00:00:00:00:00:00";
 }

@@ -40,7 +40,6 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     private AbsListView wifiDeviceListView;
     private ArrayAdapter<String> wifiDeviceArrayAdapter;
 
-
     WifiManager wifiManager;
     WifiReceiver wifiReceiver;
 
@@ -48,7 +47,6 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
     private final Handler handler = new Handler();
 
-    private static final String TAG = "WIFIFragment";
     private WifiConnection wifiConnection;
 
     OnFragmentInteractionListener mListener;
@@ -94,7 +92,6 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
     public void doInback() {
         handler.postDelayed(new Runnable() {
-
             @Override
             public void run() {
                 wifiManager.startScan();
@@ -208,6 +205,6 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
     public interface OnFragmentInteractionListener {
 
-        public void onDeviceSelectedToConnect(WifiDevice device);
+        void onDeviceSelectedToConnect(WifiDevice device);
     }
 }

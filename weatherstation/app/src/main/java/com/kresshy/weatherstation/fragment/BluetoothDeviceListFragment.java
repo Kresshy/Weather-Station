@@ -19,8 +19,6 @@ import java.util.ArrayList;
 
 public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
-    public final String TAG = "BluetoothDeviceListFragment";
-
     private AbsListView bluetoothDevicesListView;
     private TextView bluetootDevicesTextView;
 
@@ -54,9 +52,7 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
         // Set the adapter
         bluetoothDevicesListView = (AbsListView) view.findViewById(R.id.listview_bluetooth_devices);
-
         bluetoothDevicesListView.setAdapter(((WSActivity) getActivity()).getPairedDevicesArrayAdapter());
-
         bluetoothDevicesListView.setOnItemClickListener(this);
 
         return view;
@@ -84,27 +80,18 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
             // Cancel discovery because it's costly and we're about to connect
             mListener.stopBluetoothDiscovery();
 
-//            String info = ((TextView) view).getText().toString();
-//            String address = info.substring(info.length() - 17);
             ArrayList<BluetoothDevice> devices = ((WSActivity) getActivity()).getBluetoothDevices();
             mListener.onDeviceSelectedToConnect(devices.get(position).getAddress());
         }
     }
 
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = bluetoothDevicesListView.getEmptyView();
-
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
-    }
 
     public interface OnFragmentInteractionListener {
 
-        public void onDeviceSelectedToConnect(String address);
+        void onDeviceSelectedToConnect(String address);
 
-        public void startBluetoothDiscovery();
+        void startBluetoothDiscovery();
 
-        public void stopBluetoothDiscovery();
+        void stopBluetoothDiscovery();
     }
 }
