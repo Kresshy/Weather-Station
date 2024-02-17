@@ -1,5 +1,6 @@
 package com.kresshy.weatherstation.activity;
 
+import android.annotation.SuppressLint;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,9 +11,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -46,7 +47,7 @@ import java.util.Set;
 import timber.log.Timber;
 
 
-public class WSActivity extends ActionBarActivity implements
+public class WSActivity extends AppCompatActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         BluetoothDeviceListFragment.OnFragmentInteractionListener,
         DashboardFragment.OnFragmentInteractionListener,
@@ -205,6 +206,7 @@ public class WSActivity extends ActionBarActivity implements
         super.onConfigurationChanged(newConfig);
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
@@ -279,6 +281,7 @@ public class WSActivity extends ActionBarActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -301,6 +304,7 @@ public class WSActivity extends ActionBarActivity implements
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressLint("HandlerLeak")
     private final Handler messageHandler = new Handler() {
 
         @Override
@@ -345,11 +349,9 @@ public class WSActivity extends ActionBarActivity implements
                             String[] weather = pdu.split(" ");
                             windSpeed = Double.parseDouble(weather[0]);
                             temperature = Double.parseDouble(weather[1]);
-                            weatherData = new WeatherData(windSpeed, temperature);
+                            weatherData = WeatherData.create(windSpeed, temperature);
                             Timber.d( weatherData.toString());
-                            measurement = new Measurement();
-                            measurement.setVersion(1);
-                            measurement.setNumberOfNodes(1);
+                            measurement = Measurement.create(1, 1);
                             measurement.addWeatherDataToMeasurement(weatherData);
                             Timber.d( measurement.toString());
                             Timber.d( "Transferring new measurement / weatherData");
@@ -406,6 +408,7 @@ public class WSActivity extends ActionBarActivity implements
         return pairedDevices;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onDeviceSelectedToConnect(String address) {
         sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).apply();
@@ -416,12 +419,14 @@ public class WSActivity extends ActionBarActivity implements
         connectionManager.connectToDevice(bluetoothDevice);
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void startBluetoothDiscovery() {
         Timber.d( "Starting bluetooth discovery");
         bluetoothAdapter.startDiscovery();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void stopBluetoothDiscovery() {
         Timber.d( "Stopping bluetooth discovery");

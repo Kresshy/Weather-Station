@@ -3,7 +3,7 @@
     android:id="@+id/startactivity_relativelayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SidusStartActivity" >
+    tools:context=".WeatherStationStartActivity" >
 
     <TextView
         android:id="@+id/select_timer"

@@ -29,7 +29,7 @@ import java.util.List;
 import timber.log.Timber;
 
 
-public class DashboardFragment extends Fragment implements WeatherListener {
+public class DashboardFragment extends androidx.fragment.app.Fragment implements WeatherListener {
 
     private static final String TAG = "DashboardFragment";
 
@@ -172,8 +172,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             windSpeedData = new GraphViewData[1];
             temperatureData = new GraphViewData[1];
 
-            windSpeedData[0] = new GraphViewData(0, weatherData.getWindSpeed());
-            temperatureData[0] = new GraphViewData(0, weatherData.getTemperature());
+            windSpeedData[0] = new GraphViewData(0, weatherData.windSpeed());
+            temperatureData[0] = new GraphViewData(0, weatherData.temperature());
 
             windSpeedSeries.resetData(windSpeedData);
             temperatureSeries.resetData(temperatureData);
@@ -183,8 +183,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             weatherDataCount++;
         } else {
             // prevent adding false measurements
-            if (weatherData.getTemperature() == 0.0 || (weatherData.getTemperature() - previousData.getTemperature() > 1.0)) {
-                weatherData.setTemperature(previousData.getTemperature());
+            if (weatherData.temperature() == 0.0 || (weatherData.temperature() - previousData.temperature() > 1.0)) {
+                weatherData.toBuilder().setTemperature(previousData.temperature()).build();
             } else {
                 previousData = weatherData;
             }
@@ -200,8 +200,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
             double sumTemperature = 0;
 
             for (WeatherData wData : slidingScreen) {
-                sumWindSpeed += wData.getWindSpeed();
-                sumTemperature += wData.getTemperature();
+                sumWindSpeed += wData.windSpeed();
+                sumTemperature += wData.temperature();
             }
 
             double avarageWindSpeed = sumWindSpeed / slidingScreen.size();

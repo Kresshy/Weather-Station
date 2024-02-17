@@ -1,5 +1,6 @@
 package com.kresshy.weatherstation.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
@@ -202,6 +203,7 @@ public class BluetoothConnection implements Connection {
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
+        @SuppressLint("MissingPermission")
         public AcceptThread() {
             // Use a temporary object that is later assigned to mmServerSocket,
             // because mmServerSocket is final
@@ -260,6 +262,7 @@ public class BluetoothConnection implements Connection {
         @SuppressWarnings("unused")
         private final BluetoothDevice device;
 
+        @SuppressLint("MissingPermission")
         public ConnectThread(BluetoothDevice device) {
             // Use a temporary object that is later assigned to socket,
             // because socket is final
@@ -278,6 +281,7 @@ public class BluetoothConnection implements Connection {
             socket = tmp;
         }
 
+        @SuppressLint("MissingPermission")
         public void run() {
             // Cancel discovery because it will slow down the connection
             bluetoothAdapter.cancelDiscovery();

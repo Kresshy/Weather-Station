@@ -1,5 +1,6 @@
 package com.kresshy.weatherstation.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -105,6 +106,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     }
 
     class WifiReceiver extends BroadcastReceiver {
+        @SuppressLint("MissingPermission")
         public void onReceive(Context c, Intent intent) {
             sb = new StringBuilder();
 
@@ -136,7 +138,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
             @Override
             public void onClick(View v) {
                 Timber.d( "Clicked on connect Button");
-                mListener.onDeviceSelectedToConnect(new WifiDevice(SERVER_IP, SERVERPORT));
+                mListener.onDeviceSelectedToConnect(WifiDevice.create(SERVER_IP, SERVERPORT));
             }
         });
 
@@ -194,7 +196,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
         WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.addNetwork(conf);
-        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+        @SuppressLint("MissingPermission") List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
         for (WifiConfiguration i : list) {
             if (i.SSID != null && i.SSID.equals("\"" + networkSSID + "\"")) {
                 wifiManager.disconnect();

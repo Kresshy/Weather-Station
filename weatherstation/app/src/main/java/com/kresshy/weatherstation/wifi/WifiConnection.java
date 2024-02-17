@@ -183,7 +183,7 @@ public class WifiConnection implements Connection {
             try {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
-                mmSocket = new Socket(mmDevice.getIp(), mmDevice.getPort());
+                mmSocket = new Socket(mmDevice.ip(), mmDevice.port());
                 Timber.d( "CONNECT_OK");
 
             } catch (IOException connectException) {
