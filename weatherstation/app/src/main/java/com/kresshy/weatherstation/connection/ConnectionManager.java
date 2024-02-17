@@ -1,5 +1,6 @@
 package com.kresshy.weatherstation.connection;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,8 +11,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
+import androidx.appcompat.app.AppCompatActivity;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -35,11 +35,11 @@ public class ConnectionManager {
     // wifi or bluetooth connection interface
     public Connection connection;
 
-    private ActionBarActivity activity;
+    private AppCompatActivity activity;
     private ArrayAdapter adapter;
     private Handler handler;
 
-    protected ConnectionManager(ActionBarActivity activity, ArrayAdapter adapter, Handler handler) {
+    protected ConnectionManager(AppCompatActivity activity, ArrayAdapter adapter, Handler handler) {
         this.activity = activity;
         this.adapter = adapter;
         this.connection = ConnectionFactory.getConnection(handler, activity);
@@ -48,7 +48,7 @@ public class ConnectionManager {
         this.wifiManager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
-    public static ConnectionManager getInstance(ActionBarActivity activity, ArrayAdapter adapter, Handler handler) {
+    public static ConnectionManager getInstance(AppCompatActivity activity, ArrayAdapter adapter, Handler handler) {
         if (instance == null) {
             return new ConnectionManager(activity, adapter, handler);
         } else {
@@ -68,7 +68,7 @@ public class ConnectionManager {
                 enableBluetooth();
 
                 if (bluetoothAdapter.isEnabled()) {
-                    Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+                    @SuppressLint("MissingPermission") Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
                     // If there are paired devices, add each one to the ArrayAdapter
                     if (pairedDevices.size() > 0) {
@@ -97,6 +97,7 @@ public class ConnectionManager {
         wifiManager.setWifiEnabled(false);
     }
 
+    @SuppressLint("MissingPermission")
     private void enableBluetooth() {
         if (!bluetoothAdapter.isEnabled()) {
             Timber.d( "Enabling bluetooth adapter");
@@ -105,6 +106,7 @@ public class ConnectionManager {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void disableBluetooth() {
         if (bluetoothAdapter.isEnabled()) {
             Timber.d( "Disabling bluetooth adapter");

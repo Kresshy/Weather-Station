@@ -1,5 +1,6 @@
 package com.kresshy.weatherstation.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
         this.bluetoothDevices = bluetoothDevices;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;

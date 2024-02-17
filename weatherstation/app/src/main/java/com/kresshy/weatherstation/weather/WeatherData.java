@@ -1,39 +1,39 @@
 package com.kresshy.weatherstation.weather;
 
+import com.google.auto.value.AutoValue;
+
 import java.util.Date;
 
-import lombok.Data;
-import lombok.Getter;
 
-@Data
-public class WeatherData {
+@AutoValue
+public abstract class WeatherData {
 
-    private double windSpeed;
-    private double temperature;
-    private int nodeId;
-
-    @Getter
-    private Date timestamp;
-
-
-    public WeatherData() {
-        this.windSpeed = 0;
-        this.temperature = 0;
-        this.nodeId = 0;
-        this.timestamp = new Date();
+    public static WeatherData create(double windSpeed, double temperature) {
+        return create(windSpeed, temperature, 0, new Date());
+    }
+    public static WeatherData create(double windSpeed, double temperature, int nodeId, Date timestamp) {
+        return new AutoValue_WeatherData.Builder().setWindSpeed(windSpeed).setTemperature(temperature).setNodeId(nodeId).setTimestamp(timestamp).build();
     }
 
-    public WeatherData(double windSpeed, double temperature) {
-        this.windSpeed = windSpeed;
-        this.temperature = temperature;
-        this.nodeId = 0;
-        this.timestamp = new Date();
-    }
+    public abstract double windSpeed();
+    public abstract double temperature();
+    public abstract int nodeId();
 
-    public WeatherData(double windSpeed, double temperature, int nodeId) {
-        this.windSpeed = windSpeed;
-        this.temperature = temperature;
-        this.nodeId = nodeId;
-        this.timestamp = new Date();
+    public abstract Date timestamp();
+
+    public abstract Builder toBuilder();
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+
+        public abstract Builder setWindSpeed(double windSpeed);
+
+        public abstract Builder setTemperature(double temperature);
+
+        public abstract Builder setNodeId(int nodeId);
+
+        public abstract Builder setTimestamp(Date timestamp);
+
+        public abstract WeatherData build();
     }
 }

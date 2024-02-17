@@ -1,6 +1,7 @@
 package com.kresshy.weatherstation.bluetooth;
 
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -9,7 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -28,18 +29,18 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private ArrayAdapter bluetoothDevices;
     private Set<BluetoothDevice> pairedDevices;
-    private ActionBarActivity activity;
+    private AppCompatActivity activity;
     private Connection connection;
     private SharedPreferences sharedPreferences;
 
-    protected BluetoothStateReceiver(Connection connection, ArrayAdapter bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
+    protected BluetoothStateReceiver(Connection connection, ArrayAdapter bluetoothDevices, AppCompatActivity activity, SharedPreferences sharedPreferences) {
         this.bluetoothDevices = bluetoothDevices;
         this.activity = activity;
         this.connection = connection;
         this.sharedPreferences = sharedPreferences;
     }
 
-    public static BluetoothStateReceiver getInstance(Connection connection, ArrayAdapter bluetoothDevices, ActionBarActivity activity, SharedPreferences sharedPreferences) {
+    public static BluetoothStateReceiver getInstance(Connection connection, ArrayAdapter bluetoothDevices, AppCompatActivity activity, SharedPreferences sharedPreferences) {
         if (instance == null) {
             return new BluetoothStateReceiver(connection, bluetoothDevices, activity, sharedPreferences);
         } else {
@@ -47,6 +48,7 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onReceive(Context context, Intent intent) {
 

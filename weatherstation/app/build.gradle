@@ -1,18 +1,67 @@
-apply plugin: 'com.android.application'
+/**
+ * The first line in the build configuration applies the Android Gradle plugin
+ * to this build and makes the android block available to specify
+ * Android-specific build options.
+ */
+
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '27.0.3'
+    /**
+     * The app's namespace. Used primarily to access app resources.
+     */
+
+    namespace 'com.kresshy.weatherstation'
+
+    /**
+     * compileSdk specifies the Android API level Gradle should use to
+     * compile your app. This means your app can use the API features included in
+     * this API level and lower.
+     */
+
+    compileSdk 33
+
+    /**
+     * The defaultConfig block encapsulates default settings and entries for all
+     * build variants and can override some attributes in main/AndroidManifest.xml
+     * dynamically from the build system. You can configure product flavors to override
+     * these values for different versions of your app.
+     */
 
     defaultConfig {
+        // Uniquely identifies the package for publishing.
         applicationId "com.kresshy.weatherstation"
-        minSdkVersion 14
-        targetSdkVersion 20
-        versionCode 44
-        versionName "2.1.0"
+
+        // Defines the minimum API level required to run the app.
+        minSdk 21
+
+        // Specifies the API level used to test the app.
+        targetSdk 33
+
+        // Defines the version number of your app.
+        versionCode 45
+
+        // Defines a user-friendly version name for your app.
+        versionName "3.0.0"
     }
 
+    /**
+     * The buildTypes block is where you can configure multiple build types.
+     * By default, the build system defines two build types: debug and release. The
+     * debug build type is not explicitly shown in the default build configuration,
+     * but it includes debugging tools and is signed with the debug key. The release
+     * build type applies ProGuard settings and is not signed by default.
+     */
+
     buildTypes {
+
+        /**
+         * By default, Android Studio configures the release build type to enable code
+         * shrinking, using minifyEnabled, and specifies the default ProGuard rules file.
+         */
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -20,18 +69,21 @@ android {
     }
 }
 
+/**
+ * The dependencies block in the module-level build configuration file
+ * specifies dependencies required to build only the module itself.
+ * To learn more, go to Add build dependencies.
+ */
+
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:21.0.3'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     implementation 'com.jjoe64:graphview:3.1.3'
-    implementation 'com.android.support:support-v4:21.0.3'
-    implementation 'org.projectlombok:lombok:1.16.16'
-    implementation 'com.google.code.gson:gson:2.8.0'
-    implementation 'com.google.dagger:dagger:2.11'
-    implementation 'com.google.dagger:dagger-android:2.11'
     implementation 'com.jakewharton.timber:timber:4.5.1'
-    annotationProcessor 'org.projectlombok:lombok:1.16.16'
-    annotationProcessor 'com.google.dagger:dagger-android-processor:2.11'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
-    compileOnly 'org.glassfish:javax.annotation:10.0-b28'
+
+    implementation 'com.google.auto.value:auto-value-annotations:1.10.4'
+    annotationProcessor 'com.google.auto.value:auto-value:1.10.4'
+
+    implementation 'com.google.code.gson:gson:2.10'
 }
