@@ -80,10 +80,10 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
     public void measurementReceived(Measurement measurement) {
         WeatherData data = measurement.getWeatherDataForNode(0);
 
-        if (measurement.numberOfNodes() > 1) {
+        if (measurement.getNumberOfNodes() > 1) {
             WeatherData data2 = measurement.getWeatherDataForNode(1);
-            windSpeedDiff = data.windSpeed() - data2.windSpeed();
-            tempDiff = data.temperature() - data2.temperature();
+            windSpeedDiff = data.getWindSpeed() - data2.getWindSpeed();
+            tempDiff = data.getTemperature() - data2.getTemperature();
         } else {
             Toast.makeText(getActivity().getApplicationContext(), "Skipping calibration, only one station", Toast.LENGTH_SHORT).show();
             mListener.startDashboardAfterCalibration();
@@ -107,7 +107,7 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
                 WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff)
         ).commit();
 
-        Timber.d( "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+        Timber.d(  "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
 
         mListener.startDashboardAfterCalibration();
     }

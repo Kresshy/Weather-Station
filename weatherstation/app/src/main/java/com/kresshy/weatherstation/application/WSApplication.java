@@ -12,6 +12,8 @@ import timber.log.Timber;
 
 public class WSApplication extends Application {
 
+    private static final String TAG = "WSApplication";
+
     private BluetoothConnection mConnectionService = null;
     private ConnectionState state = ConnectionState.disconnected;
 

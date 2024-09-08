@@ -91,27 +91,27 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
         switch (NUM_SAMPLES) {
             case 60:
                 horizontalLabels = new String[]{"1min", "45sec", "30sec", "15sec", "0min"};
-                Timber.d( "Number of samples: 60");
+                Timber.d(  "Number of samples: 60");
                 break;
             case 120:
                 horizontalLabels = new String[]{"2min", "1min", "0min"};
-                Timber.d( "Number of samples: 120");
+                Timber.d(  "Number of samples: 120");
                 break;
             case 300:
                 horizontalLabels = new String[]{"5min", "4min", "3min", "2min", "1min", "0min"};
-                Timber.d( "Number of samples: 300");
+                Timber.d(  "Number of samples: 300");
                 break;
             case 600:
                 horizontalLabels = new String[]{"10min", "8min", "6min", "4min", "2min", "0min"};
-                Timber.d( "Number of samples: 600");
+                Timber.d(  "Number of samples: 600");
                 break;
             case 1200:
                 horizontalLabels = new String[]{"20min", "15min", "10min", "5min", "0min"};
-                Timber.d( "Number of samples: 1200");
+                Timber.d(  "Number of samples: 1200");
                 break;
             default:
                 horizontalLabels = new String[]{"5min", "4min", "3min", "2min", "1min", "0min"};
-                Timber.d( "Number of samples: 300");
+                Timber.d(  "Number of samples: 300");
         }
 
         LinearLayout windSpeedContainer = (LinearLayout) view.findViewById(R.id.windSpeedContainer);
@@ -165,15 +165,15 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
 
     @Override
     public void weatherDataReceived(WeatherData weatherData) {
-        Timber.d( "weatherDataCount: " + weatherDataCount);
+        Timber.d(  "weatherDataCount: " + weatherDataCount);
         if (weatherDataCount == 1) {
             previousData = weatherData;
 
             windSpeedData = new GraphViewData[1];
             temperatureData = new GraphViewData[1];
 
-            windSpeedData[0] = new GraphViewData(0, weatherData.windSpeed());
-            temperatureData[0] = new GraphViewData(0, weatherData.temperature());
+            windSpeedData[0] = new GraphViewData(0, weatherData.getWindSpeed());
+            temperatureData[0] = new GraphViewData(0, weatherData.getTemperature());
 
             windSpeedSeries.resetData(windSpeedData);
             temperatureSeries.resetData(temperatureData);
@@ -183,8 +183,8 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
             weatherDataCount++;
         } else {
             // prevent adding false measurements
-            if (weatherData.temperature() == 0.0 || (weatherData.temperature() - previousData.temperature() > 1.0)) {
-                weatherData.toBuilder().setTemperature(previousData.temperature()).build();
+            if (weatherData.getTemperature() == 0.0 || (weatherData.getTemperature() - previousData.getTemperature() > 1.0)) {
+                weatherData.setTemperature(previousData.getTemperature());
             } else {
                 previousData = weatherData;
             }
@@ -200,14 +200,14 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
             double sumTemperature = 0;
 
             for (WeatherData wData : slidingScreen) {
-                sumWindSpeed += wData.windSpeed();
-                sumTemperature += wData.temperature();
+                sumWindSpeed += wData.getWindSpeed();
+                sumTemperature += wData.getTemperature();
             }
 
             double avarageWindSpeed = sumWindSpeed / slidingScreen.size();
             double avarageTemperature = sumTemperature / slidingScreen.size();
-            Timber.d( "windspeed: " + avarageWindSpeed);
-            Timber.d( "temperature: " + avarageTemperature);
+            Timber.d(  "windspeed: " + avarageWindSpeed);
+            Timber.d(  "temperature: " + avarageTemperature);
 
             windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
             temperatureSeries.appendData(new GraphViewData(weatherDataCount, avarageTemperature), true, NUM_SAMPLES);

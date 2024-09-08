@@ -1,13 +1,18 @@
 package com.kresshy.weatherstation.bluetooth;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.content.pm.PackageManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -35,7 +40,6 @@ public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
     }
 
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -46,6 +50,9 @@ public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             // If it's already paired, skip it, because it's been listed
             // already
+            if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
+                Timber.d( "onReceive, Missing Permissions: BLUETOOTH_CONNECT");
+            }
             if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
                 bluetoothDevices.add(device);
                 Timber.d( "Bluetooth Device added: " + device.getName());

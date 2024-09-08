@@ -1,37 +1,42 @@
 package com.kresshy.weatherstation.weather;
 
 
-import com.google.auto.value.AutoValue;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-@AutoValue
-public abstract class Measurement {
-    public abstract int version();
 
-    public abstract int numberOfNodes();
+public class Measurement {
+    private int version;
+    private int numberOfNodes;
+    private List<WeatherData> measurements;
 
-    public abstract List<WeatherData> measurements();
-
-    public static Measurement create(int version, int numberOfNodes) {
-        return create(version, numberOfNodes, Collections.emptyList());
+    public Measurement() {
+        this.version = 1;
+        this.numberOfNodes = 0;
+        this.measurements = new ArrayList<>();
     }
 
-    public static Measurement create(int version, int numberOfNodes, List<WeatherData> measurements) {
-        return new AutoValue_Measurement.Builder().setVersion(version).setNumberOfNodes(numberOfNodes).setMeasurements(measurements).build();
+    public Measurement(int version, int numberOfNodes) {
+        this.version = version;
+        this.numberOfNodes = numberOfNodes;
+        this.measurements = new ArrayList<>();
+    }
+
+    public Measurement(int version, int numberOfNodes, List<WeatherData> measurements) {
+        this.version = version;
+        this.numberOfNodes = numberOfNodes;
+        this.measurements = measurements;
     }
 
     public void addWeatherDataToMeasurement(WeatherData weatherData) {
-        measurements().add(weatherData);
+        measurements.add(weatherData);
     }
 
     public WeatherData getWeatherDataForNode(int nodeId) {
         WeatherData weatherData = null;
 
-        for (WeatherData data : measurements()) {
-            if (data.nodeId() == nodeId) {
+        for (WeatherData data : measurements) {
+            if (data.getNodeId() == nodeId) {
                 weatherData = data;
             }
         }
@@ -40,8 +45,8 @@ public abstract class Measurement {
     }
 
     public boolean hasNodeId(int nodeId) {
-        for (WeatherData data : measurements()) {
-            if (data.nodeId() == nodeId) {
+        for (WeatherData data : measurements) {
+            if (data.getNodeId() == nodeId) {
                 return true;
             }
         }
@@ -49,14 +54,27 @@ public abstract class Measurement {
         return false;
     }
 
-    @AutoValue.Builder
-    static abstract class Builder {
-        public abstract Builder setVersion(int version);
+    public int getVersion() {
+        return version;
+    }
 
-        public abstract Builder setNumberOfNodes(int numberOfNodes);
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-        public abstract Builder setMeasurements(List<WeatherData> measurements);
+    public int getNumberOfNodes() {
+        return numberOfNodes;
+    }
 
-        public abstract Measurement build();
+    public void setNumberOfNodes(int numberOfNodes) {
+        this.numberOfNodes = numberOfNodes;
+    }
+
+    public List<WeatherData> getMeasurements() {
+        return measurements;
+    }
+
+    public void setMeasurements(List<WeatherData> measurements) {
+        this.measurements = measurements;
     }
 }

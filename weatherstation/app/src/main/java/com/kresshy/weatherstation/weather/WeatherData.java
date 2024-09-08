@@ -1,39 +1,65 @@
 package com.kresshy.weatherstation.weather;
 
-import com.google.auto.value.AutoValue;
-
 import java.util.Date;
 
+public class WeatherData {
 
-@AutoValue
-public abstract class WeatherData {
+    private double windSpeed;
+    private double temperature;
+    private int nodeId;
+    private Date timestamp;
 
-    public static WeatherData create(double windSpeed, double temperature) {
-        return create(windSpeed, temperature, 0, new Date());
+
+    public WeatherData() {
+        this.windSpeed = 0;
+        this.temperature = 0;
+        this.nodeId = 0;
+        this.timestamp = new Date();
     }
-    public static WeatherData create(double windSpeed, double temperature, int nodeId, Date timestamp) {
-        return new AutoValue_WeatherData.Builder().setWindSpeed(windSpeed).setTemperature(temperature).setNodeId(nodeId).setTimestamp(timestamp).build();
+
+    public WeatherData(double windSpeed, double temperature) {
+        this.windSpeed = windSpeed;
+        this.temperature = temperature;
+        this.nodeId = 0;
+        this.timestamp = new Date();
     }
 
-    public abstract double windSpeed();
-    public abstract double temperature();
-    public abstract int nodeId();
+    public WeatherData(double windSpeed, double temperature, int nodeId) {
+        this.windSpeed = windSpeed;
+        this.temperature = temperature;
+        this.nodeId = nodeId;
+        this.timestamp = new Date();
+    }
 
-    public abstract Date timestamp();
+    public double getWindSpeed() {
+        return windSpeed;
+    }
 
-    public abstract Builder toBuilder();
+    public void setWindSpeed(double windSpeed) {
+        this.windSpeed = windSpeed;
+    }
 
-    @AutoValue.Builder
-    public abstract static class Builder {
+    public double getTemperature() {
+        return temperature;
+    }
 
-        public abstract Builder setWindSpeed(double windSpeed);
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
 
-        public abstract Builder setTemperature(double temperature);
+    public int getNodeId() {
+        return nodeId;
+    }
 
-        public abstract Builder setNodeId(int nodeId);
+    public void setNodeId(int nodeId) {
+        this.nodeId = nodeId;
+    }
 
-        public abstract Builder setTimestamp(Date timestamp);
+    public Date getTimestamp() {
+        return timestamp;
+    }
 
-        public abstract WeatherData build();
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
     }
 }

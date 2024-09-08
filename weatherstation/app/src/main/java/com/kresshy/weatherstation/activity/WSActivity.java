@@ -1,23 +1,29 @@
 package com.kresshy.weatherstation.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -75,12 +81,13 @@ public class WSActivity extends AppCompatActivity implements
     private WeatherListener weatherListener;
     private NavigationDrawerFragment navigationDrawerFragment;
     private ConnectionManager connectionManager;
+    private boolean permissionsGranted;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Timber.d( "ONCREATE");
+        Timber.d(TAG, "ONCREATE");
 
         // setting up view
         setContentView(R.layout.activity_main);
@@ -96,6 +103,22 @@ public class WSActivity extends AppCompatActivity implements
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        // ask all runtime permissions
+        String[] permissions = new String[]{
+                Manifest.permission.BLUETOOTH_ADMIN,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+        };
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            int requestCode = 1;
+            Timber.d("Requesting Permissions!...");
+            requestPermissions(permissions, requestCode);
+        }
+
         // setting up bluetooth adapter, service and broadcast receivers
         bluetoothDevices = new ArrayList<>();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -109,32 +132,39 @@ public class WSActivity extends AppCompatActivity implements
         registerReceiver(BluetoothStateReceiver.getInstance(connectionManager.connection, bluetoothDevicesArrayAdapter, this, sharedPreferences), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         registerReceiver(BluetoothDiscoveryReceiver.getInstance(bluetoothDevicesArrayAdapter, this), new IntentFilter(BluetoothDevice.ACTION_FOUND));
 
-        if (!requestedEnableBluetooth) {
-            connectionManager.enableConnection();
-            requestedEnableBluetooth = true;
+        if (permissionsGranted) {
+            if (!requestedEnableBluetooth) {
+                connectionManager.enableConnection();
+                requestedEnableBluetooth = true;
+            }
         }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Timber.d( "ONSTART");
+        Timber.d("ONSTART");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
-        if (!requestedEnableBluetooth) {
-            connectionManager.enableConnection();
+        if (permissionsGranted) {
+            if (!requestedEnableBluetooth) {
+                connectionManager.enableConnection();
+                requestedEnableBluetooth = true;
+            }
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Timber.d( "ONRESUME");
+        Timber.d("ONRESUME");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
         if (!bluetoothAdapter.isEnabled() && !requestedEnableBluetooth) {
-            requestedEnableBluetooth = true;
-            connectionManager.enableConnection();
+            if (permissionsGranted) {
+                requestedEnableBluetooth = true;
+                connectionManager.enableConnection();
+            }
         } else if (bluetoothAdapter.isEnabled()) {
 
             switch (connectionManager.getConnectionState()) {
@@ -143,13 +173,19 @@ public class WSActivity extends AppCompatActivity implements
                 case connecting:
                     break;
                 case disconnected:
-                    connectionManager.startConnection();
+                    if (permissionsGranted) {
+                        connectionManager.startConnection();
+                    }
                     break;
                 case stopped:
-                    connectionManager.startConnection();
+                    if (permissionsGranted) {
+                        connectionManager.startConnection();
+                    }
                     break;
                 default:
-                    connectionManager.startConnection();
+                    if (permissionsGranted) {
+                        connectionManager.startConnection();
+                    }
                     break;
             }
         }
@@ -160,13 +196,13 @@ public class WSActivity extends AppCompatActivity implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Timber.d( "ONSAVEDINSTANCE");
+        Timber.d("ONSAVEDINSTANCE");
 
         if (connectionManager.getConnectionState() == ConnectionState.connected) {
-            Timber.d( "Connected to a device");
+            Timber.d("Connected to a device");
             outState.putBoolean(getString(R.string.PREFERENCE_CONNECTED), true);
         } else {
-            Timber.d( "Not connected to a device");
+            Timber.d("Not connected to a device");
             outState.putBoolean(getString(R.string.PREFERENCE_CONNECTED), false);
         }
     }
@@ -174,14 +210,14 @@ public class WSActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        Timber.d( "ONPAUSE");
+        Timber.d("ONPAUSE");
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Timber.d( "ONDESTROY");
+        Timber.d("ONDESTROY");
 
         connectionManager.stopConnection();
         BluetoothConnection.destroyInstance();
@@ -189,13 +225,13 @@ public class WSActivity extends AppCompatActivity implements
         try {
             unregisterReceiver(BluetoothStateReceiver.getInstance(connectionManager.connection, bluetoothDevicesArrayAdapter, this, sharedPreferences));
         } catch (IllegalArgumentException ie) {
-            Timber.d( "BluetoothReceiver was not registered");
+            Timber.d("BluetoothReceiver was not registered");
         }
 
         try {
             unregisterReceiver(BluetoothDiscoveryReceiver.getInstance(bluetoothDevicesArrayAdapter, this));
         } catch (IllegalArgumentException ie) {
-            Timber.d( "bluetoothDiscoveryRegister was not registered");
+            Timber.d("bluetoothDiscoveryRegister was not registered");
         }
 
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
@@ -206,7 +242,6 @@ public class WSActivity extends AppCompatActivity implements
         super.onConfigurationChanged(newConfig);
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
@@ -230,7 +265,14 @@ public class WSActivity extends AppCompatActivity implements
                 break;
             case 3:
                 if (bluetoothAdapter.isEnabled()) {
-                    Timber.d( "Disabling bluetooth adapter");
+                    Timber.d("Disabling bluetooth adapter");
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
+                        Timber.d("onNavigationDrawerItemSelected, Missing Permissions: BLUETOOTH_CONNECT");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            Timber.d("Requesting Permissions!...");
+                            requestPermissions(new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 3);
+                        }
+                    }
                     bluetoothAdapter.disable();
                 }
 
@@ -281,7 +323,6 @@ public class WSActivity extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -294,7 +335,14 @@ public class WSActivity extends AppCompatActivity implements
             return true;
         } else if (id == R.id.action_quit) {
             if (bluetoothAdapter.isEnabled()) {
-                Timber.d( "Disabling bluetooth adapter");
+                Timber.d("Disabling bluetooth adapter");
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
+                    Timber.d("onOptionsItemSelected, Missing Permissions: BLUETOOTH_CONNECT");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        Timber.d("Requesting Permissions!...");
+                        requestPermissions(new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 3);
+                    }
+                }
                 bluetoothAdapter.disable();
             }
 
@@ -324,7 +372,7 @@ public class WSActivity extends AppCompatActivity implements
 
                     // [start_pdu_end]
                     String pdu = message.split("_")[1];
-                    Timber.d( "PDU of the message");
+                    Timber.d("PDU of the message");
                     Timber.d(pdu);
 
                     double windSpeed = 0;
@@ -338,33 +386,32 @@ public class WSActivity extends AppCompatActivity implements
                         measurement = gson.fromJson(pdu, Measurement.class);
                         Timber.d( measurement.toString());
                         weatherData = measurement.getWeatherDataForNode(0);
-                        Timber.d( weatherData.toString());
-                        Timber.d( "Transferring new measurement / weatherData");
+                        Timber.d(weatherData.toString());
+                        Timber.d("Transferring new measurement / weatherData");
                         weatherListener.weatherDataReceived(weatherData);
                         weatherListener.measurementReceived(measurement);
                         break;
                     } catch (JsonSyntaxException jse) {
                         try {
-                            Timber.d( "JsonSyntaxException, parsing as version 1 pdu");
+                            Timber.d("JsonSyntaxException, parsing as version 1 pdu");
                             String[] weather = pdu.split(" ");
                             windSpeed = Double.parseDouble(weather[0]);
                             temperature = Double.parseDouble(weather[1]);
-                            weatherData = WeatherData.create(windSpeed, temperature);
-                            Timber.d( weatherData.toString());
-                            measurement = Measurement.create(1, 1);
+                            weatherData = new WeatherData(windSpeed, temperature);
+                            Timber.d(weatherData.toString());
+                            measurement = new Measurement(1, 1);
                             measurement.addWeatherDataToMeasurement(weatherData);
-                            Timber.d( measurement.toString());
-                            Timber.d( "Transferring new measurement / weatherData");
+                            Timber.d(measurement.toString());
+                            Timber.d("Transferring new measurement / weatherData");
                             weatherListener.weatherDataReceived(weatherData);
                             weatherListener.measurementReceived(measurement);
                             break;
                         } catch (NumberFormatException nfe) {
-                            Timber.d( "Cannot parse weather data: " + pdu);
+                            Timber.d("Cannot parse weather data: " + pdu);
                         }
                     } catch (NumberFormatException nfe) {
-                        Timber.d( "Cannot parse weather data: " + pdu);
+                        Timber.d("Cannot parse weather data: " + pdu);
                     }
-
                     break;
 
                 case WSConstants.MESSAGE_STATE:
@@ -388,6 +435,11 @@ public class WSActivity extends AppCompatActivity implements
                             .replace(R.id.container, new CalibrationFragment())
                             .commit();
                     break;
+
+                case WSConstants.MESSAGE_LOG:
+                    message = (String) msg.obj;
+                    Timber.d(message);
+                    break;
             }
         }
     };
@@ -408,28 +460,48 @@ public class WSActivity extends AppCompatActivity implements
         return pairedDevices;
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void onDeviceSelectedToConnect(String address) {
         sharedPreferences.edit().putString(getString(R.string.PREFERENCE_DEVICE_ADDRESS), address).apply();
 
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-        Timber.d( bluetoothDevice.getName() + bluetoothDevice.getAddress());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
+            Timber.d("onDeviceSelectedToConnect, Missing Permissions: BLUETOOTH_CONNECT");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Timber.d("Requesting Permissions!...");
+                requestPermissions(new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 3);
+            }
+        }
+        Timber.d(bluetoothDevice.getName() + bluetoothDevice.getAddress());
 
         connectionManager.connectToDevice(bluetoothDevice);
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void startBluetoothDiscovery() {
-        Timber.d( "Starting bluetooth discovery");
+        Timber.d("Starting bluetooth discovery");
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Toast.makeText(getApplicationContext(), "Missing Permissions: BLUETOOTH_SCAN", Toast.LENGTH_SHORT).show();
+                Timber.d("startBluetoothDiscovery, missing permissions: BLUETOOTH_SCAN");
+                Timber.d("Requesting Permissions!...");
+                requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 4);
+            }
+        }
         bluetoothAdapter.startDiscovery();
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public void stopBluetoothDiscovery() {
-        Timber.d( "Stopping bluetooth discovery");
+        Timber.d("Stopping bluetooth discovery");
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Toast.makeText(getApplicationContext(), "Missing Permissions: BLUETOOTH_SCAN", Toast.LENGTH_SHORT).show();
+                Timber.d("stopBluetoothDiscovery, missing permissions: BLUETOOTH_SCAN");
+                Timber.d("Requesting Permissions!...");
+                requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 4);
+            }
+        }
         bluetoothAdapter.cancelDiscovery();
     }
 
@@ -446,5 +518,26 @@ public class WSActivity extends AppCompatActivity implements
     @Override
     public void onDeviceSelectedToConnect(WifiDevice device) {
         connectionManager.connectToDevice(device);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Timber.d("onRequestPermissionsResult");
+        switch (requestCode) {
+            case 1:
+                if (!requestedEnableBluetooth) {
+                    Timber.d("Starting Connection");
+                    connectionManager.enableConnection();
+                    connectionManager.startConnection();
+                    sharedPreferences.registerOnSharedPreferenceChangeListener(connectionManager.sharedPreferenceChangeListener);
+                    requestedEnableBluetooth = true;
+                }
+
+                permissionsGranted = true;
+                break;
+            default:
+                break;
+        }
     }
 }

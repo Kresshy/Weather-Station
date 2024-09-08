@@ -14,6 +14,7 @@ android {
      */
 
     namespace 'com.kresshy.weatherstation'
+    compileSdk 33
 
     /**
      * compileSdk specifies the Android API level Gradle should use to
@@ -21,7 +22,6 @@ android {
      * this API level and lower.
      */
 
-    compileSdk 33
 
     /**
      * The defaultConfig block encapsulates default settings and entries for all
@@ -38,13 +38,13 @@ android {
         minSdk 21
 
         // Specifies the API level used to test the app.
-        targetSdk 33
+        targetSdk 34
 
         // Defines the version number of your app.
-        versionCode 45
+        versionCode 49
 
         // Defines a user-friendly version name for your app.
-        versionName "3.0.0"
+        versionName "3.0.4"
     }
 
     /**
@@ -76,6 +76,8 @@ android {
  */
 
 dependencies {
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
+
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
