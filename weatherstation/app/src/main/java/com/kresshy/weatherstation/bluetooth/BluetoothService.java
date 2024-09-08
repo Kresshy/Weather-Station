@@ -1,5 +1,6 @@
 package com.kresshy.weatherstation.bluetooth;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -45,8 +46,10 @@ public class BluetoothService extends Service {
         super.onDestroy();
     }
 
+    @SuppressLint("HandlerLeak")
     Handler bluetoothHandler = new Handler() {
 
+        @SuppressLint("HandlerLeak")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {

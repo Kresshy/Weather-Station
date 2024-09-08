@@ -107,7 +107,7 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
                 WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff)
         ).commit();
 
-        Timber.d( "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+        Timber.d(  "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
 
         mListener.startDashboardAfterCalibration();
     }

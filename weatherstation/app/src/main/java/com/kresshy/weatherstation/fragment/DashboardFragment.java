@@ -29,7 +29,7 @@ import java.util.List;
 import timber.log.Timber;
 
 
-public class DashboardFragment extends Fragment implements WeatherListener {
+public class DashboardFragment extends androidx.fragment.app.Fragment implements WeatherListener {
 
     private static final String TAG = "DashboardFragment";
 
@@ -91,27 +91,27 @@ public class DashboardFragment extends Fragment implements WeatherListener {
         switch (NUM_SAMPLES) {
             case 60:
                 horizontalLabels = new String[]{"1min", "45sec", "30sec", "15sec", "0min"};
-                Timber.d( "Number of samples: 60");
+                Timber.d(  "Number of samples: 60");
                 break;
             case 120:
                 horizontalLabels = new String[]{"2min", "1min", "0min"};
-                Timber.d( "Number of samples: 120");
+                Timber.d(  "Number of samples: 120");
                 break;
             case 300:
                 horizontalLabels = new String[]{"5min", "4min", "3min", "2min", "1min", "0min"};
-                Timber.d( "Number of samples: 300");
+                Timber.d(  "Number of samples: 300");
                 break;
             case 600:
                 horizontalLabels = new String[]{"10min", "8min", "6min", "4min", "2min", "0min"};
-                Timber.d( "Number of samples: 600");
+                Timber.d(  "Number of samples: 600");
                 break;
             case 1200:
                 horizontalLabels = new String[]{"20min", "15min", "10min", "5min", "0min"};
-                Timber.d( "Number of samples: 1200");
+                Timber.d(  "Number of samples: 1200");
                 break;
             default:
                 horizontalLabels = new String[]{"5min", "4min", "3min", "2min", "1min", "0min"};
-                Timber.d( "Number of samples: 300");
+                Timber.d(  "Number of samples: 300");
         }
 
         LinearLayout windSpeedContainer = (LinearLayout) view.findViewById(R.id.windSpeedContainer);
@@ -165,7 +165,7 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
     @Override
     public void weatherDataReceived(WeatherData weatherData) {
-        Timber.d( "weatherDataCount: " + weatherDataCount);
+        Timber.d(  "weatherDataCount: " + weatherDataCount);
         if (weatherDataCount == 1) {
             previousData = weatherData;
 
@@ -206,8 +206,8 @@ public class DashboardFragment extends Fragment implements WeatherListener {
 
             double avarageWindSpeed = sumWindSpeed / slidingScreen.size();
             double avarageTemperature = sumTemperature / slidingScreen.size();
-            Timber.d( "windspeed: " + avarageWindSpeed);
-            Timber.d( "temperature: " + avarageTemperature);
+            Timber.d(  "windspeed: " + avarageWindSpeed);
+            Timber.d(  "temperature: " + avarageTemperature);
 
             windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
             temperatureSeries.appendData(new GraphViewData(weatherDataCount, avarageTemperature), true, NUM_SAMPLES);

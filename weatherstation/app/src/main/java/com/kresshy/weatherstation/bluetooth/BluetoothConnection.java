@@ -1,13 +1,17 @@
 package com.kresshy.weatherstation.bluetooth;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.connection.Connection;
@@ -202,6 +206,7 @@ public class BluetoothConnection implements Connection {
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
+
         public AcceptThread() {
             // Use a temporary object that is later assigned to mmServerSocket,
             // because mmServerSocket is final
@@ -209,6 +214,9 @@ public class BluetoothConnection implements Connection {
             try {
                 // MY_UUID is the app's UUID string, also used by the client
                 // code
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    handler.obtainMessage(WSConstants.MESSAGE_LOG, -1, -1, "AcceptThread, Missing Permissions: BLUETOOTH_CONNECT").sendToTarget();
+                }
                 tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
             } catch (IOException e) {
                 Log.e(TAG, "Accept Thread " + e.getMessage());
@@ -270,6 +278,9 @@ public class BluetoothConnection implements Connection {
             try {
                 // MY_UUID is the app's UUID string, also used by the server
                 // code
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    handler.obtainMessage(WSConstants.MESSAGE_LOG, -1, -1, "ConnectThread Constructor, Missing Permissions: BLUETOOTH_CONNECT").sendToTarget();
+                }
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
                 Timber.d( "RFCOMM_OK");
             } catch (IOException e) {
@@ -280,13 +291,20 @@ public class BluetoothConnection implements Connection {
 
         public void run() {
             // Cancel discovery because it will slow down the connection
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                handler.obtainMessage(WSConstants.MESSAGE_TOAST, -1, -1, "Missing Permissions: BLUETOOTH_SCAN").sendToTarget();
+                Log.d(TAG, "ConnectThread, missing permissions: BLUETOOTH_SCAN");
+            }
             bluetoothAdapter.cancelDiscovery();
 
             try {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    handler.obtainMessage(WSConstants.MESSAGE_LOG, -1, -1, "ConnectThread, Missing Permissions: BLUETOOTH_CONNECT").sendToTarget();
+                }
                 socket.connect();
-                Timber.d( "CONNECT_OK");
+                Timber.d(  "CONNECT_OK");
 
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
@@ -348,7 +366,7 @@ public class BluetoothConnection implements Connection {
 
                 tmpInputStream = socket.getInputStream();
                 tmpOutputStream = socket.getOutputStream();
-                Timber.d( "STREAMS_OK");
+                Timber.d(  "STREAMS_OK");
             } catch (IOException e) {
                 Log.e(TAG, "STREAMS_FAIL " + e.getMessage());
             }
@@ -377,7 +395,7 @@ public class BluetoothConnection implements Connection {
 
                         if (endIdx != -1) {
                             String fullMessage = curMsg.substring(0, endIdx + end.length());
-                            Timber.d( "New weather data available " + fullMessage);
+                            Timber.d(  "New weather data available " + fullMessage);
                             curMsg.delete(0, endIdx + end.length());
                             handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage).sendToTarget();
                         }
@@ -395,7 +413,7 @@ public class BluetoothConnection implements Connection {
         public void write(byte[] bytes) {
             try {
                 outputStream.write(bytes);
-                Timber.d( "WRITE_OK");
+                Timber.d(  "WRITE_OK");
             } catch (IOException e) {
                 // TODO here we should reconnect to the device if the stream is interrupted
                 Log.e(TAG, "WRITE_FAIL " + e.getMessage());

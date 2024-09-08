@@ -1,19 +1,29 @@
 package com.kresshy.weatherstation.bluetooth;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.R;
 
 import java.util.List;
 
+import timber.log.Timber;
+
 public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
+
+    private static final String TAG = "BluetoothDeviceItemAdapter";
     List<BluetoothDevice> bluetoothDevices;
     Context context;
 
@@ -23,6 +33,7 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
         this.context = context;
         this.bluetoothDevices = bluetoothDevices;
     }
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -41,6 +52,9 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
             TextView address = (TextView) v.findViewById(R.id.bluetooth_device_address);
             TextView status = (TextView) v.findViewById(R.id.bluetooth_device_status);
 
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
+                Timber.d( "getView, Missing Permissions: BLUETOOTH_CONNECT");
+            }
             if (bluetoothDevice.getName() != null) {
                 if (bluetoothDevice.getName().startsWith("WS")) {
                     icon.setBackgroundDrawable(this.context.getResources().getDrawable(R.drawable.weather_station));

@@ -4,10 +4,7 @@ package com.kresshy.weatherstation.weather;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
 
-
-@Data
 public class Measurement {
     private int version;
     private int numberOfNodes;
@@ -55,5 +52,29 @@ public class Measurement {
         }
 
         return false;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getNumberOfNodes() {
+        return numberOfNodes;
+    }
+
+    public void setNumberOfNodes(int numberOfNodes) {
+        this.numberOfNodes = numberOfNodes;
+    }
+
+    public List<WeatherData> getMeasurements() {
+        return measurements;
+    }
+
+    public void setMeasurements(List<WeatherData> measurements) {
+        this.measurements = measurements;
     }
 }

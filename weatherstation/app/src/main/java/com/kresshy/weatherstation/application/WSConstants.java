@@ -17,6 +17,8 @@ public class WSConstants {
     public static final int MESSAGE_STATE = 3;
     public static final int MESSAGE_CONNECTED = 4;
 
+    public static final int MESSAGE_LOG = 5;
+
     // numbers
     public static final int NUM_SAMPLES = 300;
 

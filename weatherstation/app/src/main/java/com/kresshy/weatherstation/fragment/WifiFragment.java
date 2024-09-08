@@ -1,5 +1,7 @@
 package com.kresshy.weatherstation.fragment;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -8,9 +10,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -23,6 +27,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.wifi.WifiConnection;
@@ -110,6 +117,11 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
             List<ScanResult> wifiList;
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getContext(), "Missing Permissions: ACCESS_FINE_LOCATION", Toast.LENGTH_SHORT).show();
+                }
+            }
             wifiList = wifiManager.getScanResults();
 
             for (int i = 0; i < wifiList.size(); i++) {
@@ -136,7 +148,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
             @Override
             public void onClick(View v) {
                 Timber.d( "Clicked on connect Button");
-                mListener.onDeviceSelectedToConnect(new WifiDevice(SERVER_IP, SERVERPORT));
+                mListener.onDeviceSelectedToConnect(WifiDevice.create(SERVER_IP, SERVERPORT));
             }
         });
 
@@ -194,6 +206,11 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
         WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.addNetwork(conf);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getContext(), "Missing Permissions: ACCESS_FINE_LOCATION", Toast.LENGTH_SHORT).show();
+            }
+        }
         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
         for (WifiConfiguration i : list) {
             if (i.SSID != null && i.SSID.equals("\"" + networkSSID + "\"")) {
