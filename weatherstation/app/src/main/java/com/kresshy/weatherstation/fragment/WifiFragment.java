@@ -1,7 +1,6 @@
 package com.kresshy.weatherstation.fragment;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -18,7 +17,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,10 +33,9 @@ import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.wifi.WifiConnection;
 import com.kresshy.weatherstation.wifi.WifiDevice;
 
-import java.util.List;
-
 import timber.log.Timber;
 
+import java.util.List;
 
 public class WifiFragment extends Fragment implements AdapterView.OnItemClickListener {
 
@@ -46,7 +43,6 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     private static final String SERVER_IP = "192.168.100.155";
     private AbsListView wifiDeviceListView;
     private ArrayAdapter<String> wifiDeviceArrayAdapter;
-
 
     WifiManager wifiManager;
     WifiReceiver wifiReceiver;
@@ -77,8 +73,8 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+            throw new ClassCastException(
+                    activity.toString() + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -86,11 +82,16 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager =
+                (WifiManager)
+                        getActivity()
+                                .getApplicationContext()
+                                .getSystemService(Context.WIFI_SERVICE);
 
         wifiReceiver = new WifiReceiver();
-        getActivity().registerReceiver(wifiReceiver, new IntentFilter(
-                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        getActivity()
+                .registerReceiver(
+                        wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
         if (wifiManager.isWifiEnabled() == false) {
             wifiManager.setWifiEnabled(true);
@@ -100,15 +101,16 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     }
 
     public void doInback() {
-        handler.postDelayed(new Runnable() {
+        handler.postDelayed(
+                new Runnable() {
 
-            @Override
-            public void run() {
-                wifiManager.startScan();
-                doInback();
-            }
-        }, 1000);
-
+                    @Override
+                    public void run() {
+                        wifiManager.startScan();
+                        doInback();
+                    }
+                },
+                1000);
     }
 
     class WifiReceiver extends BroadcastReceiver {
@@ -118,8 +120,14 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
             List<ScanResult> wifiList;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getContext(), "Missing Permissions: ACCESS_FINE_LOCATION", Toast.LENGTH_SHORT).show();
+                if (ActivityCompat.checkSelfPermission(
+                                getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(
+                                    getContext(),
+                                    "Missing Permissions: ACCESS_FINE_LOCATION",
+                                    Toast.LENGTH_SHORT)
+                            .show();
                 }
             }
             wifiList = wifiManager.getScanResults();
@@ -130,10 +138,9 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
         }
     }
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_wifi, container, false);
         Button connectButton = (Button) view.findViewById(R.id.connect);
         Button disconnectButton = (Button) view.findViewById(R.id.disconnect);
@@ -144,19 +151,21 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
         wifiDeviceListView.setAdapter(wifiDeviceArrayAdapter);
         wifiDeviceListView.setOnItemClickListener(this);
 
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Timber.d( "Clicked on connect Button");
-                mListener.onDeviceSelectedToConnect(WifiDevice.create(SERVER_IP, SERVERPORT));
-            }
-        });
+        connectButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Timber.d("Clicked on connect Button");
+                        mListener.onDeviceSelectedToConnect(
+                                WifiDevice.create(SERVER_IP, SERVERPORT));
+                    }
+                });
 
-        disconnectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
-        });
+        disconnectButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {}
+                });
 
         return view;
     }
@@ -169,23 +178,30 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
         // Set up the input
         final EditText input = new EditText(getActivity());
 
-        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        // Specify the type of input expected; this, for example, sets the input as a password, and
+        // will mask the text
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         builder.setView(input);
 
         // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                connectToSelectedWifi(wifiDeviceArrayAdapter.getItem(position), input.getText().toString());
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setPositiveButton(
+                "OK",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        connectToSelectedWifi(
+                                wifiDeviceArrayAdapter.getItem(position),
+                                input.getText().toString());
+                    }
+                });
+        builder.setNegativeButton(
+                "Cancel",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
 
         builder.show();
     }
@@ -193,7 +209,7 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
     public void connectToSelectedWifi(String networkSSID, String networkPass) {
 
         WifiConfiguration conf = new WifiConfiguration();
-        conf.SSID = "\"" + networkSSID + "\"";   // Please
+        conf.SSID = "\"" + networkSSID + "\""; // Please
 
         conf.wepKeys[0] = "\"" + networkPass + "\"";
         conf.wepTxKeyIndex = 0;
@@ -204,11 +220,21 @@ public class WifiFragment extends Fragment implements AdapterView.OnItemClickLis
 
         conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 
-        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager =
+                (WifiManager)
+                        getActivity()
+                                .getApplicationContext()
+                                .getSystemService(Context.WIFI_SERVICE);
         wifiManager.addNetwork(conf);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getContext(), "Missing Permissions: ACCESS_FINE_LOCATION", Toast.LENGTH_SHORT).show();
+            if (ActivityCompat.checkSelfPermission(
+                            getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(
+                                getContext(),
+                                "Missing Permissions: ACCESS_FINE_LOCATION",
+                                Toast.LENGTH_SHORT)
+                        .show();
             }
         }
         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();

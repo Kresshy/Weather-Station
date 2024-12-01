@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 
 import com.kresshy.weatherstation.R;
 
-
 public class ReconnectHandler {
 
     private Context context;
@@ -15,14 +14,14 @@ public class ReconnectHandler {
 
     public ReconnectHandler(Context context) {
         this.context = context;
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
     }
 
-    public void saveBluetoothDevice() {
-
-    }
+    public void saveBluetoothDevice() {}
 
     public String loadBluetoothDevice() {
-        return sharedPreferences.getString(context.getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
+        return sharedPreferences.getString(
+                context.getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
     }
 }

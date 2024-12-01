@@ -1,13 +1,11 @@
 package com.kresshy.weatherstation.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,11 +21,10 @@ import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import timber.log.Timber;
 
+import java.util.ArrayList;
+import java.util.List;
 
 public class DashboardFragment extends androidx.fragment.app.Fragment implements WeatherListener {
 
@@ -67,8 +64,8 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
             mListener = (OnFragmentInteractionListener) activity;
             mListener.registerWeatherDataReceiver(this);
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+            throw new ClassCastException(
+                    activity.toString() + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -78,44 +75,49 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-        NUM_SAMPLES = Integer.parseInt(sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));
+        sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(
+                        getActivity().getApplicationContext());
+        NUM_SAMPLES =
+                Integer.parseInt(
+                        sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));
 
         String[] horizontalLabels;
         switch (NUM_SAMPLES) {
             case 60:
-                horizontalLabels = new String[]{"1min", "45sec", "30sec", "15sec", "0min"};
-                Timber.d(  "Number of samples: 60");
+                horizontalLabels = new String[] {"1min", "45sec", "30sec", "15sec", "0min"};
+                Timber.d("Number of samples: 60");
                 break;
             case 120:
-                horizontalLabels = new String[]{"2min", "1min", "0min"};
-                Timber.d(  "Number of samples: 120");
+                horizontalLabels = new String[] {"2min", "1min", "0min"};
+                Timber.d("Number of samples: 120");
                 break;
             case 300:
-                horizontalLabels = new String[]{"5min", "4min", "3min", "2min", "1min", "0min"};
-                Timber.d(  "Number of samples: 300");
+                horizontalLabels = new String[] {"5min", "4min", "3min", "2min", "1min", "0min"};
+                Timber.d("Number of samples: 300");
                 break;
             case 600:
-                horizontalLabels = new String[]{"10min", "8min", "6min", "4min", "2min", "0min"};
-                Timber.d(  "Number of samples: 600");
+                horizontalLabels = new String[] {"10min", "8min", "6min", "4min", "2min", "0min"};
+                Timber.d("Number of samples: 600");
                 break;
             case 1200:
-                horizontalLabels = new String[]{"20min", "15min", "10min", "5min", "0min"};
-                Timber.d(  "Number of samples: 1200");
+                horizontalLabels = new String[] {"20min", "15min", "10min", "5min", "0min"};
+                Timber.d("Number of samples: 1200");
                 break;
             default:
-                horizontalLabels = new String[]{"5min", "4min", "3min", "2min", "1min", "0min"};
-                Timber.d(  "Number of samples: 300");
+                horizontalLabels = new String[] {"5min", "4min", "3min", "2min", "1min", "0min"};
+                Timber.d("Number of samples: 300");
         }
 
         LinearLayout windSpeedContainer = (LinearLayout) view.findViewById(R.id.windSpeedContainer);
-        LinearLayout temperatureContainer = (LinearLayout) view.findViewById(R.id.temperatureContainer);
+        LinearLayout temperatureContainer =
+                (LinearLayout) view.findViewById(R.id.temperatureContainer);
 
         graphViewStyle = new GraphViewStyle(Color.BLACK, Color.BLACK, Color.GRAY);
         graphViewStyle.setVerticalLabelsAlign(Paint.Align.LEFT);
@@ -144,8 +146,16 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
         windSpeedData[0] = new GraphViewData(0, 0);
         temperatureData[0] = new GraphViewData(0, 0);
 
-        windSpeedSeries = new GraphViewSeries("Wind Speed", new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, 7), windSpeedData);
-        temperatureSeries = new GraphViewSeries("Temperature", new GraphViewSeries.GraphViewSeriesStyle(Color.RED, 7), temperatureData);
+        windSpeedSeries =
+                new GraphViewSeries(
+                        "Wind Speed",
+                        new GraphViewSeries.GraphViewSeriesStyle(Color.BLUE, 7),
+                        windSpeedData);
+        temperatureSeries =
+                new GraphViewSeries(
+                        "Temperature",
+                        new GraphViewSeries.GraphViewSeriesStyle(Color.RED, 7),
+                        temperatureData);
 
         windSpeedGraph.addSeries(windSpeedSeries);
         temperatureGraph.addSeries(temperatureSeries);
@@ -165,7 +175,7 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
 
     @Override
     public void weatherDataReceived(WeatherData weatherData) {
-        Timber.d(  "weatherDataCount: " + weatherDataCount);
+        Timber.d("weatherDataCount: " + weatherDataCount);
         if (weatherDataCount == 1) {
             previousData = weatherData;
 
@@ -183,7 +193,8 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
             weatherDataCount++;
         } else {
             // prevent adding false measurements
-            if (weatherData.getTemperature() == 0.0 || (weatherData.getTemperature() - previousData.getTemperature() > 1.0)) {
+            if (weatherData.getTemperature() == 0.0
+                    || (weatherData.getTemperature() - previousData.getTemperature() > 1.0)) {
                 weatherData.setTemperature(previousData.getTemperature());
             } else {
                 previousData = weatherData;
@@ -206,23 +217,22 @@ public class DashboardFragment extends androidx.fragment.app.Fragment implements
 
             double avarageWindSpeed = sumWindSpeed / slidingScreen.size();
             double avarageTemperature = sumTemperature / slidingScreen.size();
-            Timber.d(  "windspeed: " + avarageWindSpeed);
-            Timber.d(  "temperature: " + avarageTemperature);
+            Timber.d("windspeed: " + avarageWindSpeed);
+            Timber.d("temperature: " + avarageTemperature);
 
-            windSpeedSeries.appendData(new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
-            temperatureSeries.appendData(new GraphViewData(weatherDataCount, avarageTemperature), true, NUM_SAMPLES);
+            windSpeedSeries.appendData(
+                    new GraphViewData(weatherDataCount, avarageWindSpeed), true, NUM_SAMPLES);
+            temperatureSeries.appendData(
+                    new GraphViewData(weatherDataCount, avarageTemperature), true, NUM_SAMPLES);
             weatherDataCount++;
         }
     }
 
     @Override
-    public void measurementReceived(Measurement measurement) {
-
-    }
+    public void measurementReceived(Measurement measurement) {}
 
     public interface OnFragmentInteractionListener {
 
         public void registerWeatherDataReceiver(WeatherListener weatherListener);
     }
-
 }

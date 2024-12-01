@@ -3,7 +3,6 @@ package com.kresshy.weatherstation.connection;
 import static androidx.core.app.ActivityCompat.requestPermissions;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -15,21 +14,20 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
-import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
 import com.kresshy.weatherstation.utils.ConnectionState;
 import com.kresshy.weatherstation.wifi.WifiConnection;
 
-import java.util.Set;
-
 import timber.log.Timber;
+
+import java.util.Set;
 
 public class ConnectionManager {
 
@@ -52,10 +50,13 @@ public class ConnectionManager {
         this.connection = ConnectionFactory.getConnection(handler, activity);
         this.handler = handler;
 
-        this.wifiManager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        this.wifiManager =
+                (WifiManager)
+                        activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
-    public static ConnectionManager getInstance(AppCompatActivity activity, ArrayAdapter adapter, Handler handler) {
+    public static ConnectionManager getInstance(
+            AppCompatActivity activity, ArrayAdapter adapter, Handler handler) {
         if (instance == null) {
             return new ConnectionManager(activity, adapter, handler);
         } else {
@@ -68,17 +69,21 @@ public class ConnectionManager {
 
         if (connectionType.equals("bluetooth")) {
             if (bluetoothAdapter == null) {
-                Timber.d( "Bluetooth is not supported, shutting down application");
+                Timber.d("Bluetooth is not supported, shutting down application");
                 Toast.makeText(activity, "Bluetooth is not supported", Toast.LENGTH_LONG).show();
                 activity.finish();
             } else {
                 enableBluetooth();
 
                 if (bluetoothAdapter.isEnabled()) {
-                    if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        Timber.d( "enableConnection, Missing Permissions: BLUETOOTH_CONNECT");
-                        Timber.d( "Requesting Permissions!...");
-                        requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 6);
+                    if (ActivityCompat.checkSelfPermission(
+                                    activity.getApplicationContext(),
+                                    Manifest.permission.BLUETOOTH_CONNECT)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        Timber.d("enableConnection, Missing Permissions: BLUETOOTH_CONNECT");
+                        Timber.d("Requesting Permissions!...");
+                        requestPermissions(
+                                activity, new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 6);
                     }
                     Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
@@ -96,7 +101,8 @@ public class ConnectionManager {
     }
 
     public static String getConnectionType(Activity activity) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(activity);
 
         return sharedPreferences.getString("pref_connection_type", "bluetooth");
     }
@@ -111,12 +117,15 @@ public class ConnectionManager {
 
     private void enableBluetooth() {
         if (!bluetoothAdapter.isEnabled()) {
-            Timber.d( "Enabling bluetooth adapter");
+            Timber.d("Enabling bluetooth adapter");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
-                Timber.d( "enableBluetooth, Missing Permissions: BLUETOOTH_CONNECT");
-                Timber.d( "Requesting Permissions!...");
-                requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 6);
+            if (ActivityCompat.checkSelfPermission(
+                            activity.getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Timber.d("enableBluetooth, Missing Permissions: BLUETOOTH_CONNECT");
+                Timber.d("Requesting Permissions!...");
+                requestPermissions(
+                        activity, new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 6);
             }
             activity.startActivityForResult(enableIntent, WSConstants.REQUEST_ENABLE_BT);
         }
@@ -124,11 +133,14 @@ public class ConnectionManager {
 
     private void disableBluetooth() {
         if (bluetoothAdapter.isEnabled()) {
-            Timber.d( "Disabling bluetooth adapter");
-            if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
-                Timber.d( "disableBluetooth, Missing Permissions: BLUETOOTH_CONNECT");
-                Timber.d( "Requesting Permissions!...");
-                requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 6);
+            Timber.d("Disabling bluetooth adapter");
+            if (ActivityCompat.checkSelfPermission(
+                            activity.getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Timber.d("disableBluetooth, Missing Permissions: BLUETOOTH_CONNECT");
+                Timber.d("Requesting Permissions!...");
+                requestPermissions(
+                        activity, new String[] {Manifest.permission.BLUETOOTH_CONNECT}, 6);
             }
             bluetoothAdapter.disable();
         }
@@ -153,7 +165,8 @@ public class ConnectionManager {
     public SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener =
             new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
-                public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                public void onSharedPreferenceChanged(
+                        SharedPreferences sharedPreferences, String key) {
 
                     if (key.equals("pref_connection_type")) {
                         String connectionType = sharedPreferences.getString(key, "bluetooth");

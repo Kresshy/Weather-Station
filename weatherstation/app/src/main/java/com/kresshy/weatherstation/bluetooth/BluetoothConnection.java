@@ -17,14 +17,13 @@ import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.connection.Connection;
 import com.kresshy.weatherstation.utils.ConnectionState;
 
+import timber.log.Timber;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.UUID;
-
-import timber.log.Timber;
-
 
 public class BluetoothConnection implements Connection {
 
@@ -101,7 +100,8 @@ public class BluetoothConnection implements Connection {
         }
 
         state = ConnectionState.disconnected;
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.disconnected).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.disconnected)
+                .sendToTarget();
     }
 
     public synchronized void connect(Parcelable device) {
@@ -129,7 +129,8 @@ public class BluetoothConnection implements Connection {
         connectThread.start();
         Log.d(TAG, "START ConnectThread " + device);
 
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connecting).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connecting)
+                .sendToTarget();
     }
 
     public synchronized void connected(BluetoothSocket socket) {
@@ -156,7 +157,8 @@ public class BluetoothConnection implements Connection {
         Log.d(TAG, "START ConnectedThread");
 
         state = ConnectionState.connected;
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connected).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connected)
+                .sendToTarget();
     }
 
     public synchronized void stop() {
@@ -181,7 +183,8 @@ public class BluetoothConnection implements Connection {
         }
 
         state = ConnectionState.stopped;
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.stopped).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.stopped)
+                .sendToTarget();
     }
 
     public void write(byte[] out) {
@@ -206,7 +209,6 @@ public class BluetoothConnection implements Connection {
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
-
         public AcceptThread() {
             // Use a temporary object that is later assigned to mmServerSocket,
             // because mmServerSocket is final
@@ -214,8 +216,15 @@ public class BluetoothConnection implements Connection {
             try {
                 // MY_UUID is the app's UUID string, also used by the client
                 // code
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    handler.obtainMessage(WSConstants.MESSAGE_LOG, -1, -1, "AcceptThread, Missing Permissions: BLUETOOTH_CONNECT").sendToTarget();
+                if (ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.BLUETOOTH_CONNECT)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    handler.obtainMessage(
+                                    WSConstants.MESSAGE_LOG,
+                                    -1,
+                                    -1,
+                                    "AcceptThread, Missing Permissions: BLUETOOTH_CONNECT")
+                            .sendToTarget();
                 }
                 tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
             } catch (IOException e) {
@@ -237,7 +246,7 @@ public class BluetoothConnection implements Connection {
                 // If a connection was accepted
                 if (socket != null) {
                     // Do work to manage the connection (in a separate thread)
-                    Timber.d( "Connected");
+                    Timber.d("Connected");
                     connected(socket);
                     try {
                         mmServerSocket.close();
@@ -249,9 +258,7 @@ public class BluetoothConnection implements Connection {
             }
         }
 
-        /**
-         * Will cancel the listening socket, and cause the thread to finish
-         */
+        /** Will cancel the listening socket, and cause the thread to finish */
         public void cancel() {
             try {
                 mmServerSocket.close();
@@ -265,6 +272,7 @@ public class BluetoothConnection implements Connection {
         private final BluetoothSocket socket;
         private BluetoothSocket fallbackSocket;
         private boolean fallback = false;
+
         @SuppressWarnings("unused")
         private final BluetoothDevice device;
 
@@ -278,21 +286,35 @@ public class BluetoothConnection implements Connection {
             try {
                 // MY_UUID is the app's UUID string, also used by the server
                 // code
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    handler.obtainMessage(WSConstants.MESSAGE_LOG, -1, -1, "ConnectThread Constructor, Missing Permissions: BLUETOOTH_CONNECT").sendToTarget();
+                if (ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.BLUETOOTH_CONNECT)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    handler.obtainMessage(
+                                    WSConstants.MESSAGE_LOG,
+                                    -1,
+                                    -1,
+                                    "ConnectThread Constructor, Missing Permissions:"
+                                            + " BLUETOOTH_CONNECT")
+                            .sendToTarget();
                 }
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-                Timber.d( "RFCOMM_OK");
+                Timber.d("RFCOMM_OK");
             } catch (IOException e) {
-                Timber.d( "Cannot create RfcommSocket " + e.getMessage());
+                Timber.d("Cannot create RfcommSocket " + e.getMessage());
             }
             socket = tmp;
         }
 
         public void run() {
             // Cancel discovery because it will slow down the connection
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                handler.obtainMessage(WSConstants.MESSAGE_TOAST, -1, -1, "Missing Permissions: BLUETOOTH_SCAN").sendToTarget();
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
+                    != PackageManager.PERMISSION_GRANTED) {
+                handler.obtainMessage(
+                                WSConstants.MESSAGE_TOAST,
+                                -1,
+                                -1,
+                                "Missing Permissions: BLUETOOTH_SCAN")
+                        .sendToTarget();
                 Log.d(TAG, "ConnectThread, missing permissions: BLUETOOTH_SCAN");
             }
             bluetoothAdapter.cancelDiscovery();
@@ -300,11 +322,18 @@ public class BluetoothConnection implements Connection {
             try {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    handler.obtainMessage(WSConstants.MESSAGE_LOG, -1, -1, "ConnectThread, Missing Permissions: BLUETOOTH_CONNECT").sendToTarget();
+                if (ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.BLUETOOTH_CONNECT)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    handler.obtainMessage(
+                                    WSConstants.MESSAGE_LOG,
+                                    -1,
+                                    -1,
+                                    "ConnectThread, Missing Permissions: BLUETOOTH_CONNECT")
+                            .sendToTarget();
                 }
                 socket.connect();
-                Timber.d(  "CONNECT_OK");
+                Timber.d("CONNECT_OK");
 
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
@@ -319,7 +348,9 @@ public class BluetoothConnection implements Connection {
                     Log.e(TAG, "2ND CONNECT_FAIL " + connectException2.getMessage());
 
                     try {
-                        handler.obtainMessage(WSConstants.MESSAGE_TOAST, -1, -1, "Failed to reconnect...").sendToTarget();
+                        handler.obtainMessage(
+                                        WSConstants.MESSAGE_TOAST, -1, -1, "Failed to reconnect...")
+                                .sendToTarget();
                         socket.close();
                         return;
                     } catch (IOException e) {
@@ -329,15 +360,11 @@ public class BluetoothConnection implements Connection {
             }
 
             // Do work to manage the connection (in a separate thread)
-            if (fallback)
-                connected(fallbackSocket);
-            else
-                connected(socket);
+            if (fallback) connected(fallbackSocket);
+            else connected(socket);
         }
 
-        /**
-         * Will cancel an in-progress connection, and close the socket
-         */
+        /** Will cancel an in-progress connection, and close the socket */
         public void cancel() {
             try {
                 socket.close();
@@ -345,7 +372,6 @@ public class BluetoothConnection implements Connection {
                 Log.e(TAG, "Failed to close the socket " + e.getMessage());
             }
         }
-
     }
 
     private class ConnectedThread extends Thread {
@@ -366,7 +392,7 @@ public class BluetoothConnection implements Connection {
 
                 tmpInputStream = socket.getInputStream();
                 tmpOutputStream = socket.getOutputStream();
-                Timber.d(  "STREAMS_OK");
+                Timber.d("STREAMS_OK");
             } catch (IOException e) {
                 Log.e(TAG, "STREAMS_FAIL " + e.getMessage());
             }
@@ -395,9 +421,10 @@ public class BluetoothConnection implements Connection {
 
                         if (endIdx != -1) {
                             String fullMessage = curMsg.substring(0, endIdx + end.length());
-                            Timber.d(  "New weather data available " + fullMessage);
+                            Timber.d("New weather data available " + fullMessage);
                             curMsg.delete(0, endIdx + end.length());
-                            handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage).sendToTarget();
+                            handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage)
+                                    .sendToTarget();
                         }
                     }
 
@@ -413,7 +440,7 @@ public class BluetoothConnection implements Connection {
         public void write(byte[] bytes) {
             try {
                 outputStream.write(bytes);
-                Timber.d(  "WRITE_OK");
+                Timber.d("WRITE_OK");
             } catch (IOException e) {
                 // TODO here we should reconnect to the device if the stream is interrupted
                 Log.e(TAG, "WRITE_FAIL " + e.getMessage());

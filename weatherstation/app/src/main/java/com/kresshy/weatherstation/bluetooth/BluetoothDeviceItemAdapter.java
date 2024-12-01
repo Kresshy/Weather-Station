@@ -1,7 +1,6 @@
 package com.kresshy.weatherstation.bluetooth;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -11,15 +10,14 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.R;
 
-import java.util.List;
-
 import timber.log.Timber;
+
+import java.util.List;
 
 public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
 
@@ -34,13 +32,13 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
         this.bluetoothDevices = bluetoothDevices;
     }
 
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;
 
         if (v == null) {
-            LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater vi =
+                    (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = vi.inflate(R.layout.bluetooth_device_list_item, null);
         }
 
@@ -52,12 +50,14 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
             TextView address = (TextView) v.findViewById(R.id.bluetooth_device_address);
             TextView status = (TextView) v.findViewById(R.id.bluetooth_device_status);
 
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)  {
-                Timber.d( "getView, Missing Permissions: BLUETOOTH_CONNECT");
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Timber.d("getView, Missing Permissions: BLUETOOTH_CONNECT");
             }
             if (bluetoothDevice.getName() != null) {
                 if (bluetoothDevice.getName().startsWith("WS")) {
-                    icon.setBackgroundDrawable(this.context.getResources().getDrawable(R.drawable.weather_station));
+                    icon.setBackgroundDrawable(
+                            this.context.getResources().getDrawable(R.drawable.weather_station));
                 }
 
                 if (name != null) {

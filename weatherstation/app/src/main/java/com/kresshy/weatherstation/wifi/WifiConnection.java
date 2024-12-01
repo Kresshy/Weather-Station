@@ -12,14 +12,13 @@ import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.connection.Connection;
 import com.kresshy.weatherstation.utils.ConnectionState;
 
+import timber.log.Timber;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
-
-import timber.log.Timber;
-
 
 public class WifiConnection implements Connection {
 
@@ -80,7 +79,8 @@ public class WifiConnection implements Connection {
         }
 
         state = ConnectionState.disconnected;
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.disconnected).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.disconnected)
+                .sendToTarget();
     }
 
     public synchronized void connect(Parcelable device) {
@@ -108,7 +108,8 @@ public class WifiConnection implements Connection {
         connectThread.start();
         Log.d(TAG, "START ConnectThread " + device);
 
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connecting).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connecting)
+                .sendToTarget();
     }
 
     public synchronized void connected(Socket socket) {
@@ -127,7 +128,8 @@ public class WifiConnection implements Connection {
         Log.d(TAG, "START ConnectedThread");
 
         state = ConnectionState.connected;
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connected).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connected)
+                .sendToTarget();
     }
 
     public synchronized void stop() {
@@ -146,7 +148,8 @@ public class WifiConnection implements Connection {
         }
 
         state = ConnectionState.stopped;
-        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.stopped).sendToTarget();
+        handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.stopped)
+                .sendToTarget();
     }
 
     public void write(byte[] out) {
@@ -184,7 +187,7 @@ public class WifiConnection implements Connection {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 mmSocket = new Socket(mmDevice.ip(), mmDevice.port());
-                Timber.d(  "CONNECT_OK");
+                Timber.d("CONNECT_OK");
 
             } catch (IOException connectException) {
                 connectException.printStackTrace();
@@ -193,9 +196,7 @@ public class WifiConnection implements Connection {
             connected(mmSocket);
         }
 
-        /**
-         * Will cancel an in-progress connection, and close the socket
-         */
+        /** Will cancel an in-progress connection, and close the socket */
         public void cancel() {
             try {
                 mmSocket.close();
@@ -203,7 +204,6 @@ public class WifiConnection implements Connection {
                 Log.e(TAG, "Failed to close the socket " + e.getMessage());
             }
         }
-
     }
 
     private class ConnectedThread extends Thread {
@@ -224,7 +224,7 @@ public class WifiConnection implements Connection {
 
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-                Timber.d(  "STREAMS_OK");
+                Timber.d("STREAMS_OK");
             } catch (IOException e) {
                 Log.e(TAG, "STREAMS_FAIL " + e.getMessage());
             }
@@ -238,7 +238,7 @@ public class WifiConnection implements Connection {
             byte[] buffer = new byte[1024]; // buffer store for the stream
             int bytes = 0; // bytes returned from read()
 
-            Timber.d(  "Runing Connected Thread");
+            Timber.d("Runing Connected Thread");
 
             while (true) {
                 try {
@@ -251,20 +251,21 @@ public class WifiConnection implements Connection {
                     }
 
                     while (-1 != (bytes = mmInStream.read(buffer))) {
-                        Timber.d(  "Read from inputstream");
+                        Timber.d("Read from inputstream");
 
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
-                        Timber.d(  "Append to current message" + curMsg);
+                        Timber.d("Append to current message" + curMsg);
 
                         int endIdx = curMsg.indexOf(end);
                         if (endIdx != -1) {
-                            Timber.d(  "Found endIdx");
+                            Timber.d("Found endIdx");
                             String fullMessage = curMsg.substring(0, endIdx + end.length());
-                            Timber.d(  "New weather data available " + fullMessage);
+                            Timber.d("New weather data available " + fullMessage);
                             curMsg.delete(0, endIdx + end.length());
-                            handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage).sendToTarget();
+                            handler.obtainMessage(WSConstants.MESSAGE_READ, bytes, -1, fullMessage)
+                                    .sendToTarget();
                         } else {
-                            Timber.d(  "NOT Found endIdx");
+                            Timber.d("NOT Found endIdx");
                         }
                     }
 
@@ -278,12 +279,11 @@ public class WifiConnection implements Connection {
             }
         }
 
-
         /* Call this from the main activity to send data to the remote device */
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
-                Timber.d(  "WRITE_OK");
+                Timber.d("WRITE_OK");
             } catch (IOException e) {
                 // TODO here we should reconnect to the device if the stream is interrupted
                 Log.e(TAG, "WRITE_FAIL " + e.getMessage());

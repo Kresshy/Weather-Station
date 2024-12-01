@@ -20,15 +20,14 @@ public class BluetoothService extends Service {
         }
     }
 
-    public BluetoothService() {
-
-    }
+    public BluetoothService() {}
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        bluetoothConnection = BluetoothConnection.getInstance(bluetoothHandler, getApplicationContext());
+        bluetoothConnection =
+                BluetoothConnection.getInstance(bluetoothHandler, getApplicationContext());
     }
 
     @Override
@@ -47,14 +46,14 @@ public class BluetoothService extends Service {
     }
 
     @SuppressLint("HandlerLeak")
-    Handler bluetoothHandler = new Handler() {
+    Handler bluetoothHandler =
+            new Handler() {
 
-        @SuppressLint("HandlerLeak")
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-
-            }
-        }
-    };
+                @SuppressLint("HandlerLeak")
+                @Override
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                    }
+                }
+            };
 }

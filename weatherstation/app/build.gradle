@@ -6,6 +6,7 @@
 
 plugins {
     id 'com.android.application'
+    id 'com.diffplug.spotless'
 }
 
 android {
@@ -14,7 +15,7 @@ android {
      */
 
     namespace 'com.kresshy.weatherstation'
-    compileSdk 33
+    compileSdk 34
 
     /**
      * compileSdk specifies the Android API level Gradle should use to
@@ -69,6 +70,23 @@ android {
     }
 }
 
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        // apply a specific flavor of google-java-format
+        googleJavaFormat('1.10.0').aosp().reflowLongStrings().reorderImports(true)
+        // fix formatting of type annotations
+        formatAnnotations()
+    }
+    format 'misc', {
+        target '**/*.gradle', '**/*.md', '**/.gitignore'
+        indentWithSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+
 /**
  * The dependencies block in the module-level build configuration file
  * specifies dependencies required to build only the module itself.
@@ -88,4 +106,6 @@ dependencies {
     annotationProcessor 'com.google.auto.value:auto-value:1.10.4'
 
     implementation 'com.google.code.gson:gson:2.10'
+
+    implementation 'com.github.lorenzofelletti:permissions:0.4.2'
 }

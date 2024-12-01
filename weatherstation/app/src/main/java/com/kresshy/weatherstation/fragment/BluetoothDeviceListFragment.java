@@ -16,8 +16,8 @@ import com.kresshy.weatherstation.activity.WSActivity;
 
 import java.util.ArrayList;
 
-
-public class BluetoothDeviceListFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class BluetoothDeviceListFragment extends Fragment
+        implements AbsListView.OnItemClickListener {
 
     public final String TAG = "BluetoothDeviceListFragment";
 
@@ -26,9 +26,7 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
 
     private OnFragmentInteractionListener mListener;
 
-    public BluetoothDeviceListFragment() {
-
-    }
+    public BluetoothDeviceListFragment() {}
 
     @Override
     public void onAttach(Activity activity) {
@@ -37,8 +35,8 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
             mListener = (OnFragmentInteractionListener) activity;
             mListener.startBluetoothDiscovery();
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+            throw new ClassCastException(
+                    activity.toString() + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -48,14 +46,15 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_bluetoothdevice, container, false);
 
         // Set the adapter
         bluetoothDevicesListView = (AbsListView) view.findViewById(R.id.listview_bluetooth_devices);
 
-        bluetoothDevicesListView.setAdapter(((WSActivity) getActivity()).getPairedDevicesArrayAdapter());
+        bluetoothDevicesListView.setAdapter(
+                ((WSActivity) getActivity()).getPairedDevicesArrayAdapter());
 
         bluetoothDevicesListView.setOnItemClickListener(this);
 
@@ -77,15 +76,14 @@ public class BluetoothDeviceListFragment extends Fragment implements AbsListView
         mListener = null;
     }
 
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Cancel discovery because it's costly and we're about to connect
             mListener.stopBluetoothDiscovery();
 
-//            String info = ((TextView) view).getText().toString();
-//            String address = info.substring(info.length() - 17);
+            //            String info = ((TextView) view).getText().toString();
+            //            String address = info.substring(info.length() - 17);
             ArrayList<BluetoothDevice> devices = ((WSActivity) getActivity()).getBluetoothDevices();
             mListener.onDeviceSelectedToConnect(devices.get(position).getAddress());
         }

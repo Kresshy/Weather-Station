@@ -5,7 +5,6 @@ import android.os.Parcelable;
 
 import com.kresshy.weatherstation.utils.ConnectionState;
 
-
 public interface Connection {
     public void setHandler(Handler handler);
 

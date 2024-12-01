@@ -30,5 +30,4 @@ public class WSConstants {
     public static final String KEY_NODE_ID = "KEY_NODE_ID";
     public static final String KEY_WIND_DIFF = "KEY_WIND_DIFF";
     public static final String KEY_TEMP_DIFF = "KEY_TEMP_DIFF";
-
 }

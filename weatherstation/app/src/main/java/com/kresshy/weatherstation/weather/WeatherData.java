@@ -9,7 +9,6 @@ public class WeatherData {
     private int nodeId;
     private Date timestamp;
 
-
     public WeatherData() {
         this.windSpeed = 0;
         this.temperature = 0;

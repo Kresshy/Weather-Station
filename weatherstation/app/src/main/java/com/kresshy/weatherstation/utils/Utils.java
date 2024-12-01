@@ -29,6 +29,4 @@ public class Utils {
     public String getConnectionTypePreference() {
         return "";
     }
-
-
 }

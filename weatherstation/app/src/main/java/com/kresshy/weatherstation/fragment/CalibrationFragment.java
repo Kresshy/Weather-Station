@@ -20,7 +20,6 @@ import com.kresshy.weatherstation.weather.WeatherListener;
 
 import timber.log.Timber;
 
-
 public class CalibrationFragment extends Fragment implements WeatherListener, View.OnClickListener {
 
     private String TAG = "CalibrationFragment";
@@ -41,8 +40,8 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
             mListener = (OnFragmentInteractionListener) activity;
             mListener.registerWeatherDataReceiver(this);
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+            throw new ClassCastException(
+                    activity.toString() + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -52,8 +51,8 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_calibration, container, false);
 
@@ -72,9 +71,7 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
     }
 
     @Override
-    public void weatherDataReceived(WeatherData weatherData) {
-
-    }
+    public void weatherDataReceived(WeatherData weatherData) {}
 
     @Override
     public void measurementReceived(Measurement measurement) {
@@ -85,7 +82,11 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
             windSpeedDiff = data.getWindSpeed() - data2.getWindSpeed();
             tempDiff = data.getTemperature() - data2.getTemperature();
         } else {
-            Toast.makeText(getActivity().getApplicationContext(), "Skipping calibration, only one station", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                            getActivity().getApplicationContext(),
+                            "Skipping calibration, only one station",
+                            Toast.LENGTH_SHORT)
+                    .show();
             mListener.startDashboardAfterCalibration();
         }
 
@@ -95,19 +96,18 @@ public class CalibrationFragment extends Fragment implements WeatherListener, Vi
 
     @Override
     public void onClick(View v) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(
-                getActivity().getApplicationContext()
-        );
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(
+                        getActivity().getApplicationContext());
 
-        sharedPreferences.edit().putString(
-                WSConstants.KEY_WIND_DIFF, Double.toString(0.0)
-        ).commit();
+        sharedPreferences.edit().putString(WSConstants.KEY_WIND_DIFF, Double.toString(0.0)).apply();
 
-        sharedPreferences.edit().putString(
-                WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff)
-        ).commit();
+        sharedPreferences
+                .edit()
+                .putString(WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff))
+                .apply();
 
-        Timber.d(  "Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+        Timber.d("Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
 
         mListener.startDashboardAfterCalibration();
     }

@@ -1,8 +1,9 @@
 package com.kresshy.weatherstation.wifi;
 
-import com.google.auto.value.AutoValue;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.google.auto.value.AutoValue;
 
 @AutoValue
 public abstract class WifiDevice implements Parcelable {
@@ -19,18 +20,18 @@ public abstract class WifiDevice implements Parcelable {
 
     protected WifiDevice(Parcel in) {}
 
-    public static final Creator<WifiDevice> CREATOR = new Creator<WifiDevice>() {
-        @Override
-        public WifiDevice createFromParcel(Parcel in) {
-            return createWithParcel(in);
-        }
+    public static final Creator<WifiDevice> CREATOR =
+            new Creator<WifiDevice>() {
+                @Override
+                public WifiDevice createFromParcel(Parcel in) {
+                    return createWithParcel(in);
+                }
 
-        @Override
-        public WifiDevice[] newArray(int size) {
-            return new WifiDevice[size];
-        }
-    };
-
+                @Override
+                public WifiDevice[] newArray(int size) {
+                    return new WifiDevice[size];
+                }
+            };
 
     @Override
     public int describeContents() {
@@ -38,8 +39,7 @@ public abstract class WifiDevice implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-    }
+    public void writeToParcel(Parcel dest, int flags) {}
 
     // private members & builder
 
