@@ -19,8 +19,6 @@ import java.util.ArrayList;
 public class BluetoothDeviceListFragment extends Fragment
         implements AbsListView.OnItemClickListener {
 
-    public final String TAG = "BluetoothDeviceListFragment";
-
     private AbsListView bluetoothDevicesListView;
     private TextView bluetootDevicesTextView;
 

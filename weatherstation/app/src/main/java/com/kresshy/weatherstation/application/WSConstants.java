@@ -22,10 +22,6 @@ public class WSConstants {
     // numbers
     public static final int NUM_SAMPLES = 300;
 
-    // wifi server
-    public static final int SERVER_PORT = 3000;
-    public static final String SERVER_IP = "192.168.0.112";
-
     // calibration
     public static final String KEY_NODE_ID = "KEY_NODE_ID";
     public static final String KEY_WIND_DIFF = "KEY_WIND_DIFF";

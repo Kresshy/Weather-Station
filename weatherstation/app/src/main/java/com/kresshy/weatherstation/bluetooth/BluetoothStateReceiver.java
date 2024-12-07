@@ -25,9 +25,6 @@ import timber.log.Timber;
 import java.util.Set;
 
 public class BluetoothStateReceiver extends BroadcastReceiver {
-
-    private static final String TAG = "BluetoothStateReceiver";
-
     private static BluetoothStateReceiver instance = null;
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private ArrayAdapter bluetoothDevices;
@@ -106,21 +103,17 @@ public class BluetoothStateReceiver extends BroadcastReceiver {
                 builder.setMessage(R.string.reconnect_message);
                 builder.setPositiveButton(
                         R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                Timber.d("The device address is valid, attempting to reconnect");
-                                BluetoothDevice bluetoothDevice =
-                                        bluetoothAdapter.getRemoteDevice(address);
-                                connection.connect(bluetoothDevice);
-                            }
+                        (dialog, id) -> {
+                            Timber.d("The device address is valid, attempting to reconnect");
+                            BluetoothDevice bluetoothDevice =
+                                    bluetoothAdapter.getRemoteDevice(address);
+                            connection.connect(bluetoothDevice);
                         });
                 builder.setNegativeButton(
                         R.string.cancel,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                Timber.d("We couldn't restore the connection");
-                                dialog.cancel();
-                            }
+                        (dialog, id) -> {
+                            Timber.d("We couldn't restore the connection");
+                            dialog.cancel();
                         });
 
                 AlertDialog dialog = builder.create();

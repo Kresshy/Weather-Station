@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -40,12 +39,10 @@ import com.kresshy.weatherstation.fragment.DashboardFragment;
 import com.kresshy.weatherstation.fragment.GraphViewFragment;
 import com.kresshy.weatherstation.fragment.NavigationDrawerFragment;
 import com.kresshy.weatherstation.fragment.SettingsFragment;
-import com.kresshy.weatherstation.fragment.WifiFragment;
-import com.kresshy.weatherstation.utils.ConnectionState;
+import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.weather.Measurement;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherListener;
-import com.kresshy.weatherstation.wifi.WifiDevice;
 
 import timber.log.Timber;
 
@@ -57,16 +54,10 @@ public class WSActivity extends AppCompatActivity
                 BluetoothDeviceListFragment.OnFragmentInteractionListener,
                 DashboardFragment.OnFragmentInteractionListener,
                 GraphViewFragment.OnFragmentInteractionListener,
-                WifiFragment.OnFragmentInteractionListener,
                 CalibrationFragment.OnFragmentInteractionListener {
-
-    private static final String TAG = "WSActivity";
-
     private static BluetoothDeviceItemAdapter bluetoothDevicesArrayAdapter;
     private static ArrayList<BluetoothDevice> bluetoothDevices;
     private static Set<BluetoothDevice> pairedDevices;
-    private static ArrayAdapter<String> wifiDevicesArrayAdapter;
-
     private static BluetoothAdapter bluetoothAdapter;
     private static BluetoothDevice bluetoothDevice;
 
@@ -85,7 +76,7 @@ public class WSActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Timber.d(TAG, "ONCREATE");
+        Timber.d("ONCREATE");
 
         // setting up view
         setContentView(R.layout.activity_main);
@@ -98,8 +89,9 @@ public class WSActivity extends AppCompatActivity
 
         fragmentTitle = getTitle();
 
-        navigationDrawerFragment.setUp(
-                R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+        navigationDrawerFragment.setUp(R.id.navigation_drawer, findViewById(R.id.drawer_layout));
+
+        // Move permission management to helper class
 
         // ask all runtime permissions
         String[] permissions =
@@ -117,6 +109,8 @@ public class WSActivity extends AppCompatActivity
             Timber.d("Requesting Permissions!...");
             requestPermissions(permissions, requestCode);
         }
+
+        // Move bluetooth related fields to it's own manager class
 
         // setting up bluetooth adapter, service and broadcast receivers
         bluetoothDevices = new ArrayList<>();
@@ -175,22 +169,12 @@ public class WSActivity extends AppCompatActivity
                 connectionManager.enableConnection();
             }
         } else if (bluetoothAdapter.isEnabled()) {
-
             switch (connectionManager.getConnectionState()) {
                 case connected:
-                    break;
                 case connecting:
                     break;
                 case disconnected:
-                    if (permissionsGranted) {
-                        connectionManager.startConnection();
-                    }
-                    break;
                 case stopped:
-                    if (permissionsGranted) {
-                        connectionManager.startConnection();
-                    }
-                    break;
                 default:
                     if (permissionsGranted) {
                         connectionManager.startConnection();
@@ -303,12 +287,6 @@ public class WSActivity extends AppCompatActivity
                 }
 
                 finish();
-                break;
-            case 4:
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.container, new WifiFragment())
-                        .commit();
                 break;
             default:
                 getFragmentManager()
@@ -488,13 +466,13 @@ public class WSActivity extends AppCompatActivity
                 }
             };
 
-    public ArrayAdapter getPairedDevicesArrayAdapter() {
+    public ArrayAdapter<BluetoothDevice> getPairedDevicesArrayAdapter() {
         return bluetoothDevicesArrayAdapter;
     }
 
-    //    public static BluetoothAdapter getBluetoothAdapter() {
-    //        return bluetoothAdapter;
-    //    }
+    public static BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
+    }
 
     public static ArrayList<BluetoothDevice> getBluetoothDevices() {
         return bluetoothDevices;
@@ -576,15 +554,22 @@ public class WSActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDeviceSelectedToConnect(WifiDevice device) {
-        connectionManager.connectToDevice(device);
-    }
-
-    @Override
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Timber.d("onRequestPermissionsResult");
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        for (int i = 0; i < permissions.length; i++) {
+            String permission = permissions[i];
+            boolean grantResult = grantResults[i] == PackageManager.PERMISSION_GRANTED;
+            Timber.d(
+                    "Permission: "
+                            + permission
+                            + ", was "
+                            + (grantResult ? "granted" : "not granted")
+                            + "!");
+        }
+
         switch (requestCode) {
             case 1:
                 if (!requestedEnableBluetooth) {

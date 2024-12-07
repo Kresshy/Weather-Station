@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.R;
@@ -21,7 +22,6 @@ import java.util.List;
 
 public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
 
-    private static final String TAG = "BluetoothDeviceItemAdapter";
     List<BluetoothDevice> bluetoothDevices;
     Context context;
 
@@ -32,8 +32,8 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
         this.bluetoothDevices = bluetoothDevices;
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    @NonNull @Override
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View v = convertView;
 
         if (v == null) {
@@ -45,10 +45,10 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
         BluetoothDevice bluetoothDevice = bluetoothDevices.get(position);
 
         if (bluetoothDevice != null) {
-            ImageView icon = (ImageView) v.findViewById(R.id.bluetooth_device_icon);
-            TextView name = (TextView) v.findViewById(R.id.bluetooth_device_name);
-            TextView address = (TextView) v.findViewById(R.id.bluetooth_device_address);
-            TextView status = (TextView) v.findViewById(R.id.bluetooth_device_status);
+            ImageView icon = v.findViewById(R.id.bluetooth_device_icon);
+            TextView name = v.findViewById(R.id.bluetooth_device_name);
+            TextView address = v.findViewById(R.id.bluetooth_device_address);
+            TextView status = v.findViewById(R.id.bluetooth_device_status);
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -56,7 +56,7 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<BluetoothDevice> {
             }
             if (bluetoothDevice.getName() != null) {
                 if (bluetoothDevice.getName().startsWith("WS")) {
-                    icon.setBackgroundDrawable(
+                    icon.setBackground(
                             this.context.getResources().getDrawable(R.drawable.weather_station));
                 }
 

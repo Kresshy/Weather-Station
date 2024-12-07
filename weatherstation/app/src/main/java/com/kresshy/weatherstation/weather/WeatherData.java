@@ -3,7 +3,6 @@ package com.kresshy.weatherstation.weather;
 import java.util.Date;
 
 public class WeatherData {
-
     private double windSpeed;
     private double temperature;
     private int nodeId;

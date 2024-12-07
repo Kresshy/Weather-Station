@@ -20,7 +20,6 @@ public class BluetoothDiscoveryReceiver extends BroadcastReceiver {
     private static BluetoothDiscoveryReceiver instance = null;
     private ArrayAdapter bluetoothDevices;
     private AppCompatActivity activity;
-    private String TAG = "BluetoothDiscoveryReceiver";
 
     protected BluetoothDiscoveryReceiver(
             ArrayAdapter bluetoothDevices, AppCompatActivity activity) {

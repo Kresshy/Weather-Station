@@ -30,8 +30,6 @@ import java.util.List;
 
 public class GraphViewFragment extends Fragment implements WeatherListener {
 
-    private static final String TAG = "GraphViewFragment";
-
     private int measurementCount = 1;
     private int numberOfSamples = 300;
     private final int averageBucketSize = 5;

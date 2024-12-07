@@ -28,8 +28,6 @@ import java.util.List;
 
 public class DashboardFragment extends androidx.fragment.app.Fragment implements WeatherListener {
 
-    private static final String TAG = "DashboardFragment";
-
     private LineGraphView windSpeedGraph;
     private LineGraphView temperatureGraph;
 

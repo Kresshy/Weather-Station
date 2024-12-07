@@ -22,7 +22,6 @@ import timber.log.Timber;
 
 public class CalibrationFragment extends Fragment implements WeatherListener, View.OnClickListener {
 
-    private String TAG = "CalibrationFragment";
     private OnFragmentInteractionListener mListener;
     private TextView windSpeedDiffView;
     private TextView tempDiffView;

@@ -1,4 +1,4 @@
-package com.kresshy.weatherstation.utils;
+package com.kresshy.weatherstation.connection;
 
 public enum ConnectionState {
     disconnected,

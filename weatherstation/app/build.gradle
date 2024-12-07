@@ -74,7 +74,11 @@ spotless {
     java {
         target 'src/*/java/**/*.java'
         // apply a specific flavor of google-java-format
-        googleJavaFormat('1.10.0').aosp().reflowLongStrings().reorderImports(true)
+        googleJavaFormat('1.10.0')
+                .aosp()
+                .reflowLongStrings()
+                .reorderImports(true)
+                .formatJavadoc(true)
         // fix formatting of type annotations
         formatAnnotations()
     }
@@ -106,6 +110,4 @@ dependencies {
     annotationProcessor 'com.google.auto.value:auto-value:1.10.4'
 
     implementation 'com.google.code.gson:gson:2.10'
-
-    implementation 'com.github.lorenzofelletti:permissions:0.4.2'
 }

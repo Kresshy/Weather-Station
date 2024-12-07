@@ -4,18 +4,11 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
 import com.kresshy.weatherstation.logging.FileLoggingTree;
-import com.kresshy.weatherstation.utils.ConnectionState;
 
 import timber.log.Timber;
 
 public class WSApplication extends Application {
-
-    private static final String TAG = "WSApplication";
-
-    private BluetoothConnection mConnectionService = null;
-    private ConnectionState state = ConnectionState.disconnected;
 
     @Override
     public void onCreate() {
@@ -32,20 +25,4 @@ public class WSApplication extends Application {
 
         Timber.d("ONCREATE");
     }
-
-    //    public BluetoothConnection getConnectionService() {
-    //        return mConnectionService;
-    //    }
-    //
-    //    public void setConnectionService(BluetoothConnection mConnectionService) {
-    //        this.mConnectionService = mConnectionService;
-    //    }
-    //
-    //    public ConnectionState getState() {
-    //        return state;
-    //    }
-    //
-    //    public void setState(ConnectionState state) {
-    //        this.state = state;
-    //    }
 }

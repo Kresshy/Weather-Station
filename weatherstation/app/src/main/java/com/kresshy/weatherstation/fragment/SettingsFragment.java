@@ -11,8 +11,6 @@ import com.kresshy.weatherstation.R;
 public class SettingsFragment extends PreferenceFragment {
 
     public static final String KEY_PREF_INTERVAL = "pref_interval";
-    public static final String KEY_PREF_RECONNECT = "pref_reconnect";
-    public static final String KEY_PREF_CONNECTION_TYPE = "pref_connection_type";
 
     public SettingsFragment() {
         // Required empty public constructor
