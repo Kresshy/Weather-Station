@@ -26,10 +26,6 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 
 public class BluetoothConnection implements Connection {
-
-    // Debugging
-    private static final String TAG = "BluetoothConnection";
-
     // Context which is the source of potential leak is required because of permission check.
     @SuppressLint("StaticFieldLeak")
     private static BluetoothConnection instance = null;
@@ -74,27 +70,27 @@ public class BluetoothConnection implements Connection {
     }
 
     public synchronized void start() {
-        Timber.d( "START SERVICE");
+        Timber.d("START SERVICE");
 
         // Cancel any thread attempting to make a connection
         if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
-            Timber.d( "CANCEL ConnectThread");
+            Timber.d("CANCEL ConnectThread");
         }
 
         // Cancel any thread currently running a connection
         if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
-            Timber.d( "CANCEL ConnectedThread");
+            Timber.d("CANCEL ConnectedThread");
         }
 
         // Start the thread to listen on a BluetoothServerSocket
         if (acceptThread == null) {
             acceptThread = new AcceptThread();
             acceptThread.start();
-            Timber.d( "START AcceptThread");
+            Timber.d("START AcceptThread");
         }
 
         state = ConnectionState.disconnected;
@@ -103,7 +99,7 @@ public class BluetoothConnection implements Connection {
     }
 
     public synchronized void connect(Parcelable device) {
-        Timber.d( "connect to: " + device);
+        Timber.d("connect to: " + device);
 
         state = ConnectionState.connecting;
         bluetoothDevice = (BluetoothDevice) device;
@@ -112,33 +108,33 @@ public class BluetoothConnection implements Connection {
         if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
-            Timber.d( "Cancel any thread attempting to make a connection");
+            Timber.d("Cancel any thread attempting to make a connection");
         }
 
         // Cancel any thread currently running a connection
         if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
-            Timber.d( "Cancel any thread currently running a connection");
+            Timber.d("Cancel any thread currently running a connection");
         }
 
         // Start the thread to connect with the given device
         connectThread = new ConnectThread(bluetoothDevice);
         connectThread.start();
-        Timber.d( "START ConnectThread " + device);
+        Timber.d("START ConnectThread " + device);
 
         handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connecting)
                 .sendToTarget();
     }
 
     public synchronized void connected(BluetoothSocket socket) {
-        Timber.d( "connected");
+        Timber.d("connected");
 
         // Cancel any thread currently running a connection
         if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
-            Timber.d( "Cancel any thread currently connected");
+            Timber.d("Cancel any thread currently connected");
         }
 
         // Cancel the accept thread because we only want to connect to one
@@ -146,13 +142,13 @@ public class BluetoothConnection implements Connection {
         if (acceptThread != null) {
             acceptThread.cancel();
             acceptThread = null;
-            Timber.d( "Cancel the accept thread");
+            Timber.d("Cancel the accept thread");
         }
 
         // Start the thread to manage the connection and perform transmissions
         connectedThread = new ConnectedThread(socket);
         connectedThread.start();
-        Timber.d( "START ConnectedThread");
+        Timber.d("START ConnectedThread");
 
         state = ConnectionState.connected;
         handler.obtainMessage(WSConstants.MESSAGE_STATE, -1, -1, ConnectionState.connected)
@@ -160,24 +156,24 @@ public class BluetoothConnection implements Connection {
     }
 
     public synchronized void stop() {
-        Timber.d( "stop");
+        Timber.d("stop");
 
         if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
-            Timber.d( "STOP ConnectThread");
+            Timber.d("STOP ConnectThread");
         }
 
         if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
-            Timber.d( "STOP ConnectedThread");
+            Timber.d("STOP ConnectedThread");
         }
 
         if (acceptThread != null) {
             acceptThread.cancel();
             acceptThread = null;
-            Timber.d( "STOP AccceptThread");
+            Timber.d("STOP AccceptThread");
         }
 
         state = ConnectionState.stopped;
@@ -226,7 +222,7 @@ public class BluetoothConnection implements Connection {
                 }
                 tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
             } catch (IOException e) {
-                Timber.e(TAG, "Accept Thread " + e.getMessage());
+                Timber.e("Accept Thread " + e.getMessage());
             }
             mmServerSocket = tmp;
         }
@@ -238,7 +234,7 @@ public class BluetoothConnection implements Connection {
                 try {
                     socket = mmServerSocket.accept();
                 } catch (IOException e) {
-                    Timber.e(TAG, "AcceptThread: " + e.getMessage());
+                    Timber.e("AcceptThread: " + e.getMessage());
                     break;
                 }
                 // If a connection was accepted
@@ -313,7 +309,7 @@ public class BluetoothConnection implements Connection {
                                 -1,
                                 "Missing Permissions: BLUETOOTH_SCAN")
                         .sendToTarget();
-                Timber.d( "ConnectThread, missing permissions: BLUETOOTH_SCAN");
+                Timber.d("ConnectThread, missing permissions: BLUETOOTH_SCAN");
             }
             bluetoothAdapter.cancelDiscovery();
 
@@ -336,14 +332,14 @@ public class BluetoothConnection implements Connection {
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
                 try {
-                    Timber.e(TAG, "CONNECT_FAIL " + connectException.getMessage() + " RECONNECT");
+                    Timber.e("CONNECT_FAIL " + connectException.getMessage() + " RECONNECT");
                     fallback = true;
 
                     fallbackSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
                     fallbackSocket.connect();
 
                 } catch (IOException connectException2) {
-                    Timber.e(TAG, "2ND CONNECT_FAIL " + connectException2.getMessage());
+                    Timber.e("2ND CONNECT_FAIL " + connectException2.getMessage());
 
                     try {
                         handler.obtainMessage(
@@ -352,7 +348,7 @@ public class BluetoothConnection implements Connection {
                         socket.close();
                         return;
                     } catch (IOException e) {
-                        Timber.e(TAG, "Closing the socket");
+                        Timber.e("Closing the socket");
                     }
                 }
             }
@@ -367,7 +363,7 @@ public class BluetoothConnection implements Connection {
             try {
                 socket.close();
             } catch (IOException e) {
-                Timber.e(TAG, "Failed to close the socket " + e.getMessage());
+                Timber.e("Failed to close the socket " + e.getMessage());
             }
         }
     }
@@ -392,7 +388,7 @@ public class BluetoothConnection implements Connection {
                 tmpOutputStream = socket.getOutputStream();
                 Timber.d("STREAMS_OK");
             } catch (IOException e) {
-                Timber.e(TAG, "STREAMS_FAIL " + e.getMessage());
+                Timber.e("STREAMS_FAIL " + e.getMessage());
             }
 
             inputStream = tmpInputStream;
@@ -441,7 +437,7 @@ public class BluetoothConnection implements Connection {
                 Timber.d("WRITE_OK");
             } catch (IOException e) {
                 // TODO here we should reconnect to the device if the stream is interrupted
-                Timber.e(TAG, "WRITE_FAIL " + e.getMessage());
+                Timber.e("WRITE_FAIL " + e.getMessage());
             }
         }
 
@@ -450,7 +446,7 @@ public class BluetoothConnection implements Connection {
             try {
                 socket.close();
             } catch (IOException e) {
-                Timber.e(TAG, "Failed to close the socket " + e.getMessage());
+                Timber.e("Failed to close the socket " + e.getMessage());
             }
         }
     }
