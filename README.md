@@ -1,6 +1,6 @@
 # Weather Station for Free Flight Aeromodels
 
-A comprehensive, multi-platform weather monitoring and thermal analysis system specifically designed for **free-flight aeromodelling**. By deploying static weather stations on an airfield, this system monitors critical changes in wind speed and temperature to detect thermal activity in real-time. Launching a model into a thermal detected by this system significantly increases elevation and extends flight times.
+A comprehensive weather monitoring and thermal analysis system specifically designed for **free-flight aeromodelling**. By deploying static weather stations on an airfield, this system monitors critical changes in wind speed and temperature to detect thermal activity in real-time. Launching a model into a thermal detected by this system significantly increases elevation and extends flight times.
 
 ## 🚀 Key Features
 
@@ -8,16 +8,14 @@ A comprehensive, multi-platform weather monitoring and thermal analysis system s
 - **Real-time Airfield Monitoring**: Track precise wind speed and temperature readings via Bluetooth at the launch site.
 - **Advanced Trend Analysis**: Uses Exponential Moving Averages (EMA) to detect subtle thermal pulses, providing a "Launch Suitability" score (0-100).
 - **Data Visualization**: Interactive real-time graphs for monitoring temperature and wind speed trends during a flight session.
-- **Cross-Platform Apps**: Modern mobile applications for both Android (Java) and iOS (Swift) for field use.
+- **Mobile Access**: Modern Android application (Java) optimized for field use.
 
 ## 🏗️ System Architecture
 
-The repository is organized into four main components:
+The repository is organized into two main components:
 
 1.  **/weatherstation**: The primary Android application (Java/Dagger Hilt).
-2.  **/weatherstation-ios**: The companion iOS application (Swift).
-3.  **/arduino**: Multiple firmware implementations for Arduino Nano/Micro/Uno.
-4.  **/weatherstation-simulator**: A Node.js backend to simulate weather data PDU streams for development.
+2.  **/arduino**: Firmware implementations for Arduino Nano/Micro/Uno.
 
 ## 🛠️ Hardware Requirements
 
@@ -43,20 +41,9 @@ Open the `/weatherstation` folder in Android Studio.
 - **Minimum SDK**: 23 (Android 6.0).
 - **Target SDK**: 35 (Android 15).
 
-### 3. iOS App
-Open the `Weather Station.xcodeproj` in the `/weatherstation-ios` directory using Xcode.
-- **Language**: Swift.
-
-### 4. Simulator
-Run the simulator to test the mobile apps via TCP (port 3000):
-```bash
-cd weatherstation-simulator
-node app.js
-```
-
 ## 📡 Protocol Specification
 
-The system uses a custom PDU (Protocol Data Unit) format for Bluetooth/TCP communication:
+The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communication:
 - **Format**: `WS_{JSON_PAYLOAD}_end`
 - **Payload Example**:
   ```json
