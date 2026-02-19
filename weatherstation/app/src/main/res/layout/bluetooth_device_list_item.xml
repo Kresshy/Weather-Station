@@ -38,6 +38,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/accent_material_light"
-        android:text="unpaired" />
+        android:text="@string/device_status_unpaired" />
 
 </RelativeLayout>

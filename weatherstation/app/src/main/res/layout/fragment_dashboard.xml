@@ -1,27 +1,156 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="5dp"
-    android:weightSum="105"
+    android:padding="8dp"
     tools:context="com.kresshy.weatherstation.fragment.DashboardFragment">
 
-    <LinearLayout
-        android:id="@+id/windSpeedContainer"
+    <!-- Slimmer Launch Decision Panel -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/launchStatusCard"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_weight="55"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:cardBackgroundColor="@android:color/darker_gray"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="2dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/launchStatusText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/launch_status_analyzing"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/thermalScoreProgress"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:max="100"
+                app:indicatorColor="@android:color/white"
+                app:trackColor="#40FFFFFF"
+                app:trackThickness="6dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/rssiText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/rssi_na"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            android:gravity="start" />
+
+        <TextView
+            android:id="@+id/lastUpdatedText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/last_updated_never"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            android:gravity="end" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/temperatureContainer"
+    <!-- Wind Speed Chart with Floating Values -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_weight="50"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="8dp">
 
-    </LinearLayout>
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/windSpeedChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:background="@android:color/transparent"
+            android:layout_margin="8dp">
+
+            <TextView
+                android:id="@+id/currentWindText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.0 m/s"
+                android:textColor="#2196F3"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/windTrendText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wind_trend_format"
+                android:textColor="#2196F3"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Temperature Chart with Floating Values -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/temperatureChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:background="@android:color/transparent"
+            android:layout_margin="8dp">
+
+            <TextView
+                android:id="@+id/currentTempText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.0°C"
+                android:textColor="#F44336"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tempTrendText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/temp_trend_format"
+                android:textColor="#F44336"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </FrameLayout>
+
 </LinearLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/dashboardFragment"
+            android:icon="@android:drawable/ic_menu_today"
+            android:title="@string/dashboard_view" />
+        <item
+            android:id="@+id/bluetoothDeviceListFragment"
+            android:icon="@android:drawable/ic_menu_search"
+            android:title="@string/bluetooth_weather_station_connect_view" />
+        <item
+            android:id="@+id/settingsFragment"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="@string/settings_view" />
+        <item
+            android:id="@+id/calibrationFragment"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="@string/calibration_view" />
+    </group>
+    <item android:title="System">
+        <menu>
+            <item
+                android:id="@+id/action_quit"
+                android:icon="@android:drawable/ic_menu_close_clear_cancel"
+                android:title="@string/quit_view" />
+        </menu>
+    </item>
+</menu>

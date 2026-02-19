@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dip"
         android:layout_marginTop="10dip"
-        android:text="Please select your weather station"
+        android:text="@string/select_station_desc"
         android:textSize="20dip"
         android:gravity="center"
         android:textColor="@color/accent_material_light"
