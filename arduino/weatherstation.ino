@@ -1,157 +1,157 @@
 #include <OneWire.h>
-#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 
-#define DS18S20_ID 0x10
-#define DS18B20_ID 0x28
-#define ROBOT_NAME "Weather Station 00"
-#define BLUETOOTH_SPEED 9600
+/**
+ * Refined Weather Station Firmware (Single Node)
+ * Optimized for Arduino Nano
+ * 
+ * Features:
+ * - Interrupt-driven wind speed measurement (D2)
+ * - OneWire temperature sensing with family detection (D5)
+ * - Randomized sampling jitter (450ms-550ms) to prevent airfield signal collisions
+ * - Modern JSON protocol compatible with Android app (WS_ prefix)
+ */
 
-SoftwareSerial mySerial(0, 1); // RX, TX
-String command = "";
+// --- Pin Definitions ---
+#define PIN_ONEWIRE 5
+#define PIN_ANEMOMETER 2
+#define BAUDRATE 9600
+#define SERIAL_TIMEOUT 300
 
-int sensorPin = A2;    // select the input pin for the potentiometer
-int ledPin = 13;      // select the pin for the LED
-int sensorValue = 0;  // variable to store the value coming from the sensor
-int sensorState = LOW;
-int previousSensorState = LOW;
-int frequency = 0; // frequency of the anemometer
-int interval = 1000; // sampling interval (milliseconds)
-const int UNIT_FREQ = 100; // 1 m/s = 100 freq
+// --- Sensor Objects ---
+OneWire ds(PIN_ONEWIRE);
+volatile byte pulseCount = 0;
+
+// --- State Variables ---
 unsigned long previousMillis = 0;
-unsigned long currentMillis = 0;
+int currentInterval = 500;
+double lastTemp = 20.0;
+double lastWind = 0.0;
+byte dsAddr[8];
+bool dsConnected = false;
+bool isDS18S20 = false;
 
-byte i;
-byte present = 0;
-byte data[12];
-byte addr[8];
-
-
-OneWire ds(5);
+// --- Constants ---
+const double WIND_CALIBRATION = 2.25; 
 
 void setup() {
-  // declare the ledPin as an OUTPUT:
-  pinMode(ledPin, OUTPUT);  
-  Serial.begin(9600);
-  mySerial.begin(9600);
-  delay(1000);
+  Serial.begin(BAUDRATE);
+  Serial.setTimeout(SERIAL_TIMEOUT);
   
-  if(!ds.search(addr)) {
-   Serial.print("No more addresses.\n");
-   ds.reset_search();
-   return;
+  // 1. Initialize Anemometer
+  pinMode(PIN_ANEMOMETER, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_ANEMOMETER), onWindPulse, CHANGE);
+  
+  // 2. Initialize Temperature Sensor & Identify Family
+  if (!ds.search(dsAddr)) {
+    Serial.println(F("Status: No OneWire sensors found."));
+    ds.reset_search();
+  } else {
+    if (OneWire::crc8(dsAddr, 7) == dsAddr[7]) {
+      dsConnected = true;
+      if (dsAddr[0] == 0x10) {
+        isDS18S20 = true;
+        Serial.println(F("Status: DS18S20 detected."));
+      } else if (dsAddr[0] == 0x28) {
+        isDS18S20 = false;
+        Serial.println(F("Status: DS18B20 detected."));
+      }
+    } else {
+      Serial.println(F("Error: OneWire CRC failed."));
+    }
   }
-  
-  Serial.print("R=");
-  
-  for (i = 0; i< 8; i++) {
-   Serial.print(addr[i], HEX);
-   Serial.print(" ");
+
+  // Trigger initial conversion
+  if (dsConnected) {
+    ds.reset();
+    ds.select(dsAddr);
+    ds.write(0x44, 1);
   }
-  
-  if ( OneWire::crc8( addr, 7) != addr[7]) {
-   Serial.print("CRC is not valid!\n");
-   return;
-  }
-  
-  if ( addr[0] == 0x10) {
-      Serial.print("Device is a DS18S20 family device.\n");
-  }
-  else if ( addr[0] == 0x28) {
-      Serial.print("Device is a DS18B20 family device.\n");
-  }
-  else {
-      Serial.print("Device family is not recognized: 0x");
-      Serial.println(addr[0],HEX);
-      return;
-  }
-  
-  ds.reset();
-  ds.select(addr);
-  ds.write(0x44,1);
-  
+}
+
+void onWindPulse() {
+  pulseCount++;
 }
 
 void loop() {
-  // read the value from the sensor:
-  sensorValue = analogRead(sensorPin);
+  unsigned long currentMillis = millis();
   
-  if (sensorValue < 300)
-    sensorState = LOW;
-  else 
-    sensorState = HIGH;
-  
-  if (sensorState != previousSensorState) {
-    frequency++;
-    previousSensorState = sensorState;
-    // Serial.println(frequency/2);
-  }
-  
-  currentMillis = millis();
-  
-  if (currentMillis - previousMillis >= interval) {
-
-    previousMillis = currentMillis;
-    float windSpeed = (float) frequency / UNIT_FREQ;
-    float temperature = getTemp();
-    Serial.print("wind: ");
-    Serial.print(windSpeed);
-    Serial.print(" m/s temperature: ");
-    Serial.println(temperature);
-
-    if (mySerial.available()) {
-      mySerial.write("wind: ");
-      mySerial.write(windSpeed);
-      mySerial.write(" m/s temperature: ");
-      mySerial.write(temperature); 
+  if (currentMillis - previousMillis >= currentInterval) {
+    double timeDelta = (currentMillis - previousMillis) / 1000.0;
+    
+    // 1. Calculate Wind Speed
+    detachInterrupt(digitalPinToInterrupt(PIN_ANEMOMETER));
+    double wind = (pulseCount / 2.0) * (WIND_CALIBRATION / timeDelta);
+    pulseCount = 0;
+    attachInterrupt(digitalPinToInterrupt(PIN_ANEMOMETER), onWindPulse, CHANGE);
+    
+    // Apply basic noise filtering
+    if (wind >= 0 && wind < 50.0) {
+      lastWind = wind;
     }
 
-    frequency = 0;
+    // 2. Calculate Temperature
+    if (dsConnected) {
+      double newTemp = readDS18x20();
+      
+      // --- Temperature Sanity Filter ---
+      // 85.0 is the DS18B20 power-on default (before first conversion)
+      // -127.0 is the OneWire "not found" error value
+      if (newTemp != 85.0 && newTemp > -30.0 && newTemp < 60.0) {
+        lastTemp = newTemp;
+      }
+      
+      // Start next conversion for the next loop
+      ds.reset();
+      ds.select(dsAddr);
+      ds.write(0x44, 1);
+    }
+
+    // 3. Transmit Data
+    sendPDU(lastWind, lastTemp);
+
+    // 4. Update timing with jitter (450ms - 550ms)
+    // Jitter helps prevent multiple stations from "clashing" on the same frequency
+    previousMillis = currentMillis;
+    currentInterval = random(450, 550);
   }
 }
 
-
-float getTemp() {
-  //returns the temperature from one DS18S20 in DEG Celsius
-
+double readDS18x20() {
   byte data[12];
-  byte addr[8];
-
-  if ( !ds.search(addr)) {
-    //no more sensors on chain, reset search
-    ds.reset_search();
-    return -1000;
-  }
-
-  if ( OneWire::crc8( addr, 7) != addr[7]) {
-    Serial.println("CRC is not valid!");
-    return -1000;
-  }
-
-  if ( addr[0] != 0x10 && addr[0] != 0x28) {
-     Serial.print("Device is not recognized");
-    return -1000;
-  }
-
   ds.reset();
-  ds.select(addr);
-  ds.write(0x44,1); // start conversion, with parasite power on at the end
-
-  byte present = ds.reset();
-  ds.select(addr);
+  ds.select(dsAddr);
   ds.write(0xBE); // Read Scratchpad
 
-
-  for (int i = 0; i < 9; i++) { // we need 9 bytes
+  for (int i = 0; i < 9; i++) {
     data[i] = ds.read();
   }
 
-  ds.reset_search();
+  int16_t raw = (data[1] << 8) | data[0];
+  if (isDS18S20) {
+    raw = raw << 3; 
+    if (data[7] == 0x10) {
+      raw = (raw & 0xFFF0) + 12 - data[6];
+    }
+  }
+  return (double)raw / 16.0;
+}
 
-  byte MSB = data[1];
-  byte LSB = data[0];
+void sendPDU(double wind, double temp) {
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  
+  root["version"] = 2;
+  root["numberOfNodes"] = 1;
+  
+  JsonArray& measurements = root.createNestedArray("measurements");
+  JsonObject& m0 = measurements.createNestedObject();
+  m0["windSpeed"] = wind;
+  m0["temperature"] = temp;
+  m0["nodeId"] = 0;
 
-  float tempRead = ((MSB << 8) | LSB); //using two's compliment
-  float TemperatureSum = tempRead / 16;
-
-  return TemperatureSum;
+  // Prefix must be "WS_" for the current Android parser
+  Serial.print("WS_");
+  root.printTo(Serial);
+  Serial.println("_end");
 }

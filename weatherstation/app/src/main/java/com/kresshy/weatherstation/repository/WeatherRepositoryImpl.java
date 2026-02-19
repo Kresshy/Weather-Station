@@ -243,6 +243,9 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
     // --- RawDataCallback Implementation ---
 
+    private static final double MAX_TEMP_JUMP = 10.0; // Max physically possible jump in deg/sec
+    private WeatherData lastSaneData = null;
+
     /**
      * Called when a raw string message is received from the hardware. Parses the message, applies
      * calibration, and triggers thermal analysis.
@@ -254,6 +257,18 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         WeatherData weatherData = messageParser.parse(data);
 
         if (weatherData != null) {
+            // --- Layer 2 Outlier Rejection ---
+            // Air temperature doesn't jump 10 degrees in a second. Discard glitches.
+            if (lastSaneData != null) {
+                double tempDelta =
+                        Math.abs(weatherData.getTemperature() - lastSaneData.getTemperature());
+                if (tempDelta > MAX_TEMP_JUMP) {
+                    Timber.w("OUTLIER DETECTED: Discarding temp jump of %.2f", tempDelta);
+                    return; // Reject this glitchy reading
+                }
+            }
+            lastSaneData = weatherData;
+
             applyCorrections(weatherData);
             latestWeatherData.postValue(weatherData);
 
