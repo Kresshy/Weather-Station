@@ -15,7 +15,7 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 The repository is organized into two main components:
 
 1.  **/weatherstation**: The primary Android application (Java/Dagger Hilt).
-2.  **/arduino**: Firmware implementations for Arduino Nano/Micro/Uno.
+2.  **/arduino**: Unified firmware implementation (`weatherstation.ino`) for Arduino Nano/Micro/Uno.
 
 ## 🛠️ Hardware Requirements
 
@@ -31,9 +31,9 @@ To build a physical station, you will typically need:
 ## 📥 Getting Started
 
 ### 1. Arduino Setup
-Flash the firmware located in the `/arduino` directory.
-- **Dependencies**: `OneWire`, `ArduinoJson`, `SoftwareSerial`.
-- **Wiring**: Temperature sensor on pin 5, Anemometer interrupt on pin 2 (for newer versions).
+Flash the unified firmware located at `arduino/weatherstation.ino`.
+- **Dependencies**: `OneWire`, `ArduinoJson` (v5.x), `SoftwareSerial`.
+- **Wiring**: Temperature sensor on pin 5, Anemometer interrupt on pin 2.
 
 ### 2. Android App
 Open the `/weatherstation` folder in Android Studio.
@@ -59,7 +59,6 @@ The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communica
     ]
   }
   ```
-*Legacy support for space-separated values `{windSpeed} {temperature}` is also maintained.*
 
 ## 📄 License
 
