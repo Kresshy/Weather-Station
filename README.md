@@ -41,6 +41,18 @@ Open the `/weatherstation` folder in Android Studio.
 - **Minimum SDK**: 23 (Android 6.0).
 - **Target SDK**: 35 (Android 15).
 
+## 🛡️ Data Integrity & Spike Protection
+
+To ensure stable charts and reliable thermal analysis, the system implements a **Double-Layer Filter** to eliminate false sensor readings:
+
+1.  **Firmware Layer (Arduino)**:
+    - Rejects the `85.0°C` power-on default value of the DS18B20 sensor.
+    - Filters out `-127.0°C` error values caused by OneWire bus disconnections.
+    - Limits readings to a sane environmental range (-30°C to 60°C).
+2.  **Application Layer (Android)**:
+    - **Outlier Rejection**: Discards any temperature jump greater than 10°C per second (physically impossible for air temperature).
+    - **Smoothing**: Uses Exponential Moving Averages (EMA) for trend detection and stable "Launch Suitability" scoring.
+
 ## 📡 Protocol Specification
 
 The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communication:
