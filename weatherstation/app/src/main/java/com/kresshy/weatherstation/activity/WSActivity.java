@@ -48,9 +48,7 @@ import javax.inject.Inject;
 @AndroidEntryPoint
 public class WSActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
-    private CharSequence fragmentTitle;
     private boolean requestedEnableBluetooth = false;
-    private int orientation;
 
     private boolean permissionsGranted;
 
@@ -63,7 +61,6 @@ public class WSActivity extends AppCompatActivity {
     private NavController navController;
     private AppBarConfiguration appBarConfiguration;
     private Snackbar loadingSnackbar;
-    private AlertDialog reconnectDialog;
 
     private final ActivityResultLauncher<String[]> requestPermissionLauncher =
             registerForActivityResult(
@@ -80,8 +77,6 @@ public class WSActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
-
-        orientation = getResources().getConfiguration().orientation;
 
         // Set up NavController
         NavHostFragment navHostFragment =
@@ -116,8 +111,6 @@ public class WSActivity extends AppCompatActivity {
                     binding.drawerLayout.closeDrawers();
                     return handled;
                 });
-
-        fragmentTitle = getTitle();
 
         // ask all runtime permissions
         ArrayList<String> permissionList = new ArrayList<>();
@@ -320,10 +313,6 @@ public class WSActivity extends AppCompatActivity {
 
     /** Checks if the user previously connected to a device and offers to reconnect. */
     public void reconnectPreviousWeatherStation() {
-        if (reconnectDialog != null && reconnectDialog.isShowing()) {
-            return;
-        }
-
         if (sharedPreferences.getBoolean("pref_reconnect", false)) {
             Timber.d("We should restore the connection");
             final String address =
@@ -339,7 +328,6 @@ public class WSActivity extends AppCompatActivity {
                         (dialog, id) -> {
                             Timber.d("The device address is valid, attempting to reconnect");
                             weatherRepository.connectToDeviceAddress(address);
-                            reconnectDialog = null;
                         });
 
                 builder.setNegativeButton(
@@ -347,13 +335,9 @@ public class WSActivity extends AppCompatActivity {
                         (dialog, id) -> {
                             Timber.d("We couldn't restore the connection");
                             dialog.cancel();
-                            reconnectDialog = null;
                         });
 
-                builder.setOnCancelListener(dialog -> reconnectDialog = null);
-
-                reconnectDialog = builder.create();
-                reconnectDialog.show();
+                builder.create().show();
             } else {
                 Timber.d("The device address was invalid");
             }
@@ -403,20 +387,11 @@ public class WSActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(fragmentTitle);
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (binding.drawerLayout != null
                 && !binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
             return true;
         }
         return super.onCreateOptionsMenu(menu);
