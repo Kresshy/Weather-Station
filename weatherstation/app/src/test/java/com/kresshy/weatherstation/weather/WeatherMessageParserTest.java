@@ -115,4 +115,23 @@ public class WeatherMessageParserTest {
             assertEquals(msg, 22.2, result.getTemperature(), 0.001);
         }
     }
+
+    /** Verifies that legacy frames preceded by junk data are parsed correctly. */
+    @Test
+    public void parse_LegacyWithLeadingJunk_ReturnsCorrectData() {
+        String rawData = "31\n30\nstart_5.5 22.2_end";
+        WeatherData result = parser.parse(rawData);
+        assertEquals(5.5, result.getWindSpeed(), 0.001);
+        assertEquals(22.2, result.getTemperature(), 0.001);
+    }
+
+    /** Verifies that JSON frames preceded by junk data are parsed correctly. */
+    @Test
+    public void parse_JsonWithLeadingJunk_ReturnsCorrectData() {
+        String json = "{\"version\":2,\"numberOfNodes\":1,\"measurements\":[{\"windSpeed\":5.5,\"temperature\":22.2,\"nodeId\":0}]}";
+        String rawData = "31\n30\nWS_" + json + "_end";
+        WeatherData result = parser.parse(rawData);
+        assertEquals(5.5, result.getWindSpeed(), 0.001);
+        assertEquals(22.2, result.getTemperature(), 0.001);
+    }
 }
