@@ -135,7 +135,7 @@ public class DashboardFragment extends Fragment {
                 .observe(
                         getViewLifecycleOwner(),
                         score -> {
-                            binding.thermalScoreProgress.setProgress(score, true);
+                            binding.thermalScoreProgress.setProgress(score);
                         });
     }
 
