@@ -34,12 +34,32 @@ public class WeatherMessageParser {
             return null;
         }
 
-        // 1. Clean up the raw data (strip framing and whitespace)
-        String pdu = rawData.trim()
-                .replace("WS_", "")
-                .replace("start_", "")
-                .replace("_end", "")
-                .trim();
+        // 1. Robust Frame Extraction
+        // The protocol uses "WS_{DATA}_end" or "start_{DATA}_end". 
+        // We find the last occurrences to handle cases where multiple frames or junk are in the buffer.
+        String pdu = "";
+        int endIdx = rawData.lastIndexOf("_end");
+        if (endIdx != -1) {
+            int startIdx = rawData.lastIndexOf("WS_", endIdx);
+            if (startIdx != -1) {
+                pdu = rawData.substring(startIdx + 3, endIdx);
+            } else {
+                startIdx = rawData.lastIndexOf("start_", endIdx);
+                if (startIdx != -1) {
+                    pdu = rawData.substring(startIdx + 6, endIdx);
+                }
+            }
+        }
+
+        pdu = pdu.trim();
+        if (pdu.isEmpty()) {
+            // Fallback for extremely legacy formats that might lack framing
+            pdu = rawData.trim()
+                    .replace("WS_", "")
+                    .replace("start_", "")
+                    .replace("_end", "")
+                    .trim();
+        }
 
         if (pdu.isEmpty()) return null;
 

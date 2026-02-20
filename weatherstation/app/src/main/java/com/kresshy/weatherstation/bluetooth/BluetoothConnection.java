@@ -365,7 +365,7 @@ public class BluetoothConnection implements Connection {
             byte[] buffer = new byte[1024];
             int bytes;
             StringBuilder curMsg = new StringBuilder();
-            String end = "_end";
+            String endMarker = "_end";
 
             while (isRunning) {
                 try {
@@ -374,14 +374,29 @@ public class BluetoothConnection implements Connection {
                     if (inputStream.available() > 0) {
                         bytes = inputStream.read(buffer);
                         curMsg.append(new String(buffer, 0, bytes, Charset.forName("UTF-8")));
-                        int endIdx = curMsg.indexOf(end);
-
+                        
+                        int endIdx = curMsg.indexOf(endMarker);
                         while (endIdx != -1) {
-                            String fullMessage = curMsg.substring(0, endIdx + end.length());
-                            Timber.d("New weather data available " + fullMessage);
-                            curMsg.delete(0, endIdx + end.length());
-                            callback.onRawDataReceived(fullMessage);
-                            endIdx = curMsg.indexOf(end);
+                            // Find the best start marker before this end marker
+                            int startWS = curMsg.lastIndexOf("WS_", endIdx);
+                            int startLegacy = curMsg.lastIndexOf("start_", endIdx);
+                            int startIdx = Math.max(startWS, startLegacy);
+
+                            if (startIdx != -1) {
+                                // Extract the full frame including start and end markers
+                                String fullMessage = curMsg.substring(startIdx, endIdx + endMarker.length());
+                                Timber.d("New weather data available " + fullMessage);
+                                callback.onRawDataReceived(fullMessage);
+                                
+                                // Discard processed data including the junk before startIdx
+                                curMsg.delete(0, endIdx + endMarker.length());
+                            } else {
+                                // No start marker found, but we have an end marker. 
+                                // Discard up to endIdx + length to stay clean.
+                                curMsg.delete(0, endIdx + endMarker.length());
+                            }
+                            
+                            endIdx = curMsg.indexOf(endMarker);
                         }
                     } else {
                         Thread.sleep(100);
