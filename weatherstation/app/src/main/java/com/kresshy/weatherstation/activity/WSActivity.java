@@ -60,6 +60,7 @@ public class WSActivity extends AppCompatActivity {
     private NavController navController;
     private AppBarConfiguration appBarConfiguration;
     private Snackbar loadingSnackbar;
+    private boolean isReconnectDialogShowing = false;
 
     private final ActivityResultLauncher<String[]> requestPermissionLauncher =
             registerForActivityResult(
@@ -312,6 +313,8 @@ public class WSActivity extends AppCompatActivity {
 
     /** Checks if the user previously connected to a device and offers to reconnect. */
     public void reconnectPreviousWeatherStation() {
+        if (isReconnectDialogShowing) return;
+
         if (sharedPreferences.getBoolean("pref_reconnect", false)) {
             Timber.d("We should restore the connection");
             final String address =
@@ -319,7 +322,7 @@ public class WSActivity extends AppCompatActivity {
                             getString(R.string.PREFERENCE_DEVICE_ADDRESS), "00:00:00:00:00:00");
 
             if (!address.equals("00:00:00:00:00:00")) {
-
+                isReconnectDialogShowing = true;
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(R.string.reconnect_message);
                 builder.setPositiveButton(
@@ -327,6 +330,7 @@ public class WSActivity extends AppCompatActivity {
                         (dialog, id) -> {
                             Timber.d("The device address is valid, attempting to reconnect");
                             weatherRepository.connectToDeviceAddress(address);
+                            isReconnectDialogShowing = false;
                         });
 
                 builder.setNegativeButton(
@@ -334,7 +338,10 @@ public class WSActivity extends AppCompatActivity {
                         (dialog, id) -> {
                             Timber.d("We couldn't restore the connection");
                             dialog.cancel();
+                            isReconnectDialogShowing = false;
                         });
+
+                builder.setOnCancelListener(dialog -> isReconnectDialogShowing = false);
 
                 builder.create().show();
             } else {
