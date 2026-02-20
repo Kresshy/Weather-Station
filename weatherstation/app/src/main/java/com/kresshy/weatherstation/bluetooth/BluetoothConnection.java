@@ -26,6 +26,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.inject.Inject;
+
 /**
  * Manages Bluetooth Classic (RFCOMM) connections to the Weather Station. Uses background threads to
  * handle accepting, connecting, and data transmission.
@@ -53,13 +55,15 @@ public class BluetoothConnection implements Connection {
 
     /**
      * @param context The application context.
-     * @param callback Callback for reporting data and state changes.
+     * @param bluetoothAdapter Injected Bluetooth adapter.
      */
-    public BluetoothConnection(Context context, RawDataCallback callback) {
+    @Inject
+    public BluetoothConnection(
+            @dagger.hilt.android.qualifiers.ApplicationContext Context context,
+            BluetoothAdapter bluetoothAdapter) {
         this.state = ConnectionState.stopped;
         this.context = context;
-        this.callback = callback;
-        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        this.bluetoothAdapter = bluetoothAdapter;
     }
 
     /**

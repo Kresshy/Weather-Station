@@ -3,23 +3,28 @@ package com.kresshy.weatherstation.connection;
 import android.content.Context;
 import android.os.Parcelable;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * Orchestrates the connection to the weather station hardware. Acts as a wrapper around the
  * specific {@link Connection} implementation (Bluetooth or Simulator).
  */
+@Singleton
 public class ConnectionManager {
     /** The active connection implementation. */
-    public Connection connection;
+    public final Connection connection;
 
     private RawDataCallback callback;
 
     /**
-     * @param context Application context.
-     * @param callback Initial callback for data and state events.
+     * @param connection Injected connection implementation.
      */
-    public ConnectionManager(Context context, RawDataCallback callback) {
-        this.callback = callback;
-        this.connection = ConnectionFactory.getConnection(context, callback);
+    @Inject
+    public ConnectionManager(Connection connection) {
+        this.connection = connection;
     }
 
     /** Starts the connection service. */

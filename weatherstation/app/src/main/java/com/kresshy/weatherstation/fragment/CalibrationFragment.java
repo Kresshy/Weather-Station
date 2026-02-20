@@ -22,6 +22,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 import timber.log.Timber;
 
+import javax.inject.Inject;
+
 /**
  * Fragment that allows the user to manually enter calibration offsets for sensors. These offsets
  * (wind speed delta and temperature delta) are applied to the raw data in the repository.
@@ -31,7 +33,7 @@ public class CalibrationFragment extends Fragment implements View.OnClickListene
 
     private WeatherViewModel weatherViewModel;
     private FragmentCalibrationBinding binding;
-    private SharedPreferences sharedPreferences;
+    @Inject SharedPreferences sharedPreferences;
 
     public CalibrationFragment() {
         // Required empty public constructor
@@ -53,8 +55,6 @@ public class CalibrationFragment extends Fragment implements View.OnClickListene
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
         // Load current offsets into the edit texts
         String currentWindOffset =

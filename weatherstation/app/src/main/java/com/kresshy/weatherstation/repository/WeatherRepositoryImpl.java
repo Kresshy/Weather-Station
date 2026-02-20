@@ -47,11 +47,12 @@ import javax.inject.Singleton;
 public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback {
 
     private final Context context;
-    protected final ConnectionManager connectionManager;
+    private final ConnectionManager connectionManager;
     private final BluetoothAdapter bluetoothAdapter;
     private final ThermalAnalyzer thermalAnalyzer;
     private final WeatherMessageParser messageParser;
     private final WeatherBluetoothManager bluetoothManager;
+    private final SharedPreferences sharedPreferences;
 
     private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> uiState = new MutableLiveData<>();
@@ -89,32 +90,20 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             @ApplicationContext Context context,
             ThermalAnalyzer thermalAnalyzer,
             WeatherMessageParser messageParser,
-            WeatherBluetoothManager bluetoothManager) {
-        this(
-                context,
-                thermalAnalyzer,
-                messageParser,
-                bluetoothManager,
-                new ConnectionManager(context, null));
-        this.connectionManager.setCallback(this);
-    }
-
-    /** Package-private constructor for manual dependency injection during unit tests. */
-    WeatherRepositoryImpl(
-            Context context,
-            ThermalAnalyzer thermalAnalyzer,
-            WeatherMessageParser messageParser,
             WeatherBluetoothManager bluetoothManager,
+            SharedPreferences sharedPreferences,
+            BluetoothAdapter bluetoothAdapter,
             ConnectionManager connectionManager) {
         this.context = context;
         this.thermalAnalyzer = thermalAnalyzer;
         this.messageParser = messageParser;
         this.bluetoothManager = bluetoothManager;
+        this.sharedPreferences = sharedPreferences;
+        this.bluetoothAdapter = bluetoothAdapter;
         this.connectionManager = connectionManager;
-        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
+        this.connectionManager.setCallback(this);
+
         loadCorrections(sharedPreferences);
 
         this.preferenceChangeListener =
@@ -209,9 +198,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
     @Override
     public void refreshPairedDevices() {
-        boolean useSimulator =
-                PreferenceManager.getDefaultSharedPreferences(context)
-                        .getBoolean("pref_simulator_mode", false);
+        boolean useSimulator = sharedPreferences.getBoolean("pref_simulator_mode", false);
 
         List<Parcelable> devices = new ArrayList<>();
 
@@ -382,8 +369,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
     @Override
     public void connectToDeviceAddress(String address) {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
         sharedPreferences
                 .edit()
                 .putString(context.getString(R.string.PREFERENCE_DEVICE_ADDRESS), address)
@@ -393,7 +378,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
                 && sharedPreferences.getBoolean("pref_simulator_mode", false)) {
             connectToDevice(new SimulatorDevice("Simulator Station", address));
         } else {
-            BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
+            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
             connectToDevice(device);
         }
     }

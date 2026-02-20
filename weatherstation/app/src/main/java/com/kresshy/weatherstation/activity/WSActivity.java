@@ -46,7 +46,7 @@ import javax.inject.Inject;
  */
 @AndroidEntryPoint
 public class WSActivity extends AppCompatActivity {
-    private SharedPreferences sharedPreferences;
+    @Inject SharedPreferences sharedPreferences;
     private boolean requestedEnableBluetooth = false;
 
     private boolean permissionsGranted;
@@ -133,9 +133,6 @@ public class WSActivity extends AppCompatActivity {
         requestPermissionLauncher.launch(permissionList.toArray(new String[0]));
 
         weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
-
-        // setting up sharedpreferences
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         weatherBluetoothManager.registerReceivers();
 

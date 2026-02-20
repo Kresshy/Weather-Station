@@ -9,6 +9,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 /**
  * A mock connection that generates simulated weather data. Useful for testing UI logic and thermal
  * analysis without physical hardware. Simulates realistic air conditions, including occasional
@@ -19,6 +21,9 @@ public class SimulatorConnection implements Connection {
     private ScheduledExecutorService executor;
     private final Random random = new Random();
     private RawDataCallback callback;
+
+    @Inject
+    public SimulatorConnection() {}
 
     // Simulation state
     private double currentTemp = 22.0;

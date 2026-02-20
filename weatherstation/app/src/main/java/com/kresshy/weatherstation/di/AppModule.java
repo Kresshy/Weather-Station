@@ -1,10 +1,17 @@
 package com.kresshy.weatherstation.di;
 
+import android.app.NotificationManager;
+import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import com.google.gson.Gson;
 
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
 
 import javax.inject.Singleton;
@@ -14,14 +21,31 @@ import javax.inject.Singleton;
 @InstallIn(SingletonComponent.class)
 public class AppModule {
 
-    /**
-     * Provides a singleton instance of Gson for JSON parsing.
-     *
-     * @return A {@link Gson} instance.
-     */
+    /** Provides a singleton instance of Gson for JSON parsing. */
     @Provides
     @Singleton
     public Gson provideGson() {
         return new Gson();
+    }
+
+    /** Provides the default SharedPreferences. */
+    @Provides
+    @Singleton
+    public SharedPreferences provideSharedPreferences(@ApplicationContext Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    /** Provides the default BluetoothAdapter. */
+    @Provides
+    @Singleton
+    public BluetoothAdapter provideBluetoothAdapter() {
+        return BluetoothAdapter.getDefaultAdapter();
+    }
+
+    /** Provides the NotificationManager system service. */
+    @Provides
+    @Singleton
+    public NotificationManager provideNotificationManager(@ApplicationContext Context context) {
+        return context.getSystemService(NotificationManager.class);
     }
 }

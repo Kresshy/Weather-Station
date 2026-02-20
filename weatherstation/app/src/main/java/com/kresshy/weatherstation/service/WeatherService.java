@@ -39,6 +39,7 @@ public class WeatherService extends LifecycleService {
     private static final int NOTIFICATION_ID = 1;
 
     @Inject WeatherRepository weatherRepository;
+    @Inject NotificationManager notificationManager;
 
     @Override
     public void onCreate() {
@@ -100,8 +101,9 @@ public class WeatherService extends LifecycleService {
      * @param content The new text to display.
      */
     private void updateNotification(String content) {
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
-        notificationManager.notify(NOTIFICATION_ID, createNotification(content));
+        if (notificationManager != null) {
+            notificationManager.notify(NOTIFICATION_ID, createNotification(content));
+        }
     }
 
     /** Creates a {@link Notification} with actions for reconnecting and stopping. */
@@ -140,9 +142,8 @@ public class WeatherService extends LifecycleService {
                             CHANNEL_ID,
                             "Weather Station Service Channel",
                             NotificationManager.IMPORTANCE_LOW);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(serviceChannel);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(serviceChannel);
             }
         }
     }
