@@ -36,6 +36,7 @@
     <string name="last_updated_format">Last Updated: %s</string>
     <string name="last_updated_never">Last Updated: Never</string>
     <string name="rssi_format">RSSI: %d dBm</string>
+    <string name="rssi_format_with_label">RSSI: %1$d dBm (%2$s)</string>
     <string name="rssi_na">RSSI: N/A</string>
 
     <string name="device_unknown">Unknown device</string>

@@ -217,7 +217,8 @@ public class DashboardFragment extends Fragment {
         binding.lastUpdatedText.setText(
                 getString(R.string.last_updated_format, timeFormat.format(data.getTimestamp())));
         if (data.getRssi() != 0) {
-            binding.rssiText.setText(getString(R.string.rssi_format, data.getRssi()));
+            String label = getSignalStrengthLabel(data.getRssi());
+            binding.rssiText.setText(getString(R.string.rssi_format_with_label, data.getRssi(), label));
         } else {
             binding.rssiText.setText(getString(R.string.rssi_na));
         }
@@ -229,6 +230,14 @@ public class DashboardFragment extends Fragment {
 
         addEntryToChart(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
         addEntryToChart(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
+    }
+
+    private String getSignalStrengthLabel(int rssi) {
+        if (rssi >= -60) return "Excellent";
+        if (rssi >= -70) return "Good";
+        if (rssi >= -80) return "Fair";
+        if (rssi >= -90) return "Poor";
+        return "Very Weak";
     }
 
     /** Appends a new value to a chart and shifts the window if capacity is reached. */
