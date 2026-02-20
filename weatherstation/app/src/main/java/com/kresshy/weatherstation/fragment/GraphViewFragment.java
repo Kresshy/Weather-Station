@@ -102,7 +102,9 @@ public class GraphViewFragment extends Fragment {
         chart.setDragEnabled(true);
         chart.setScaleEnabled(true);
         chart.setPinchZoom(true);
-        chart.setBackgroundColor(Color.TRANSPARENT);
+
+        // Dark background to make fills pop
+        chart.setBackgroundColor(Color.parseColor("#121212"));
         chart.setDrawGridBackground(false);
 
         // Styling for the legend
@@ -122,7 +124,7 @@ public class GraphViewFragment extends Fragment {
 
         chart.getAxisLeft().setTextColor(Color.LTGRAY);
         chart.getAxisLeft().setDrawGridLines(true);
-        chart.getAxisLeft().setGridColor(Color.parseColor("#33FFFFFF")); // Subtle grid lines
+        chart.getAxisLeft().setGridColor(Color.parseColor("#22FFFFFF"));
         chart.getAxisRight().setEnabled(false);
     }
 
@@ -152,27 +154,18 @@ public class GraphViewFragment extends Fragment {
         set.setColor(color);
         set.setLineWidth(2.5f);
         set.setCircleColor(color);
-        set.setCircleRadius(1.5f); // Smaller markers as requested
+        set.setCircleRadius(1.5f);
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
 
-        // Pro: Cubic smoothing for organic weather data
+        // Pro: Cubic smoothing
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         set.setCubicIntensity(0.15f);
 
-        // Pro: Area filling for better visual volume
+        // Pro: High-contrast solid fill
         set.setDrawFilled(true);
-        set.setFillAlpha(85); // Increased to ~33% opacity for better visibility
+        set.setFillAlpha(110); // Higher alpha (~43% opacity)
         set.setFillColor(color);
-
-        // Use a gradient if on a modern device
-        if (com.github.mikephil.charting.utils.Utils.getSDKInt() >= 18) {
-            android.graphics.drawable.GradientDrawable gradientDrawable =
-                    new android.graphics.drawable.GradientDrawable(
-                            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                            new int[] {color, Color.TRANSPARENT});
-            set.setFillDrawable(gradientDrawable);
-        }
 
         // Smoothing out the edges
         set.setHighLightColor(Color.WHITE);
