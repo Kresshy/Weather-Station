@@ -103,13 +103,16 @@ public class ThermalAnalyzer {
     private double calculateWindStdDev() {
         if (recentHistory.isEmpty()) return 0;
 
-        double avgWind =
-                recentHistory.stream().mapToDouble(WeatherData::getWindSpeed).average().orElse(0.0);
+        double sumWind = 0;
+        for (WeatherData d : recentHistory) {
+            sumWind += d.getWindSpeed();
+        }
+        double avgWind = sumWind / recentHistory.size();
 
-        double sumSqDiff =
-                recentHistory.stream()
-                        .mapToDouble(d -> Math.pow(d.getWindSpeed() - avgWind, 2))
-                        .sum();
+        double sumSqDiff = 0;
+        for (WeatherData d : recentHistory) {
+            sumSqDiff += Math.pow(d.getWindSpeed() - avgWind, 2);
+        }
 
         return Math.sqrt(sumSqDiff / recentHistory.size());
     }

@@ -25,8 +25,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Fragment that displays a list of paired and discovered Bluetooth devices. Allows the user to
@@ -95,13 +93,12 @@ public class BluetoothDeviceListFragment extends Fragment
         List<Parcelable> paired = weatherViewModel.getPairedDevices().getValue();
         List<Parcelable> discovered = weatherViewModel.getDiscoveredDevices().getValue();
 
+        java.util.LinkedHashSet<Parcelable> uniqueDevices = new java.util.LinkedHashSet<>();
+        if (paired != null) uniqueDevices.addAll(paired);
+        if (discovered != null) uniqueDevices.addAll(discovered);
+
         deviceList.clear();
-        deviceList.addAll(
-                Stream.concat(
-                                paired != null ? paired.stream() : Stream.empty(),
-                                discovered != null ? discovered.stream() : Stream.empty())
-                        .distinct()
-                        .collect(Collectors.toList()));
+        deviceList.addAll(uniqueDevices);
         adapter.notifyDataSetChanged();
     }
 
