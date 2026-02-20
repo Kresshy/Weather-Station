@@ -103,21 +103,27 @@ public class GraphViewFragment extends Fragment {
         chart.setScaleEnabled(true);
         chart.setPinchZoom(true);
         chart.setBackgroundColor(Color.TRANSPARENT);
+        chart.setDrawGridBackground(false);
+
+        // Styling for the legend
+        chart.getLegend().setTextColor(Color.WHITE);
+        chart.getLegend().setForm(com.github.mikephil.charting.components.Legend.LegendForm.LINE);
 
         LineData data = new LineData(set);
         data.setValueTextColor(Color.WHITE);
         chart.setData(data);
 
         XAxis xAxis = chart.getXAxis();
-        xAxis.setTextColor(Color.GRAY);
+        xAxis.setTextColor(Color.LTGRAY);
         xAxis.setDrawGridLines(false);
         xAxis.setEnabled(true);
         xAxis.setAxisMinimum(0f);
         xAxis.setAxisMaximum(numberOfSamples);
 
-        chart.getAxisLeft().setTextColor(Color.GRAY);
+        chart.getAxisLeft().setTextColor(Color.LTGRAY);
+        chart.getAxisLeft().setDrawGridLines(true);
+        chart.getAxisLeft().setGridColor(Color.parseColor("#33FFFFFF")); // Subtle grid lines
         chart.getAxisRight().setEnabled(false);
-        chart.getLegend().setTextColor(Color.GRAY);
     }
 
     private void addEntry(WeatherData data) {
@@ -128,11 +134,10 @@ public class GraphViewFragment extends Fragment {
     private void addValueToSet(LineChart chart, LineDataSet set, float value) {
         List<Entry> entries = set.getValues();
         if (entries.size() >= numberOfSamples) {
-            for (int i = 0; i < entries.size(); i++) {
-                Entry e = entries.get(i);
+            set.removeEntry(0);
+            for (Entry e : entries) {
                 e.setX(e.getX() - 1);
             }
-            set.removeEntry(0);
         }
 
         set.addEntry(new Entry(set.getEntryCount(), value));
@@ -145,11 +150,25 @@ public class GraphViewFragment extends Fragment {
     private LineDataSet createSet(String label, int color) {
         LineDataSet set = new LineDataSet(new ArrayList<>(), label);
         set.setColor(color);
-        set.setLineWidth(2f);
+        set.setLineWidth(2.5f);
         set.setCircleColor(color);
-        set.setCircleRadius(3f);
+        set.setCircleRadius(1.5f); // Smaller markers as requested
+        set.setDrawCircleHole(false);
         set.setDrawValues(false);
-        set.setMode(LineDataSet.Mode.LINEAR);
+
+        // Pro: Cubic smoothing for organic weather data
+        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set.setCubicIntensity(0.15f);
+
+        // Pro: Area filling for better visual volume
+        set.setDrawFilled(true);
+        set.setFillAlpha(40); // Subtle 15% opacity
+        set.setFillColor(color);
+
+        // Smoothing out the edges
+        set.setHighLightColor(Color.WHITE);
+        set.setDrawHorizontalHighlightIndicator(false);
+
         return set;
     }
 
