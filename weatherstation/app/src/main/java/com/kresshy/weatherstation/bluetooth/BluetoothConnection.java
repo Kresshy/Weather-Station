@@ -115,7 +115,28 @@ public class BluetoothConnection implements Connection {
     public synchronized void connected(BluetoothSocket socket) {
         Timber.d("connected");
 
-        cancelTasks();
+        // Cancel the thread that completed the connection attempt
+        if (connectFuture != null) {
+            connectFuture.cancel(true);
+            connectFuture = null;
+            connectRunnable = null; // Do NOT call cancel() as it closes the socket
+        }
+
+        // Cancel any thread currently running a connection
+        if (connectedFuture != null) {
+            connectedFuture.cancel(true);
+            if (connectedRunnable != null) connectedRunnable.cancel();
+            connectedFuture = null;
+            connectedRunnable = null;
+        }
+
+        // Cancel the accept thread because we only want to connect to one device
+        if (acceptFuture != null) {
+            acceptFuture.cancel(true);
+            if (acceptRunnable != null) acceptRunnable.cancel();
+            acceptFuture = null;
+            acceptRunnable = null;
+        }
 
         // Start the task to manage the connection and perform transmissions
         connectedRunnable = new ConnectedRunnable(socket);
@@ -129,12 +150,12 @@ public class BluetoothConnection implements Connection {
     /** Stops all active threads and closes sockets. */
     public synchronized void stop() {
         Timber.d("stop");
-        cancelTasks();
+        cancelAllTasks();
         state = ConnectionState.stopped;
         callback.onConnectionStateChange(ConnectionState.stopped);
     }
 
-    private void cancelTasks() {
+    private void cancelAllTasks() {
         if (connectFuture != null) {
             connectFuture.cancel(true);
             if (connectRunnable != null) connectRunnable.cancel();
@@ -155,6 +176,10 @@ public class BluetoothConnection implements Connection {
             acceptFuture = null;
             acceptRunnable = null;
         }
+    }
+
+    private void cancelTasks() {
+        cancelAllTasks();
     }
 
     /**
