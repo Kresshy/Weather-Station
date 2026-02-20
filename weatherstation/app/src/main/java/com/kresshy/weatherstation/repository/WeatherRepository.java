@@ -70,6 +70,11 @@ public interface WeatherRepository {
     LiveData<WeatherData> getLatestWeatherData();
 
     /**
+     * @return List of historical weather data points for chart persistence.
+     */
+    List<WeatherData> getHistoricalWeatherData();
+
+    /**
      * @return Observable connection state.
      */
     LiveData<ConnectionState> getConnectionState();

@@ -74,6 +74,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
     private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(false);
     private final MutableLiveData<String> connectedDeviceName = new MutableLiveData<>(null);
+    private final List<WeatherData> historicalData = new ArrayList<>();
+    private static final int MAX_HISTORY_SIZE = 300;
 
     private double correctionWind = 0.0;
     private double correctionTemp = 0.0;
@@ -199,6 +201,13 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     @Override
+    public List<WeatherData> getHistoricalWeatherData() {
+        synchronized (historicalData) {
+            return new ArrayList<>(historicalData);
+        }
+    }
+
+    @Override
     public LiveData<ConnectionState> getConnectionState() {
         return connectionState;
     }
@@ -305,6 +314,14 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
                 }
                 int rssi = bluetoothManager.getDeviceRssi(address);
                 weatherData.setRssi(rssi);
+            }
+
+            // Track historical data for chart persistence
+            synchronized (historicalData) {
+                historicalData.add(weatherData);
+                if (historicalData.size() > MAX_HISTORY_SIZE) {
+                    historicalData.remove(0);
+                }
             }
 
             latestWeatherData.postValue(weatherData);
@@ -420,6 +437,9 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     public void stopConnection() {
         shouldReconnect = false;
         thermalAnalyzer.reset();
+        synchronized (historicalData) {
+            historicalData.clear();
+        }
         connectionManager.stopConnection();
     }
 

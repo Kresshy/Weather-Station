@@ -76,6 +76,7 @@ public class GraphViewFragment extends Fragment {
         }
 
         setupCharts();
+        populateChartsFromHistory();
 
         weatherViewModel
                 .getConnectedDeviceName()
@@ -108,6 +109,23 @@ public class GraphViewFragment extends Fragment {
 
         configureChart(binding.windSpeedChart, "Wind Speed (m/s)", windSpeedSet);
         configureChart(binding.temperatureChart, "Temperature (°C)", temperatureSet);
+    }
+
+    private void populateChartsFromHistory() {
+        List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
+        if (history != null && !history.isEmpty()) {
+            for (WeatherData data : history) {
+                windSpeedSet.addEntry(new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
+                temperatureSet.addEntry(new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
+            }
+            binding.windSpeedChart.getData().notifyDataChanged();
+            binding.windSpeedChart.notifyDataSetChanged();
+            binding.windSpeedChart.invalidate();
+
+            binding.temperatureChart.getData().notifyDataChanged();
+            binding.temperatureChart.notifyDataSetChanged();
+            binding.temperatureChart.invalidate();
+        }
     }
 
     private void configureChart(LineChart chart, String description, LineDataSet set) {

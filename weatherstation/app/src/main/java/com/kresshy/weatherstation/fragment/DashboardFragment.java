@@ -81,6 +81,7 @@ public class DashboardFragment extends Fragment {
                         sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));
 
         setupCharts();
+        populateChartsFromHistory();
 
         // Data observation and UI updates
         weatherViewModel
@@ -194,6 +195,31 @@ public class DashboardFragment extends Fragment {
 
         configureChart(binding.windSpeedChart, windSpeedSet, "Wind Speed (m/s)");
         configureChart(binding.temperatureChart, temperatureSet, "Temperature (°C)");
+    }
+
+    /** Loads stored historical data into the charts for persistence. */
+    private void populateChartsFromHistory() {
+        List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
+        if (history != null && !history.isEmpty()) {
+            for (WeatherData data : history) {
+                windSpeedSet.addEntry(new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
+                temperatureSet.addEntry(new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
+            }
+            binding.windSpeedChart.getData().notifyDataChanged();
+            binding.windSpeedChart.notifyDataSetChanged();
+            binding.windSpeedChart.invalidate();
+
+            binding.temperatureChart.getData().notifyDataChanged();
+            binding.temperatureChart.notifyDataSetChanged();
+            binding.temperatureChart.invalidate();
+            
+            // Set current values to latest in history
+            WeatherData latest = history.get(history.size() - 1);
+            binding.currentWindText.setText(
+                    String.format(Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
+            binding.currentTempText.setText(
+                    String.format(Locale.getDefault(), "%.1f°C", latest.getTemperature()));
+        }
     }
 
     /** Configures general styling and axes for a LineChart. */

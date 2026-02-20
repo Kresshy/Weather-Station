@@ -83,6 +83,13 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * @return List of historical weather data points for chart persistence.
+     */
+    public List<WeatherData> getHistoricalWeatherData() {
+        return weatherRepository.getHistoricalWeatherData();
+    }
+
+    /**
      * @return Observable toast messages for UI notifications.
      */
     public LiveData<String> getToastMessage() {
