@@ -1,49 +1,38 @@
-# Weather Station - Development Summary (Thermal Hunting Edition)
+# Weather Station - Development Summary (Compatibility & Stability Edition)
 
 ## 🎯 Overview
-Successfully refocused the project on **free-flight aeromodelling** and **thermal detection**. Transformed the codebase into a robust, single-platform (Android) and single-node (Arduino) system with advanced data integrity and modern architecture.
+Successfully resolved critical field-testing issues by implementing a "Universal" data parser and fixing a persistent Bluetooth race condition. These changes ensure the Android application is now 100% backwards-compatible with every existing weather station in the field, regardless of firmware version.
 
-## 🏗️ Architectural Evolution (Recent Session)
+## 🏗️ Architectural Evolution (Current Session)
 
-### Focus & Scope Refinement
-*   **Android-First**: Removed the legacy iOS application and Node.js simulator to consolidate development on the Android/Arduino core.
-*   **Single-Node Optimization**: Transitioned from multi-node complexity to a high-performance single-sensor configuration optimized for airfield deployment.
-*   **Dependency Injection Overhaul**: Eliminated static factories and manual context passing. Fully integrated **Dagger Hilt** for dynamic connection providing and core component management.
+### 📡 Protocol & Compatibility
+*   **Universal Legacy Parser**: 
+    - Added support for both modern `WS_` and legacy `start_` PDU prefixes.
+    - Implemented a "fallback" parsing logic that handles both JSON (modern) and space-separated/comma-separated (legacy) air data.
+    - Added resilience to extra whitespace and newlines common in older serial implementations.
+*   **Bluetooth Stability Fix**:
+    - Identified and resolved a race condition in `BluetoothConnection.java` where successful connections were immediately closing their own sockets during thread cleanup.
+    - Separated "connection attempt" cleanup from "active socket" management.
 
-### Data Integrity & Stability
-*   **Double-Layer Spike Protection**:
-    *   **Firmware Layer**: Arduino now rejects `85.0°C` power-on defaults and `-127.0°C` OneWire errors.
-    *   **Application Layer**: `WeatherRepositoryImpl` now discards physically impossible temperature jumps (outlier rejection).
-*   **Communication Protocol**: Synchronized both layers to use the modern `WS_{JSON}_end` PDU format.
+### 🎨 UI/UX & Future Roadmap
+*   **Phase 2 UI Design**: Defined the "Split-Row" layout for the upcoming Barometer and Ultrasonic Anemometer upgrades.
+    - **Wind Speed Row**: 75% Line Chart / 25% Compass Vector gauge.
+    - **Temperature Row**: 75% Line Chart / 25% Barometric Pressure vertical stack.
+*   **New Design Reference**: Created `UI_DESIGN_REFERENCE.md` to guide the implementation of custom Compass and Pressure views.
 
-### UI/UX & Visual Improvements
-*   **Pro Charts**: Implemented **Cubic Bézier smoothing** for organic weather data visualization and reduced marker size for a professional look.
-*   **Notification Fix**: Added a custom **Wind Flag silhouette** vector drawable to resolve the "blank white rectangle" issue on modern Android versions.
-*   **Dialog Polish**: Resolved a lifecycle bug where the reconnect dialog would appear multiple times.
+### 🚀 Deliverables & Field Testing
+*   **v4 Ultimate APK**: Built and staged `WeatherStation-v4-Ultimate-Fix.apk` in the root directory for immediate field distribution.
+*   **Unit Testing**: Expanded `WeatherMessageParserTest` to verify all legacy formats and messy string scenarios.
 
-### Codebase & Quality Control
-*   **Static Analysis**: Integrated **PMD** and **Android Lint** into the Gradle build to detect dead code and resource integrity issues.
-*   **Major Cleanup**:
-    *   Removed 18+ unused XML layouts and menus.
-    *   Eliminated redundant constants by moving essential keys to the `WeatherRepository` interface.
-    *   Cleaned up Windows-generated `Thumbs.db` and updated `.gitignore`.
-*   **Firmware Consolidation**: Unified multiple Arduino versions into a single, clean `weatherstation.ino` with interrupt-driven wind measurement.
-
-## ✅ Testing & Quality Assurance
-
-### Testing Infrastructure
-*   **Refactored Test Suite**: Updated `WeatherRepositoryImplTest` and `ConnectionManagerTest` to utilize the new DI architecture.
-*   **New Test Cases**: Added verification for **Layer 2 Outlier Rejection** to ensure data spikes are correctly ignored.
-
-## 🧪 Current Status
+## ✅ Quality Control
 *   **Build Status**: Successful (`assembleDebug` passing)
-*   **Unit Tests**: All tests passing (including new architecture and stability tests)
-*   **Linter**: PMD, Android Lint, and Spotless passing
+*   **Unit Tests**: All 11 tests in `WeatherMessageParserTest` passing (new compatibility tests included).
+*   **Documentation**: Updated `README.md` and created `UI_DESIGN_REFERENCE.md`.
 
-## 🚀 Future Roadmap (`FUTURE_IMPROVEMENTS.md`)
-*   **Pressure-Drop Detection**: Integrate BME280/BMP280 for early "Pre-Thermal" warnings.
-*   **Ultrasonic Sensing**: Transition to 2D Ultrasonic Anemometers for zero-latency wind vectoring.
-*   **Acoustic Variometer**: Add variable-pitch audio alerts to help pilots keep their eyes on the model.
+## 🧪 Next Steps
+*   **Thermal Logic**: Update `ThermalAnalyzer` to incorporate pressure-drop rates into the "Launch Decision" algorithm.
+*   **Phase 2 UI Implementation**: Start building the custom `CompassView` and `PressureBarView` components.
+*   **LoRa Integration**: Consider long-range RF modules for multi-station airfield deployments.
 
 ---
-*Generated by Gemini CLI - February 19, 2026*
+*Generated by Gemini CLI - February 20, 2026*

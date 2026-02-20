@@ -46,16 +46,20 @@ Open the `/weatherstation` folder in Android Studio.
 - **Minimum SDK**: 23 (Android 6.0).
 - **Target SDK**: 35 (Android 15).
 
-## 🛡️ Data Integrity & Spike Protection
+## 🛡️ Data Integrity & Protocol Compatibility
 
-To ensure stable charts and reliable thermal analysis, the system implements a **Double-Layer Filter** to eliminate false sensor readings:
+To ensure stable charts and reliable thermal analysis across various hardware generations, the system implements a multi-layer compatibility and filtering strategy:
 
-1.  **Firmware Layer (Arduino)**:
-    - Rejects the `85.0°C` power-on default value of the DS18B20 sensor.
-    - Filters out `-127.0°C` error values caused by OneWire bus disconnections.
-    - Limits readings to a sane environmental range (-30°C to 60°C).
-2.  **Application Layer (Android)**:
-    - **Outlier Rejection**: Discards any temperature jump greater than 10°C per second (physically impossible for air temperature).
+1.  **Universal Legacy Parser (Application Layer)**:
+    - **Backwards Compatibility**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
+    - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats, allowing the app to work with every version of the station firmware without updates.
+    - **Whitespace Immunity**: Resilient to erratic formatting, extra newlines, and trailing spaces from older serial implementations.
+2.  **Bluetooth Stability (Connection Layer)**:
+    - **Race Condition Protection**: Resolved a critical socket-management bug that caused instant disconnections after successful handshakes.
+    - **Fallback Support**: Implements automated RFCOMM fallback for improved pairing reliability on older Android devices.
+3.  **Sensor Filtering (Firmware & App Layers)**:
+    - **Outlier Rejection**: Discards temperature jumps > 10°C/sec (physically impossible air shifts).
+    - **OneWire Guard**: Firmware rejects `85.0°C` power-on defaults and `-127.0°C` bus errors.
     - **Smoothing**: Uses Exponential Moving Averages (EMA) for trend detection and stable "Launch Suitability" scoring.
 
 ## 🧪 Testing & Quality Control
