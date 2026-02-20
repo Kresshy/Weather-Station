@@ -394,16 +394,6 @@ public class WSActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (binding.drawerLayout != null
-                && !binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            getMenuInflater().inflate(R.menu.main, menu);
-            return true;
-        }
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle 'home' button (hamburger or up arrow) via NavController
         if (item.getItemId() == android.R.id.home) {
