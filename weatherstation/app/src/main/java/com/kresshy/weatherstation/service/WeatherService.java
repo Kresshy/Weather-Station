@@ -108,20 +108,25 @@ public class WeatherService extends LifecycleService {
 
     /** Creates a {@link Notification} with actions for reconnecting and stopping. */
     private Notification createNotification(String content) {
+        int pendingIntentFlags = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pendingIntentFlags = PendingIntent.FLAG_IMMUTABLE;
+        }
+
         Intent notificationIntent = new Intent(this, WSActivity.class);
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(
-                        this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+                        this, 0, notificationIntent, pendingIntentFlags);
 
         Intent stopIntent = new Intent(this, WeatherService.class);
         stopIntent.setAction(ACTION_STOP);
         PendingIntent stopPendingIntent =
-                PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE);
+                PendingIntent.getService(this, 0, stopIntent, pendingIntentFlags);
 
         Intent reconnectIntent = new Intent(this, WeatherService.class);
         reconnectIntent.setAction(ACTION_RECONNECT);
         PendingIntent reconnectPendingIntent =
-                PendingIntent.getService(this, 0, reconnectIntent, PendingIntent.FLAG_IMMUTABLE);
+                PendingIntent.getService(this, 0, reconnectIntent, pendingIntentFlags);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(getString(R.string.app_name))

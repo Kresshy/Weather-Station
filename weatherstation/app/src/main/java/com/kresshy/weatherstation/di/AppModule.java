@@ -46,6 +46,6 @@ public class AppModule {
     @Provides
     @Singleton
     public NotificationManager provideNotificationManager(@ApplicationContext Context context) {
-        return context.getSystemService(NotificationManager.class);
+        return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 }
