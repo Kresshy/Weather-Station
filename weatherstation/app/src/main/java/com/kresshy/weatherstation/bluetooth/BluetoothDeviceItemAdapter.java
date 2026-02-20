@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.databinding.BluetoothDeviceListItemBinding;
+import com.kresshy.weatherstation.util.PermissionHelper;
 
 import java.util.List;
 
@@ -59,9 +60,7 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<Parcelable> {
 
             if (device instanceof BluetoothDevice) {
                 BluetoothDevice btDevice = (BluetoothDevice) device;
-                if (ActivityCompat.checkSelfPermission(
-                                context, Manifest.permission.BLUETOOTH_CONNECT)
-                        == PackageManager.PERMISSION_GRANTED) {
+                if (PermissionHelper.hasConnectPermission(context)) {
                     name = btDevice.getName();
                 }
                 address = btDevice.getAddress();

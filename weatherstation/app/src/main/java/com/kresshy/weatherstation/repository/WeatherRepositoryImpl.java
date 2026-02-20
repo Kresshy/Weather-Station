@@ -19,6 +19,7 @@ import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
 import com.kresshy.weatherstation.connection.ConnectionManager;
 import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.connection.RawDataCallback;
+import com.kresshy.weatherstation.util.PermissionHelper;
 import com.kresshy.weatherstation.util.Resource;
 import com.kresshy.weatherstation.weather.ThermalAnalyzer;
 import com.kresshy.weatherstation.weather.WeatherData;
@@ -208,8 +209,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         }
 
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (PermissionHelper.hasConnectPermission(context)) {
                 Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
                 devices.addAll(bondedDevices);
             } else {
