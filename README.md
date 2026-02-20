@@ -17,6 +17,11 @@ The repository is organized into two main components:
 1.  **/weatherstation**: The primary Android application (Java/Dagger Hilt).
 2.  **/arduino**: Unified firmware implementation (`weatherstation.ino`) for Arduino Nano/Micro/Uno.
 
+Detailed hardware documentation can be found here:
+- **[Standard Wiring Diagram](WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
+- **[Future Hardware Roadmap](FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades (Ultrasonic, Barometer).
+- **[Future Wiring Diagram](FUTURE_WIRING_DIAGRAM.md)**: Technical wiring for upgraded sensors.
+
 ## 🛠️ Hardware Requirements
 
 To build a physical station, you will typically need:
