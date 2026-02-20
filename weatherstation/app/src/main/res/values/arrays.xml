@@ -16,16 +16,6 @@
         <item>1200</item>
     </string-array>
 
-    <string-array name="pref_connection_type_entries">
-        <item>Bluetooth</item>
-        <item>WI-FI</item>
-    </string-array>
-
-    <string-array name="pref_connection_type_values">
-        <item>bluetooth</item>
-        <item>wi-fi</item>
-    </string-array>
-
     <string-array name="pref_logging_entries">
         <item>true</item>
         <item>false</item>

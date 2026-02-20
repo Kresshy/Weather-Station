@@ -2,8 +2,6 @@ package com.kresshy.weatherstation.connection;
 
 import android.os.Parcelable;
 
-import com.google.gson.Gson;
-
 import timber.log.Timber;
 
 import java.util.Random;

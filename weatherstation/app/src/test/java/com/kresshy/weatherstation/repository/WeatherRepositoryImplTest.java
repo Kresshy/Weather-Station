@@ -1,5 +1,8 @@
 package com.kresshy.weatherstation.repository;
 
+import static com.kresshy.weatherstation.repository.WeatherRepository.KEY_TEMP_DIFF;
+import static com.kresshy.weatherstation.repository.WeatherRepository.KEY_WIND_DIFF;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -118,12 +121,8 @@ public class WeatherRepositoryImplTest {
     @Test
     public void onRawDataReceived_AppliesCorrections() {
         // Set corrections via shared preferences
-        when(sharedPreferences.getString(
-                        com.kresshy.weatherstation.application.WSConstants.KEY_WIND_DIFF, "0.0"))
-                .thenReturn("1.0");
-        when(sharedPreferences.getString(
-                        com.kresshy.weatherstation.application.WSConstants.KEY_TEMP_DIFF, "0.0"))
-                .thenReturn("-2.0");
+        when(sharedPreferences.getString(KEY_WIND_DIFF, "0.0")).thenReturn("1.0");
+        when(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0")).thenReturn("-2.0");
 
         // Re-initialize repository to pick up corrections
         repository =
