@@ -38,6 +38,26 @@ This document outlines potential hardware and software enhancements to evolve th
 
 ---
 
+## 🚀 Pro-Level Features (Airfield Experience)
+
+### 1. "Announcer" Mode (Text-to-Speech)
+*   **The Upgrade:** A background service using Android's Text-to-Speech (TTS) engine.
+*   **The Benefit:** Allows pilots to keep their hands on their models and eyes on the sky while the phone verbally announces: *"Thermal score 85. Wind dropping. Launch recommended."*
+
+### 2. Long-Range Connectivity (LoRa)
+*   **The Upgrade:** Replace/augment Bluetooth with LoRa (Long Range) RF modules (e.g., RFM95).
+*   **The Benefit:** Increases range from 10m to 1km+. This allows placing the station far upwind to detect thermals long before they arrive at the launch line.
+
+### 3. Smartwatch Companion (Wear OS)
+*   **The Upgrade:** A lightweight Wear OS app that syncs with the main mobile application.
+*   **The Benefit:** Critical data (Launch Score, Wind Speed) is visible on the pilot's wrist during model preparation.
+
+### 4. Live Data Sharing (Cloud/Firebase)
+*   **The Upgrade:** Push station readings to a central MQTT or Firebase broker.
+*   **The Benefit:** Allows multiple pilots at a contest to see the same "Master Station" data simultaneously on their own devices.
+
+---
+
 ## 🛠️ Required Technical Updates
 1.  **Protocol:** Update `WeatherMessageParser` to handle new JSON fields (`pressure`, `direction`).
 2.  **Analysis Logic:** Update `ThermalAnalyzer` to incorporate pressure-drop rates into the `LaunchDecision` algorithm.
