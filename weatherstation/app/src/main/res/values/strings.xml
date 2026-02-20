@@ -42,7 +42,7 @@
     <string name="device_status_paired">paired</string>
     <string name="device_status_unpaired">unpaired</string>
 
-    <string name="connecting_message">Connecting to Weather Station...</string>
+    <string name="connecting_message">Connecting to Weather Station…</string>
     <string name="error_prefix">Error: %s</string>
     <string name="retry_action">RETRY</string>
     <string name="permissions_required">Permissions required for Bluetooth functionality</string>
