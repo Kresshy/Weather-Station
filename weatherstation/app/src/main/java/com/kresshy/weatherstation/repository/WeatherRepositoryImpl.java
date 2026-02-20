@@ -72,7 +72,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final MutableLiveData<Double> tempTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Double> windTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
-    private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(true);
+    private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(false);
 
     private double correctionWind = 0.0;
     private double correctionTemp = 0.0;
@@ -138,7 +138,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     private void loadLaunchDetectorSettings(SharedPreferences sharedPreferences) {
-        boolean enabled = sharedPreferences.getBoolean(PREF_LAUNCH_DETECTOR_ENABLED, true);
+        boolean enabled = sharedPreferences.getBoolean(PREF_LAUNCH_DETECTOR_ENABLED, false);
         double sensitivity =
                 Double.parseDouble(
                         sharedPreferences.getString(PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0"));

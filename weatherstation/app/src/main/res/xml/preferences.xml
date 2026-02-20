@@ -10,7 +10,7 @@
 
     <PreferenceCategory android:title="Thermal Analysis">
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="pref_launch_detector_enabled"
             android:summary="Enable real-time thermal detection and launch scoring"
             android:title="Enable Launch Detector" />

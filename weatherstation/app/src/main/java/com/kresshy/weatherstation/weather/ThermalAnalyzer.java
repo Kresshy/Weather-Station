@@ -50,7 +50,7 @@ public class ThermalAnalyzer {
     private double fastEmaWind = -1;
     private double slowEmaWind = -1;
 
-    private boolean isEnabled = true;
+    private boolean isEnabled = false;
     private double sensitivityFactor = 1.0;
 
     @Inject
