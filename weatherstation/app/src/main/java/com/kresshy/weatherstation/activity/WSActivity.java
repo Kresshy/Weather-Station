@@ -97,6 +97,13 @@ public class WSActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            String deviceName = weatherViewModel.getConnectedDeviceName().getValue();
+            if (deviceName != null && (destination.getId() == R.id.dashboardFragment || destination.getId() == R.id.graphViewFragment)) {
+                setToolbarTitle(deviceName);
+            }
+        });
+
         binding.navView.setNavigationItemSelectedListener(
                 item -> {
                     boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
@@ -384,6 +391,21 @@ public class WSActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    /**
+     * Updates the toolbar title. If title is null, defaults to the app name or current destination.
+     *
+     * @param title The title to display.
+     */
+    public void setToolbarTitle(String title) {
+        if (getSupportActionBar() != null) {
+            if (title != null) {
+                getSupportActionBar().setTitle(title);
+            } else if (navController != null && navController.getCurrentDestination() != null) {
+                getSupportActionBar().setTitle(navController.getCurrentDestination().getLabel());
+            }
+        }
     }
 
     @Override

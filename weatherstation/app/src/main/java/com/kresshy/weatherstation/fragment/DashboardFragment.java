@@ -20,6 +20,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.kresshy.weatherstation.R;
+import com.kresshy.weatherstation.activity.WSActivity;
 import com.kresshy.weatherstation.databinding.FragmentDashboardBinding;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 import com.kresshy.weatherstation.weather.WeatherData;
@@ -152,12 +153,8 @@ public class DashboardFragment extends Fragment {
                 .observe(
                         getViewLifecycleOwner(),
                         name -> {
-                            if (getActivity() != null) {
-                                if (name != null) {
-                                    getActivity().setTitle(name);
-                                } else {
-                                    getActivity().setTitle(R.string.dashboard_view);
-                                }
+                            if (getActivity() instanceof WSActivity) {
+                                ((WSActivity) getActivity()).setToolbarTitle(name);
                             }
                         });
     }
