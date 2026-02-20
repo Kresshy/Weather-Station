@@ -31,11 +31,23 @@ Successfully transformed the application into a robust, cross-version platform. 
 *   **Pro Chart Styling**: Bold **5.0f** lines and solid **3.5f** data points for maximum airfield visibility.
 *   **RSSI Display**: Added user-friendly labels (Excellent, Good, Fair, Poor) and a "Status: Connected" fallback.
 
+## 🛠️ Deep Hardening & Field Feedback (Refinements)
+
+### 📡 Noise Resilience & Protocol Robustness
+*   **Junk Data Rejection**: Resolved "not drawing real values" issue by hardening `BluetoothConnection` and `WeatherMessageParser`. The app now strictly identifies frame markers (`WS_`, `start_`) and discards preceding debugging noise or junk data.
+*   **Frame Synchronization**: Enhanced `ConnectedRunnable` to maintain sync with the data stream even when interleaved with non-protocol characters.
+
+### ⚙️ Lifecycle & System Integration
+*   **Duplicate Startup Fix**: Eliminated redundant `WeatherService` initializations by centralizing startup logic in `onResume`, preventing socket conflicts and `AcceptRunnable` failures.
+*   **Configurable Exit Behavior**: Added `Disable Bluetooth on Quit` preference (Default: ON). Allows users to choose if the app should release system Bluetooth resources or keep them active for other devices upon exit.
+*   **Modern Android Permissions**: Added and verified `BLUETOOTH_ADVERTISE` checks for Android 12+, ensuring server-socket components don't crash on newer API levels.
+
 ### 🚀 Deliverables & Field Testing
 *   **v26 APK**: Final stable build for today, verified for Android 6.0+ compatibility and featuring all new UI and configuration enhancements.
 
 ## ✅ Quality Control
 *   **Build Status**: Successful (`assembleDebug` passing).
+*   **Unit Testing**: Expanded test suite with `BluetoothFrameSyncTest` and updated `WeatherMessageParserTest` to verify noise resilience and robust frame extraction.
 *   **Git Identity**: Configured repository identity to `Szabolcs Varadi <kresshy@gmail.com>`.
 *   **Documentation**: Updated `README.md` and `SESSION_SUMMARY.md`.
 

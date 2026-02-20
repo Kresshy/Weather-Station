@@ -57,8 +57,10 @@ To ensure stable charts and reliable thermal analysis across various hardware ge
     - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` and removed Java 8 `Stream` APIs to ensure 100% compatibility with legacy devices (API 23+).
     - **Emulator & No-BT Support**: Gracefully handles missing Bluetooth hardware, allowing the app to run in **Simulator Mode** on standard Android emulators.
     - **Proactive Reconnection**: Automatically prompts to reconnect to the last known station immediately after Bluetooth is enabled on startup.
-    - **Race Condition Protection**: Resolved socket-management bugs that caused disconnections during state transitions.
+    - **Noise Resilience**: Enhanced frame synchronization logic to discard debugging output and junk data from older firmware versions (e.g., v12), ensuring stable data visualization.
+    - **Race Condition Protection**: Resolved socket-management bugs that caused disconnections during state transitions and fixed duplicate service initialization.
 3.  **UI/UX & Visualization**:
+    - **Configurable Exit Behavior**: Added a user preference to toggle whether Bluetooth should be automatically disabled when quitting the app.
     - **Data Persistence**: Implemented a historical data buffer (300 samples) that persists across fragment navigation, ensuring charts don't reset when switching between views.
     - **Responsive Toolbar**: Automatically adjusts toolbar height for wide/landscape screen ratios to maximize vertical space for data.
     - **Dynamic Device Titles**: The toolbar title now dynamically displays the name of the connected weather station (e.g., "WS-STATION-01" or "Simulator Station").
