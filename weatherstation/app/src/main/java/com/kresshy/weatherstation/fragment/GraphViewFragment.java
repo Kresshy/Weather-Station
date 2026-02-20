@@ -154,7 +154,7 @@ public class GraphViewFragment extends Fragment {
         set.setColor(color);
         set.setLineWidth(3f);
         set.setCircleColor(color);
-        set.setCircleRadius(2f);
+        set.setCircleRadius(1.5f);
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
 
