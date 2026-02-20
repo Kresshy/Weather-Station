@@ -95,4 +95,24 @@ public class WeatherMessageParserTest {
         String rawData = "WS_" + json + "_end";
         assertNull(parser.parse(rawData));
     }
+
+    /** Torture test for very messy legacy strings. */
+    @Test
+    public void parse_LegacyFormatTortureTest() {
+        // Mixed delimiters and erratic framing
+        String[] tortureStrings = {
+            "5.5;22.2",           // Semicolon delimiter, no framing
+            "start_5.5, 22.2",    // Missing suffix, comma+space
+            "5.5 22.2_end",       // Missing prefix
+            "  5.5   22.2  ",     // Purely raw whitespace
+            "start_5.5;22.2;0_end" // Node ID with semicolons
+        };
+
+        for (String input : tortureStrings) {
+            WeatherData result = parser.parse(input);
+            String msg = "Failed to parse: " + input;
+            assertEquals(msg, 5.5, result.getWindSpeed(), 0.001);
+            assertEquals(msg, 22.2, result.getTemperature(), 0.001);
+        }
+    }
 }

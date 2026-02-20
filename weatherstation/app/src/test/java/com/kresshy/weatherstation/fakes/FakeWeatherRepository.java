@@ -37,6 +37,9 @@ public class FakeWeatherRepository implements WeatherRepository {
     private final MutableLiveData<Double> tempTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Double> windTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
+    private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(true);
+    private final MutableLiveData<String> connectedDeviceName = new MutableLiveData<>(null);
+    private final MutableLiveData<Integer> bluetoothState = new MutableLiveData<>(0);
 
     // --- Control Methods for Testing ---
 
@@ -58,6 +61,16 @@ public class FakeWeatherRepository implements WeatherRepository {
     /** Manually updates the launch decision. */
     public void setLaunchDecision(LaunchDecision decision) {
         launchDecision.postValue(decision);
+    }
+
+    /** Manually updates the launch detector enabled state. */
+    public void setLaunchDetectorEnabled(boolean enabled) {
+        launchDetectorEnabled.postValue(enabled);
+    }
+
+    /** Manually updates the connected device name. */
+    public void setConnectedDeviceName(String name) {
+        connectedDeviceName.postValue(name);
     }
 
     // --- WeatherRepository Interface Implementation ---
@@ -83,6 +96,11 @@ public class FakeWeatherRepository implements WeatherRepository {
     }
 
     @Override
+    public LiveData<Boolean> isLaunchDetectorEnabled() {
+        return launchDetectorEnabled;
+    }
+
+    @Override
     public LiveData<Resource<Void>> getUiState() {
         return uiState;
     }
@@ -90,6 +108,11 @@ public class FakeWeatherRepository implements WeatherRepository {
     @Override
     public LiveData<WeatherData> getLatestWeatherData() {
         return latestWeatherData;
+    }
+
+    @Override
+    public List<WeatherData> getHistoricalWeatherData() {
+        return new ArrayList<>();
     }
 
     @Override
@@ -115,6 +138,16 @@ public class FakeWeatherRepository implements WeatherRepository {
     @Override
     public LiveData<String> getDiscoveryStatus() {
         return discoveryStatus;
+    }
+
+    @Override
+    public LiveData<Integer> getBluetoothState() {
+        return bluetoothState;
+    }
+
+    @Override
+    public LiveData<String> getConnectedDeviceName() {
+        return connectedDeviceName;
     }
 
     @Override
