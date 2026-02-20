@@ -19,15 +19,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
+/**
+ * A Timber Tree that logs messages to a local HTML file in the public Downloads directory. Useful
+ * for debugging field tests where a computer is not available to read Logcat. Automatically rotates
+ * logs based on user-defined retention settings.
+ */
 public class FileLoggingTree extends Timber.DebugTree {
 
     private static final String TAG = FileLoggingTree.class.getSimpleName();
     private final Context context;
 
+    /**
+     * @param context Application context for accessing SharedPreferences.
+     */
     public FileLoggingTree(Context context) {
         this.context = context;
     }
 
+    /** Captures a log event and appends it to an HTML file. */
     @Override
     protected void log(int priority, String tag, String message, Throwable t) {
 
@@ -42,6 +51,7 @@ public class FileLoggingTree extends Timber.DebugTree {
                 directory.mkdir();
             }
 
+            // Cleanup old logs before writing new ones
             ArrayList<File> files = getAllFilesInDir(directory);
             deleteLogFilesOld(files);
 
@@ -62,10 +72,10 @@ public class FileLoggingTree extends Timber.DebugTree {
                                     + File.separator
                                     + fileName);
 
-            if (file.createNewFile()) {
-                Timber.d("Logging file created!");
-            } else {
-                Timber.d("Failed to create file for logging");
+            if (!file.exists()) {
+                if (file.createNewFile()) {
+                    Timber.d("Logging file created!");
+                }
             }
 
             if (file.exists()) {
@@ -87,6 +97,7 @@ public class FileLoggingTree extends Timber.DebugTree {
         }
     }
 
+    /** Recursively retrieves all files in a directory. */
     private ArrayList<File> getAllFilesInDir(File dir) {
         if (dir == null) return null;
 
@@ -100,6 +111,8 @@ public class FileLoggingTree extends Timber.DebugTree {
             File dirCurrent = dirlist.pop();
 
             File[] fileList = dirCurrent.listFiles();
+            if (fileList == null) continue;
+
             for (File aFileList : fileList) {
                 if (aFileList.isDirectory()) dirlist.push(aFileList);
                 else files.add(aFileList);
@@ -109,6 +122,7 @@ public class FileLoggingTree extends Timber.DebugTree {
         return files;
     }
 
+    /** Deletes log files that exceed the user-defined retention period. */
     private void deleteLogFilesOld(List<File> files) {
         for (File file : files) {
             if (file.exists()) {
@@ -118,13 +132,15 @@ public class FileLoggingTree extends Timber.DebugTree {
 
                 int daystokeep =
                         Integer.parseInt(sharedPreferences.getString("pref_logging_days", "-1"));
-                time.add(Calendar.DAY_OF_YEAR, daystokeep);
 
-                // I store the required attributes here and delete them
-                Date lastModified = new Date(file.lastModified());
-                if (lastModified.before(time.getTime())) {
-                    // file is older than a week
-                    file.delete();
+                // If days to keep is positive, apply the negative delta to the current time
+                if (daystokeep > 0) {
+                    time.add(Calendar.DAY_OF_YEAR, -daystokeep);
+
+                    Date lastModified = new Date(file.lastModified());
+                    if (lastModified.before(time.getTime())) {
+                        file.delete();
+                    }
                 }
             }
         }

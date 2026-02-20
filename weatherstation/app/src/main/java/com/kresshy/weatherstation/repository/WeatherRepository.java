@@ -1,0 +1,167 @@
+package com.kresshy.weatherstation.repository;
+
+import androidx.lifecycle.LiveData;
+
+import com.kresshy.weatherstation.connection.ConnectionState;
+import com.kresshy.weatherstation.util.Resource;
+import com.kresshy.weatherstation.weather.WeatherData;
+
+import java.util.List;
+
+/**
+ * Interface defining the data operations and connection management for the weather station. Acts as
+ * the single source of truth for the application's weather data and hardware state.
+ */
+public interface WeatherRepository {
+
+    /** SharedPreferences key for wind speed calibration offset. */
+    String KEY_WIND_DIFF = "KEY_WIND_DIFF";
+
+    /** SharedPreferences key for temperature calibration offset. */
+    String KEY_TEMP_DIFF = "KEY_TEMP_DIFF";
+
+    /** SharedPreferences key for enabling/disabling the launch detector. */
+    String PREF_LAUNCH_DETECTOR_ENABLED = "pref_launch_detector_enabled";
+
+    /** SharedPreferences key for launch detector sensitivity. */
+    String PREF_LAUNCH_DETECTOR_SENSITIVITY = "pref_launch_detector_sensitivity";
+
+    /** Enum representing the possible air quality decisions for flight. */
+    enum LaunchDecision {
+        WAITING,
+        POOR,
+        POTENTIAL,
+        LAUNCH
+    }
+
+    /**
+     * @return Observable launch decision.
+     */
+    LiveData<LaunchDecision> getLaunchDecision();
+
+    /**
+     * @return Observable temperature trend.
+     */
+    LiveData<Double> getTempTrend();
+
+    /**
+     * @return Observable wind speed trend.
+     */
+    LiveData<Double> getWindTrend();
+
+    /**
+     * @return Observable thermal score (0-100).
+     */
+    LiveData<Integer> getThermalScore();
+
+    /**
+     * @return Observable boolean for launch detector enabled state.
+     */
+    LiveData<Boolean> isLaunchDetectorEnabled();
+
+    /**
+     * @return Observable high-level UI status (LOADING, SUCCESS, ERROR).
+     */
+    LiveData<Resource<Void>> getUiState();
+
+    /**
+     * @return Observable latest weather measurement.
+     */
+    LiveData<WeatherData> getLatestWeatherData();
+
+    /**
+     * @return List of historical weather data points for chart persistence.
+     */
+    List<WeatherData> getHistoricalWeatherData();
+
+    /**
+     * @return Observable connection state.
+     */
+    LiveData<ConnectionState> getConnectionState();
+
+    /**
+     * @return Observable toast messages.
+     */
+    LiveData<String> getToastMessage();
+
+    /**
+     * @return Observable debug log messages.
+     */
+    LiveData<String> getLogMessage();
+
+    /**
+     * @return Observable discovery status (true if scanning).
+     */
+    LiveData<Boolean> isDiscovering();
+
+    /**
+     * @return Observable discovery status string.
+     */
+    LiveData<String> getDiscoveryStatus();
+
+    /**
+     * @return Observable Bluetooth adapter state (ON/OFF).
+     */
+    LiveData<Integer> getBluetoothState();
+
+    /**
+     * @return Observable currently connected device name.
+     */
+    LiveData<String> getConnectedDeviceName();
+
+    /**
+     * @return Observable list of paired Bluetooth devices.
+     */
+    LiveData<List<android.os.Parcelable>> getPairedDevices();
+
+    /**
+     * @return Observable list of discovered (unpaired) Bluetooth devices.
+     */
+    LiveData<List<android.os.Parcelable>> getDiscoveredDevices();
+
+    /** Refreshes the list of paired devices. */
+    void refreshPairedDevices();
+
+    /** Clears the current discovery results. */
+    void clearDiscoveredDevices();
+
+    /** Enables background connection management. */
+    void startConnection();
+
+    /** Disables connection management and resets analysis. */
+    void stopConnection();
+
+    /** Starts a Bluetooth device scan. */
+    void startDiscovery();
+
+    /** Stops the Bluetooth device scan. */
+    void stopDiscovery();
+
+    /**
+     * Connects to a specific device.
+     *
+     * @param device The BluetoothDevice or SimulatorDevice to connect to.
+     */
+    void connectToDevice(android.os.Parcelable device);
+
+    /**
+     * Connects to a device by its MAC address.
+     *
+     * @param address MAC address of the target device.
+     */
+    void connectToDeviceAddress(String address);
+
+    /**
+     * Posts a toast message to the UI.
+     *
+     * @param message The message to display.
+     */
+    void onToastMessage(String message);
+
+    /**
+     * Posts a log message for debugging.
+     *
+     * @param message The log entry.
+     */
+    void onLogMessage(String message);
+}

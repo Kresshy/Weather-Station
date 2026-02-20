@@ -1,119 +1,101 @@
 package com.kresshy.weatherstation.fragment;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.application.WSConstants;
-import com.kresshy.weatherstation.weather.Measurement;
-import com.kresshy.weatherstation.weather.WeatherData;
-import com.kresshy.weatherstation.weather.WeatherListener;
+import com.kresshy.weatherstation.databinding.FragmentCalibrationBinding;
+import com.kresshy.weatherstation.repository.WeatherRepository;
+import com.kresshy.weatherstation.weather.WeatherViewModel;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 import timber.log.Timber;
 
-public class CalibrationFragment extends Fragment implements WeatherListener, View.OnClickListener {
+import javax.inject.Inject;
 
-    private OnFragmentInteractionListener mListener;
-    private TextView windSpeedDiffView;
-    private TextView tempDiffView;
-    private double windSpeedDiff = 0.0;
-    private double tempDiff = 0.0;
+/**
+ * Fragment that allows the user to manually enter calibration offsets for sensors. These offsets
+ * (wind speed delta and temperature delta) are applied to the raw data in the repository.
+ */
+@AndroidEntryPoint
+public class CalibrationFragment extends Fragment implements View.OnClickListener {
+
+    private WeatherViewModel weatherViewModel;
+    private FragmentCalibrationBinding binding;
+    @Inject SharedPreferences sharedPreferences;
 
     public CalibrationFragment() {
         // Required empty public constructor
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-            mListener.registerWeatherDataReceiver(this);
-        } catch (ClassCastException e) {
-            throw new ClassCastException(
-                    activity.toString() + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
     }
 
     @Override
     public View onCreateView(
-            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_calibration, container, false);
-
-        windSpeedDiffView = (TextView) view.findViewById(R.id.windspeed_diff_value);
-        tempDiffView = (TextView) view.findViewById(R.id.temperature_diff_value);
-
-        Button calibrateButton = (Button) view.findViewById(R.id.calibrate_button);
-        calibrateButton.setOnClickListener(this);
-
-        return view;
+            @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentCalibrationBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Load current offsets into the edit texts
+        String currentWindOffset =
+                sharedPreferences.getString(WeatherRepository.KEY_WIND_DIFF, "0.0");
+        String currentTempOffset =
+                sharedPreferences.getString(WeatherRepository.KEY_TEMP_DIFF, "0.0");
+
+        binding.windOffsetEdit.setText(currentWindOffset);
+        binding.tempOffsetEdit.setText(currentTempOffset);
+
+        binding.calibrateButton.setOnClickListener(this);
     }
 
     @Override
-    public void weatherDataReceived(WeatherData weatherData) {}
-
-    @Override
-    public void measurementReceived(Measurement measurement) {
-        WeatherData data = measurement.getWeatherDataForNode(0);
-
-        if (measurement.getNumberOfNodes() > 1) {
-            WeatherData data2 = measurement.getWeatherDataForNode(1);
-            windSpeedDiff = data.getWindSpeed() - data2.getWindSpeed();
-            tempDiff = data.getTemperature() - data2.getTemperature();
-        } else {
-            Toast.makeText(
-                            getActivity().getApplicationContext(),
-                            "Skipping calibration, only one station",
-                            Toast.LENGTH_SHORT)
-                    .show();
-            mListener.startDashboardAfterCalibration();
-        }
-
-        windSpeedDiffView.setText(Double.toString(windSpeedDiff));
-        tempDiffView.setText(Double.toString(tempDiff) + "°C");
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
+    /**
+     * Saves the entered offsets to SharedPreferences and returns to the dashboard.
+     *
+     * @param v The button view that was clicked.
+     */
     @Override
     public void onClick(View v) {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(
-                        getActivity().getApplicationContext());
+        String windOffset = binding.windOffsetEdit.getText().toString();
+        String tempOffset = binding.tempOffsetEdit.getText().toString();
 
-        sharedPreferences.edit().putString(WSConstants.KEY_WIND_DIFF, Double.toString(0.0)).apply();
+        // Default to 0.0 if empty
+        if (windOffset.isEmpty()) windOffset = "0.0";
+        if (tempOffset.isEmpty()) tempOffset = "0.0";
 
         sharedPreferences
                 .edit()
-                .putString(WSConstants.KEY_TEMP_DIFF, Double.toString(tempDiff))
+                .putString(WeatherRepository.KEY_WIND_DIFF, windOffset)
+                .putString(WeatherRepository.KEY_TEMP_DIFF, tempOffset)
                 .apply();
 
-        Timber.d("Calibration values - wind: " + windSpeedDiff + ", temp: " + tempDiff);
+        Timber.d("Manual Calibration saved - wind: %s, temp: %s", windOffset, tempOffset);
 
-        mListener.startDashboardAfterCalibration();
-    }
-
-    public interface OnFragmentInteractionListener {
-        void registerWeatherDataReceiver(WeatherListener weatherListener);
-
-        void startDashboardAfterCalibration();
+        // Navigate back to the dashboard to see the effects
+        Navigation.findNavController(v).navigate(R.id.dashboardFragment);
     }
 }

@@ -1,9 +1,9 @@
 package com.kresshy.weatherstation.fragment;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,96 +11,132 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.activity.WSActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.kresshy.weatherstation.bluetooth.BluetoothDeviceItemAdapter;
+import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
+import com.kresshy.weatherstation.databinding.FragmentBluetoothdeviceBinding;
+import com.kresshy.weatherstation.weather.WeatherViewModel;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Fragment that displays a list of paired and discovered Bluetooth devices. Allows the user to
+ * select a device to initiate a weather station connection.
+ */
+@AndroidEntryPoint
 public class BluetoothDeviceListFragment extends Fragment
         implements AbsListView.OnItemClickListener {
 
-    private AbsListView bluetoothDevicesListView;
-    private TextView bluetootDevicesTextView;
+    private BluetoothDeviceItemAdapter adapter;
+    private List<Parcelable> deviceList = new ArrayList<>();
+    private WeatherViewModel weatherViewModel;
 
-    private OnFragmentInteractionListener mListener;
+    private FragmentBluetoothdeviceBinding binding;
 
     public BluetoothDeviceListFragment() {}
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-            mListener.startBluetoothDiscovery();
-        } catch (ClassCastException e) {
-            throw new ClassCastException(
-                    activity.toString() + " must implement OnFragmentInteractionListener");
-        }
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
     }
 
     @Override
     public View onCreateView(
-            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_bluetoothdevice, container, false);
+            @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentBluetoothdeviceBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
 
-        // Set the adapter
-        bluetoothDevicesListView = (AbsListView) view.findViewById(R.id.listview_bluetooth_devices);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        bluetoothDevicesListView.setAdapter(
-                ((WSActivity) getActivity()).getPairedDevicesArrayAdapter());
+        // Set the adapter for the list view
+        adapter = new BluetoothDeviceItemAdapter(requireContext(), deviceList);
+        binding.listviewBluetoothDevices.setAdapter(adapter);
 
-        bluetoothDevicesListView.setOnItemClickListener(this);
+        binding.listviewBluetoothDevices.setOnItemClickListener(this);
 
-        return view;
+        // Observe both paired and discovered devices to keep the list current
+        weatherViewModel
+                .getPairedDevices()
+                .observe(getViewLifecycleOwner(), this::updateDeviceList);
+        weatherViewModel
+                .getDiscoveredDevices()
+                .observe(getViewLifecycleOwner(), this::updateDeviceList);
+
+        // Auto-start discovery when screen is opened
+        weatherViewModel.startDiscovery();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    /** Consolidates paired and discovered devices into a single unique list. */
+    private void updateDeviceList(List<Parcelable> devices) {
+        List<Parcelable> paired = weatherViewModel.getPairedDevices().getValue();
+        List<Parcelable> discovered = weatherViewModel.getDiscoveredDevices().getValue();
+
+        java.util.LinkedHashSet<Parcelable> uniqueDevices = new java.util.LinkedHashSet<>();
+        if (paired != null) uniqueDevices.addAll(paired);
+        if (discovered != null) uniqueDevices.addAll(discovered);
+
+        deviceList.clear();
+        deviceList.addAll(uniqueDevices);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        if (((WSActivity) getActivity()).getPairedDevices() != null) {
-            bluetootDevicesTextView.setVisibility(View.VISIBLE);
-        }
+        weatherViewModel.refreshPairedDevices();
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
+    /**
+     * Handles device selection. Stops discovery and attempts connection to the chosen MAC address.
+     */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // Cancel discovery because it's costly and we're about to connect
-            mListener.stopBluetoothDiscovery();
+        // Cancel discovery because it's costly and we're about to connect
+        weatherViewModel.stopDiscovery();
 
-            //            String info = ((TextView) view).getText().toString();
-            //            String address = info.substring(info.length() - 17);
-            ArrayList<BluetoothDevice> devices = ((WSActivity) getActivity()).getBluetoothDevices();
-            mListener.onDeviceSelectedToConnect(devices.get(position).getAddress());
+        Parcelable device = deviceList.get(position);
+        String address = "";
+        if (device instanceof BluetoothDevice) {
+            address = ((BluetoothDevice) device).getAddress();
+        } else if (device instanceof SimulatorDevice) {
+            address = ((SimulatorDevice) device).getAddress();
         }
+        weatherViewModel.connectToDeviceAddress(address);
     }
 
+    /**
+     * Updates the text displayed when the list is empty.
+     *
+     * @param emptyText The message to show.
+     */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = bluetoothDevicesListView.getEmptyView();
-
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
+        if (binding != null) {
+            View emptyView = binding.listviewBluetoothDevices.getEmptyView();
+            if (emptyView instanceof TextView) {
+                ((TextView) emptyView).setText(emptyText);
+            }
         }
-    }
-
-    public interface OnFragmentInteractionListener {
-
-        public void onDeviceSelectedToConnect(String address);
-
-        public void startBluetoothDiscovery();
-
-        public void stopBluetoothDiscovery();
     }
 }

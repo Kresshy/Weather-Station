@@ -16,16 +16,6 @@
         <item>1200</item>
     </string-array>
 
-    <string-array name="pref_connection_type_entries">
-        <item>Bluetooth</item>
-        <item>WI-FI</item>
-    </string-array>
-
-    <string-array name="pref_connection_type_values">
-        <item>bluetooth</item>
-        <item>wi-fi</item>
-    </string-array>
-
     <string-array name="pref_logging_entries">
         <item>true</item>
         <item>false</item>
@@ -46,5 +36,17 @@
         <item>-1</item>
         <item>-2</item>
         <item>-3</item>
+    </string-array>
+
+    <string-array name="pref_sensitivity_entries">
+        <item>Low (Stable)</item>
+        <item>Normal</item>
+        <item>High (Aggressive)</item>
+    </string-array>
+
+    <string-array name="pref_sensitivity_values">
+        <item>0.7</item>
+        <item>1.0</item>
+        <item>1.3</item>
     </string-array>
 </resources>

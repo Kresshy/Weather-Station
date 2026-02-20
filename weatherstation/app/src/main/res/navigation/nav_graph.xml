@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.kresshy.weatherstation.fragment.DashboardFragment"
+        android:label="@string/dashboard_view"
+        tools:layout="@layout/fragment_dashboard" />
+
+    <fragment
+        android:id="@+id/graphViewFragment"
+        android:name="com.kresshy.weatherstation.fragment.GraphViewFragment"
+        android:label="@string/dashboard_view"
+        tools:layout="@layout/fragment_dashboard" />
+
+    <fragment
+        android:id="@+id/bluetoothDeviceListFragment"
+        android:name="com.kresshy.weatherstation.fragment.BluetoothDeviceListFragment"
+        android:label="@string/bluetooth_weather_station_connect_view"
+        tools:layout="@layout/fragment_bluetoothdevice" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.kresshy.weatherstation.fragment.SettingsFragment"
+        android:label="@string/settings_view" />
+
+    <fragment
+        android:id="@+id/calibrationFragment"
+        android:name="com.kresshy.weatherstation.fragment.CalibrationFragment"
+        android:label="@string/calibration_view"
+        tools:layout="@layout/fragment_calibration" />
+
+</navigation>

@@ -5,22 +5,18 @@
     <string name="dashboard_view">Dashboard View</string>
     <string name="bluetooth_weather_station_connect_view">Bluetooth Stations</string>
     <string name="settings_view">Settings</string>
+    <string name="calibration_view">Calibration</string>
     <string name="quit_view">Quit</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
     <string name="action_quit">Quit</string>
 
     <string name="pref_reconnect">Reconnect</string>
     <string name="pref_reconnect_summ">Automatically reconnect on bluetooth connection interrupt</string>
+    <string name="pref_simulator_title">Simulator Mode (Demo)</string>
+    <string name="pref_simulator_summary">Generate dummy weather data to test thermal hunter logic</string>
     <string name="pref_interval">Interval</string>
     <string name="pref_interval_summ">The time interval to show on the graphs</string>
-    <string name="pref_connection_type">Connection type</string>
-    <string name="pref_connection_type_summ">Choose the connetion type (Wi-Fi or Bluetooth)</string>
-    <string name="pref_wifi_station_title">WI-FI Weather Station</string>
     <string name="pref_logging_title">Application logging enabled (restart needed)</string>
     <string name="pref_logging_sum">Write application logs to storage, find logs in Downloads folder</string>
     <string name="pref_logging_days_to_keep_title">Days to keep logs</string>
@@ -30,8 +26,37 @@
     <string name="cancel">Cancel</string>
     <string name="reconnect_message">Would you like to reconnect to your weather station?</string>
 
-    <string name="PREFERENCE_FILE_KEY">com.kresshy.weatherstation.PREFERENCE_FILE_KEY</string>
+    <string name="launch_status_analyzing">ANALYZING AIR...</string>
+    <string name="launch_status_launch">LAUNCH NOW!</string>
+    <string name="launch_status_potential">POTENTIAL THERMAL...</string>
+    <string name="launch_status_poor">STAY - POOR AIR</string>
+
+    <string name="temp_trend_format">Temp: %+.2f°</string>
+    <string name="wind_trend_format">Wind: %+.2f m/s</string>
+    <string name="last_updated_format">Last Updated: %s</string>
+    <string name="last_updated_never">Last Updated: Never</string>
+    <string name="rssi_format">RSSI: %d dBm</string>
+    <string name="rssi_format_with_label">RSSI: %1$d dBm (%2$s)</string>
+    <string name="rssi_na">RSSI: N/A</string>
+    <string name="rssi_connected_only">Status: Connected</string>
+
+    <string name="device_unknown">Unknown device</string>
+    <string name="device_status_paired">paired</string>
+    <string name="device_status_unpaired">unpaired</string>
+
+    <string name="connecting_message">Connecting to Weather Station…</string>
+    <string name="error_prefix">Error: %s</string>
+    <string name="retry_action">RETRY</string>
+    <string name="permissions_required">Permissions required for Bluetooth functionality</string>
+
+    <string name="calibrate_title">Manual Calibration</string>
+    <string name="calibrate_desc">Enter offsets to be applied to the live data.</string>
+    <string name="wind_offset_hint">Wind Speed Offset (m/s)</string>
+    <string name="temp_offset_hint">Temperature Offset (°C)</string>
+    <string name="save_calibration">Save Calibration</string>
+
+    <string name="select_station_desc">Please select your weather station</string>
+
     <string name="PREFERENCE_CONNECTED">CONNECTED</string>
     <string name="PREFERENCE_DEVICE_ADDRESS">CONNECTED_DEVICE_ADDRESS</string>
-    <string name="PREFERENCE_CONNECTION_TYPE">CONNECTION_TYPE</string>
 </resources>
