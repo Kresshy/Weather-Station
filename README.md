@@ -12,6 +12,13 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 
 ## 🏗️ System Architecture
 
+The application follows **Clean Architecture** principles, separating concerns into distinct layers:
+
+1.  **UI Layer (MVVM)**: Fragments observe a unified `WeatherUiState` from the `WeatherViewModel`.
+2.  **Domain Layer (UseCases)**: Encapsulates business logic (Thermal Analysis, Connection logic, Discovery management) into individual, testable UseCase classes.
+3.  **Data Layer (Repository)**: `WeatherRepositoryImpl` acts as a lean data provider, orchestrating hardware connections and raw data parsing.
+4.  **Hardware/Connection**: Manages physical Bluetooth communication and software simulation.
+
 The repository is organized into two main components:
 
 1.  **/weatherstation**: The primary Android application (Java/Dagger Hilt).

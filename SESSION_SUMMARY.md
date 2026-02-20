@@ -42,6 +42,17 @@ Successfully transformed the application into a robust, cross-version platform. 
 *   **Configurable Exit Behavior**: Added `Disable Bluetooth on Quit` preference (Default: ON). Allows users to choose if the app should release system Bluetooth resources or keep them active for other devices upon exit.
 *   **Modern Android Permissions**: Added and verified `BLUETOOTH_ADVERTISE` checks for Android 12+, ensuring server-socket components don't crash on newer API levels.
 
+## 🏗️ Architectural Refinement (Clean Architecture)
+
+### ✂️ Breaking the "God Object" Repository
+*   **UseCase Extraction**: Successfully decoupled business logic from the Data Layer by introducing four specialized UseCases:
+    - **`ConnectToDeviceUseCase`**: Handles MAC address persistence and selection between physical/simulator hardware.
+    - **`GetPairedDevicesUseCase`**: Encapsulates logic for filtering available stations based on settings and permissions.
+    - **`ManageDiscoveryUseCase`**: Centralizes the lifecycle of Bluetooth scanning.
+    - **`UpdateCalibrationUseCase`**: Manages the validation and persistence of sensor offsets.
+*   **Lean Repository**: Refactored `WeatherRepository` to focus exclusively on raw data acquisition and protocol parsing, reducing its complexity and improving maintainability.
+*   **Unified UI State (UDF)**: Transitioned to a Uni-directional Data Flow pattern where Fragments observe a single, immutable `WeatherUiState` object, ensuring atomic UI updates.
+
 ## 🏗️ Dependency Injection Hardening (Hilt)
 
 ### 🧩 Core Component Decoupling
