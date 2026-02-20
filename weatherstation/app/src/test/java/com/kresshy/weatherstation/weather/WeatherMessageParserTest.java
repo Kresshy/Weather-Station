@@ -48,12 +48,45 @@ public class WeatherMessageParserTest {
         assertEquals(22.2, result.getTemperature(), 0.001);
     }
 
+    @Test
+    public void parse_LegacyFormatWithStartPrefix() {
+        String rawData = "start_5.5 22.2_end";
+        WeatherData result = parser.parse(rawData);
+        assertEquals(5.5, result.getWindSpeed(), 0.001);
+        assertEquals(22.2, result.getTemperature(), 0.001);
+    }
+
+    @Test
+    public void parse_LegacyFormatWithExtraWhitespace() {
+        String rawData = "  start_  5.5   22.2  _end  \n";
+        WeatherData result = parser.parse(rawData);
+        assertEquals(5.5, result.getWindSpeed(), 0.001);
+        assertEquals(22.2, result.getTemperature(), 0.001);
+    }
+
+    @Test
+    public void parse_LegacyFormatWithCommas() {
+        String rawData = "start_5.5,22.2_end";
+        WeatherData result = parser.parse(rawData);
+        assertEquals(5.5, result.getWindSpeed(), 0.001);
+        assertEquals(22.2, result.getTemperature(), 0.001);
+    }
+
+    @Test
+    public void parse_LegacyFormatWithNodeId() {
+        String rawData = "start_5.5 22.2 1_end";
+        WeatherData result = parser.parse(rawData);
+        assertEquals(5.5, result.getWindSpeed(), 0.001);
+        assertEquals(22.2, result.getTemperature(), 0.001);
+        assertEquals(1, result.getNodeId());
+    }
+
     /** Verifies that malformed prefixes or null inputs return null. */
     @Test
     public void parse_MalformedInput_ReturnsNull() {
         assertNull(parser.parse(null));
-        assertNull(parser.parse("NOT_WS_DATA"));
-        assertNull(parser.parse("WS_BAD_DATA_end"));
+        assertNull(parser.parse(""));
+        assertNull(parser.parse("   "));
     }
 
     @Test

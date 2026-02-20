@@ -30,37 +30,37 @@ public class WeatherMessageParser {
      * @return A parsed WeatherData object, or null if parsing fails.
      */
     public WeatherData parse(String rawData) {
-        if (rawData == null) {
+        if (rawData == null || rawData.trim().isEmpty()) {
             return null;
         }
 
-        // Support both modern "WS_" and legacy "start_" prefixes
-        String pdu;
-        if (rawData.startsWith("WS_")) {
-            String[] parts = rawData.split("_");
-            if (parts.length < 2) return null;
-            pdu = parts[1];
-        } else if (rawData.startsWith("start_")) {
-            String[] parts = rawData.split("_");
-            if (parts.length < 2) return null;
-            pdu = parts[1];
-        } else {
-            return null;
-        }
+        // 1. Clean up the raw data (strip framing and whitespace)
+        String pdu = rawData.trim()
+                .replace("WS_", "")
+                .replace("start_", "")
+                .replace("_end", "")
+                .trim();
+
+        if (pdu.isEmpty()) return null;
 
         try {
-            Timber.d("Parsing PDU: %s", pdu);
+            Timber.d("Parsing cleaned PDU: %s", pdu);
 
-            // Attempt JSON parsing (Modern format)
-            try {
-                Measurement measurement = gson.fromJson(pdu, Measurement.class);
-                if (measurement != null && measurement.getWeatherDataForNode(0) != null) {
-                    return measurement.getWeatherDataForNode(0);
+            // 2. Try JSON parsing (Modern format)
+            if (pdu.startsWith("{")) {
+                try {
+                    Measurement measurement = gson.fromJson(pdu, Measurement.class);
+                    if (measurement != null && measurement.getWeatherDataForNode(0) != null) {
+                        return measurement.getWeatherDataForNode(0);
+                    }
+                } catch (JsonSyntaxException e) {
+                    Timber.w("Failed to parse JSON, falling back to legacy: %s", pdu);
                 }
-            } catch (JsonSyntaxException e) {
-                // Fallback to legacy format
-                return parseLegacy(pdu);
             }
+
+            // 3. Fallback to legacy space-separated format
+            return parseLegacy(pdu);
+
         } catch (Exception e) {
             Timber.e(e, "Error parsing message: %s", rawData);
         }
@@ -69,21 +69,27 @@ public class WeatherMessageParser {
     }
 
     /**
-     * Parses the legacy space-separated format: "{windSpeed} {temperature}"
-     *
-     * @param pdu The data payload part of the message.
-     * @return WeatherData object or null if format is invalid.
+     * Parses legacy format: "{windSpeed} {temperature}" or "{windSpeed} {temperature} {nodeId}"
      */
     private WeatherData parseLegacy(String pdu) {
         try {
-            String[] weather = pdu.split(" ");
-            if (weather.length >= 2) {
-                double windSpeed = Double.parseDouble(weather[0]);
-                double temperature = Double.parseDouble(weather[1]);
-                return new WeatherData(windSpeed, temperature);
+            // Split by any whitespace or special separators
+            String[] parts = pdu.split("[\\s,;]+");
+            if (parts.length >= 2) {
+                double windSpeed = Double.parseDouble(parts[0]);
+                double temperature = Double.parseDouble(parts[1]);
+                
+                int nodeId = 0;
+                if (parts.length >= 3) {
+                    try {
+                        nodeId = Integer.parseInt(parts[2]);
+                    } catch (NumberFormatException ignored) {}
+                }
+                
+                return new WeatherData(windSpeed, temperature, nodeId);
             }
         } catch (NumberFormatException e) {
-            Timber.e("Invalid legacy PDU format: %s", pdu);
+            Timber.e("Invalid legacy format: %s", pdu);
         }
         return null;
     }
