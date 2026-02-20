@@ -4,6 +4,7 @@ import static com.kresshy.weatherstation.repository.WeatherRepository.KEY_TEMP_D
 import static com.kresshy.weatherstation.repository.WeatherRepository.KEY_WIND_DIFF;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -13,7 +14,6 @@ import static org.mockito.Mockito.when;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
@@ -24,20 +24,18 @@ import com.kresshy.weatherstation.weather.ThermalAnalyzer;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherMessageParser;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 
 /**
- * Unit tests for {@link WeatherRepositoryImpl}. Verifies data flow, calibration logic, and
- * connection lifecycle management.
+ * Unit tests for {@link WeatherRepositoryImpl}. Verifies data flow, calibration logic,
+ * outlier rejection, and connection lifecycle management.
  */
 public class WeatherRepositoryImplTest {
 
@@ -52,27 +50,17 @@ public class WeatherRepositoryImplTest {
     @Mock private ConnectionManager connectionManager;
 
     private WeatherRepositoryImpl repository;
-    private MockedStatic<PreferenceManager> mockedPreferenceManager;
-    private MockedStatic<BluetoothAdapter> mockedBluetoothAdapter;
 
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        mockedPreferenceManager = Mockito.mockStatic(PreferenceManager.class);
-        mockedBluetoothAdapter = Mockito.mockStatic(BluetoothAdapter.class);
-
-        mockedPreferenceManager
-                .when(() -> PreferenceManager.getDefaultSharedPreferences(any(Context.class)))
-                .thenReturn(sharedPreferences);
-        mockedBluetoothAdapter
-                .when(BluetoothAdapter::getDefaultAdapter)
-                .thenReturn(bluetoothAdapter);
-
         // Mock BluetoothManager LiveData
         when(bluetoothManager.getDiscoveredDevices())
                 .thenReturn(new MutableLiveData<>(new ArrayList<>()));
         when(bluetoothManager.getDiscoveryStatus()).thenReturn(new MutableLiveData<>(""));
+        
+        // Mock SharedPreferences
         when(sharedPreferences.getString(anyString(), anyString())).thenReturn("0.0");
 
         repository =
@@ -81,13 +69,9 @@ public class WeatherRepositoryImplTest {
                         thermalAnalyzer,
                         messageParser,
                         bluetoothManager,
+                        sharedPreferences,
+                        bluetoothAdapter,
                         connectionManager);
-    }
-
-    @After
-    public void tearDown() {
-        mockedPreferenceManager.close();
-        mockedBluetoothAdapter.close();
     }
 
     /** Verifies that receiving raw data triggers parsing and analysis, and updates observers. */
@@ -124,13 +108,15 @@ public class WeatherRepositoryImplTest {
         when(sharedPreferences.getString(KEY_WIND_DIFF, "0.0")).thenReturn("1.0");
         when(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0")).thenReturn("-2.0");
 
-        // Re-initialize repository to pick up corrections
+        // Re-initialize repository to pick up corrections from injected sharedPreferences
         repository =
                 new WeatherRepositoryImpl(
                         context,
                         thermalAnalyzer,
                         messageParser,
                         bluetoothManager,
+                        sharedPreferences,
+                        bluetoothAdapter,
                         connectionManager);
 
         String rawData = "WS_data_end";
@@ -146,6 +132,34 @@ public class WeatherRepositoryImplTest {
         // Verify corrections applied: 5.0 + 1.0 = 6.0, 25.0 - 2.0 = 23.0
         assertEquals(6.0, repository.getLatestWeatherData().getValue().getWindSpeed(), 0.001);
         assertEquals(23.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
+    }
+
+    /**
+     * Verifies that physically impossible temperature jumps (Layer 2 filter) are discarded.
+     */
+    @Test
+    public void onRawDataReceived_RejectsOutlierSpikes() {
+        String rawData1 = "WS_data1_end";
+        WeatherData saneData = new WeatherData(5.0, 25.0);
+        
+        String rawData2 = "WS_data2_end";
+        WeatherData spikeData = new WeatherData(5.0, 45.0); // 20 degree jump!
+
+        when(messageParser.parse(rawData1)).thenReturn(saneData);
+        when(messageParser.parse(rawData2)).thenReturn(spikeData);
+        when(thermalAnalyzer.analyze(any()))
+                .thenReturn(new ThermalAnalyzer.AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
+
+        // First send sane data
+        repository.onRawDataReceived(rawData1);
+        assertEquals(25.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
+
+        // Now send spike data
+        repository.onRawDataReceived(rawData2);
+        
+        // The value should STILL be 25.0 because the 45.0 spike was rejected
+        assertEquals(25.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
+        assertNotEquals(45.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
     }
 
     @Test
