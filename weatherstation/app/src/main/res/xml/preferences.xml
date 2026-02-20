@@ -8,6 +8,23 @@
             android:title="@string/pref_simulator_title" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Thermal Analysis">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_launch_detector_enabled"
+            android:summary="Enable real-time thermal detection and launch scoring"
+            android:title="Enable Launch Detector" />
+
+        <ListPreference
+            android:defaultValue="1.0"
+            android:dependency="pref_launch_detector_enabled"
+            android:entries="@array/pref_sensitivity_entries"
+            android:entryValues="@array/pref_sensitivity_values"
+            android:key="pref_launch_detector_sensitivity"
+            android:summary="Adjust how aggressively the app identifies thermals"
+            android:title="Detection Sensitivity" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Connection Settings">
         <CheckBoxPreference
             android:defaultValue="true"

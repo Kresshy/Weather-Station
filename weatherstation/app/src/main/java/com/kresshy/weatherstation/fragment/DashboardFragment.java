@@ -137,6 +137,14 @@ public class DashboardFragment extends Fragment {
                         score -> {
                             binding.thermalScoreProgress.setProgress(score);
                         });
+
+        weatherViewModel
+                .isLaunchDetectorEnabled()
+                .observe(
+                        getViewLifecycleOwner(),
+                        enabled -> {
+                            binding.launchStatusCard.setVisibility(enabled ? View.VISIBLE : View.GONE);
+                        });
     }
 
     private int getDecisionColor(WeatherRepository.LaunchDecision decision) {

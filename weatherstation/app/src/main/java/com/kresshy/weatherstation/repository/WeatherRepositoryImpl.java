@@ -72,6 +72,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final MutableLiveData<Double> tempTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Double> windTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
+    private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(true);
 
     private double correctionWind = 0.0;
     private double correctionTemp = 0.0;
@@ -106,11 +107,15 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         this.connectionManager.setCallback(this);
 
         loadCorrections(sharedPreferences);
+        loadLaunchDetectorSettings(sharedPreferences);
 
         this.preferenceChangeListener =
                 (prefs, key) -> {
                     if (KEY_WIND_DIFF.equals(key) || KEY_TEMP_DIFF.equals(key)) {
                         loadCorrections(prefs);
+                    } else if (PREF_LAUNCH_DETECTOR_ENABLED.equals(key)
+                            || PREF_LAUNCH_DETECTOR_SENSITIVITY.equals(key)) {
+                        loadLaunchDetectorSettings(prefs);
                     }
                 };
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
@@ -132,6 +137,26 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         Timber.d("Loaded corrections - wind: %f, temp: %f", correctionWind, correctionTemp);
     }
 
+    private void loadLaunchDetectorSettings(SharedPreferences sharedPreferences) {
+        boolean enabled = sharedPreferences.getBoolean(PREF_LAUNCH_DETECTOR_ENABLED, true);
+        double sensitivity =
+                Double.parseDouble(
+                        sharedPreferences.getString(PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0"));
+
+        thermalAnalyzer.setEnabled(enabled);
+        thermalAnalyzer.setSensitivity(sensitivity);
+        launchDetectorEnabled.postValue(enabled);
+
+        if (!enabled) {
+            launchDecision.postValue(LaunchDecision.WAITING);
+            thermalScore.postValue(0);
+        }
+
+        Timber.d(
+                "Loaded Launch Detector Settings - enabled: %b, sensitivity: %.1f",
+                enabled, sensitivity);
+    }
+
     @Override
     public LiveData<LaunchDecision> getLaunchDecision() {
         return launchDecision;
@@ -150,6 +175,11 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     @Override
     public LiveData<Integer> getThermalScore() {
         return thermalScore;
+    }
+
+    @Override
+    public LiveData<Boolean> isLaunchDetectorEnabled() {
+        return launchDetectorEnabled;
     }
 
     @Override

@@ -62,6 +62,13 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * @return Observable boolean for launch detector enabled state.
+     */
+    public LiveData<Boolean> isLaunchDetectorEnabled() {
+        return weatherRepository.isLaunchDetectorEnabled();
+    }
+
+    /**
      * @return Observable connection state (connected, disconnected, etc.).
      */
     public LiveData<ConnectionState> getConnectionState() {

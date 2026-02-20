@@ -50,8 +50,25 @@ public class ThermalAnalyzer {
     private double fastEmaWind = -1;
     private double slowEmaWind = -1;
 
+    private boolean isEnabled = true;
+    private double sensitivityFactor = 1.0;
+
     @Inject
     public ThermalAnalyzer() {}
+
+    /**
+     * @param enabled Set to false to always return WAITING/0 score.
+     */
+    public void setEnabled(boolean enabled) {
+        this.isEnabled = enabled;
+    }
+
+    /**
+     * @param sensitivity Factor to multiply the final score by (e.g., 0.7 to 1.3).
+     */
+    public void setSensitivity(double sensitivity) {
+        this.sensitivityFactor = sensitivity;
+    }
 
     /**
      * Analyzes the current weather data point against historical trends.
@@ -61,6 +78,10 @@ public class ThermalAnalyzer {
      */
     public AnalysisResult analyze(WeatherData current) {
         updateHistory(current);
+
+        if (!isEnabled) {
+            return new AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0);
+        }
 
         if (fastEmaTemp == -1) {
             initializeEma(current);
@@ -119,13 +140,17 @@ public class ThermalAnalyzer {
 
     private int calculateScore(
             double tempDelta, double windDelta, double stdDevWind, double currentWind) {
-        int score = 0;
-        if (tempDelta > 0) score += Math.min(50, (int) (tempDelta * 200));
-        if (windDelta < 0) score += Math.min(30, (int) (Math.abs(windDelta) * 60));
-        if (stdDevWind < 1.0) score += (int) ((1.0 - Math.min(1.0, stdDevWind)) * 20);
+        double score = 0;
+        if (tempDelta > 0) score += Math.min(50, (tempDelta * 200));
+        if (windDelta < 0) score += Math.min(30, (Math.abs(windDelta) * 60));
+        if (stdDevWind < 1.0) score += ((1.0 - Math.min(1.0, stdDevWind)) * 20);
         if (tempDelta < -0.1) score -= 30;
         if (currentWind > 5.0) score -= 40;
-        return Math.max(0, Math.min(100, score));
+
+        // Apply user-defined sensitivity
+        score *= sensitivityFactor;
+
+        return (int) Math.max(0, Math.min(100, score));
     }
 
     private WeatherRepository.LaunchDecision determineDecision(int score, double tempDelta) {

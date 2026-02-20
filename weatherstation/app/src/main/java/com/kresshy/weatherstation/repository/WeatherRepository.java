@@ -20,6 +20,12 @@ public interface WeatherRepository {
     /** SharedPreferences key for temperature calibration offset. */
     String KEY_TEMP_DIFF = "KEY_TEMP_DIFF";
 
+    /** SharedPreferences key for enabling/disabling the launch detector. */
+    String PREF_LAUNCH_DETECTOR_ENABLED = "pref_launch_detector_enabled";
+
+    /** SharedPreferences key for launch detector sensitivity. */
+    String PREF_LAUNCH_DETECTOR_SENSITIVITY = "pref_launch_detector_sensitivity";
+
     /** Enum representing the possible air quality decisions for flight. */
     enum LaunchDecision {
         WAITING,
@@ -47,6 +53,11 @@ public interface WeatherRepository {
      * @return Observable thermal score (0-100).
      */
     LiveData<Integer> getThermalScore();
+
+    /**
+     * @return Observable boolean for launch detector enabled state.
+     */
+    LiveData<Boolean> isLaunchDetectorEnabled();
 
     /**
      * @return Observable high-level UI status (LOADING, SUCCESS, ERROR).
