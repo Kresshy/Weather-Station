@@ -45,6 +45,7 @@ public class DashboardFragment extends Fragment {
     private WeatherData previousData;
     private WeatherViewModel weatherViewModel;
     private FragmentDashboardBinding binding;
+    private com.google.android.material.snackbar.Snackbar loadingSnackbar;
 
     private LineDataSet windSpeedSet;
     private LineDataSet temperatureSet;
@@ -83,77 +84,78 @@ public class DashboardFragment extends Fragment {
         setupCharts();
         populateChartsFromHistory();
 
-        // Data observation and UI updates
+        // Single source of truth for the UI
         weatherViewModel
-                .getLatestWeatherData()
+                .getWeatherUiState()
                 .observe(
                         getViewLifecycleOwner(),
-                        weatherData -> {
-                            if (weatherData != null) {
-                                // Simple outlier filter
-                                if (previousData != null
-                                        && Math.abs(
-                                                        previousData.getTemperature()
-                                                                - weatherData.getTemperature())
-                                                > 10) {
-                                    return;
+                        state -> {
+                            if (state == null) return;
+
+                            // 1. Update sensor readings and charts
+                            if (state.getLatestData() != null) {
+                                WeatherData weatherData = state.getLatestData();
+                                if (previousData == null || Math.abs(previousData.getTemperature() - weatherData.getTemperature()) <= 10) {
+                                    previousData = weatherData;
+                                    updateSensorUI(weatherData);
                                 }
-                                previousData = weatherData;
-                                addEntry(weatherData);
+                            }
+
+                            // 2. Update launch detector status
+                            binding.launchStatusCard.setVisibility(state.isLaunchDetectorEnabled() ? View.VISIBLE : View.GONE);
+                            binding.launchStatusCard.setCardBackgroundColor(getDecisionColor(state.getLaunchDecision()));
+                            binding.launchStatusText.setText(getDecisionText(state.getLaunchDecision()));
+                            binding.thermalScoreProgress.setProgress(state.getThermalScore());
+
+                            // 3. Update trends
+                            binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
+                            binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
+
+                            // 4. Update device name in toolbar
+                            if (getActivity() instanceof WSActivity) {
+                                ((WSActivity) getActivity()).setToolbarTitle(state.getConnectedDeviceName());
                             }
                         });
 
+        // Still observe UI status (LOADING/ERROR) separately as it drives Snackbars
         weatherViewModel
-                .getLaunchDecision()
+                .getUiState()
                 .observe(
                         getViewLifecycleOwner(),
-                        decision -> {
-                            binding.launchStatusCard.setCardBackgroundColor(
-                                    getDecisionColor(decision));
-                            binding.launchStatusText.setText(getDecisionText(decision));
-                        });
-
-        weatherViewModel
-                .getTempTrend()
-                .observe(
-                        getViewLifecycleOwner(),
-                        trend -> {
-                            binding.tempTrendText.setText(
-                                    getString(R.string.temp_trend_format, trend));
-                        });
-
-        weatherViewModel
-                .getWindTrend()
-                .observe(
-                        getViewLifecycleOwner(),
-                        trend -> {
-                            binding.windTrendText.setText(
-                                    getString(R.string.wind_trend_format, trend));
-                        });
-
-        weatherViewModel
-                .getThermalScore()
-                .observe(
-                        getViewLifecycleOwner(),
-                        score -> {
-                            binding.thermalScoreProgress.setProgress(score);
-                        });
-
-        weatherViewModel
-                .isLaunchDetectorEnabled()
-                .observe(
-                        getViewLifecycleOwner(),
-                        enabled -> {
-                            binding.launchStatusCard.setVisibility(enabled ? View.VISIBLE : View.GONE);
-                        });
-
-        weatherViewModel
-                .getConnectedDeviceName()
-                .observe(
-                        getViewLifecycleOwner(),
-                        name -> {
-                            if (getActivity() instanceof WSActivity) {
-                                ((WSActivity) getActivity()).setToolbarTitle(name);
+                        resource -> {
+                            if (resource == null) return;
+                            switch (resource.status) {
+                                case LOADING:
+                                    if (loadingSnackbar == null) {
+                                        loadingSnackbar =
+                                                com.google.android.material.snackbar.Snackbar.make(
+                                                        binding.getRoot(),
+                                                        R.string.connecting_message,
+                                                        com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE);
+                                    }
+                                    loadingSnackbar.show();
+                                    break;
+                                case SUCCESS:
+                                    if (loadingSnackbar != null) loadingSnackbar.dismiss();
+                                    if (androidx.navigation.fragment.NavHostFragment.findNavController(this).getCurrentDestination() != null
+                                            && androidx.navigation.fragment.NavHostFragment.findNavController(this).getCurrentDestination().getId()
+                                                    == R.id.bluetoothDeviceListFragment) {
+                                        androidx.navigation.fragment.NavHostFragment.findNavController(this).navigate(R.id.dashboardFragment);
+                                    }
+                                    break;
+                                case ERROR:
+                                    if (loadingSnackbar != null) loadingSnackbar.dismiss();
+                                    com.google.android.material.snackbar.Snackbar.make(
+                                                    binding.getRoot(),
+                                                    getString(
+                                                            R.string.error_prefix,
+                                                            resource.message),
+                                                    com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                                            .setAction(
+                                                    R.string.retry_action,
+                                                    v -> weatherViewModel.startDiscovery()) // Use appropriate retry
+                                            .show();
+                                    break;
                             }
                         });
     }
@@ -258,7 +260,7 @@ public class DashboardFragment extends Fragment {
     }
 
     /** Updates text views and appends data points to the charts. */
-    private void addEntry(WeatherData data) {
+    private void updateSensorUI(WeatherData data) {
         binding.lastUpdatedText.setText(
                 getString(R.string.last_updated_format, timeFormat.format(data.getTimestamp())));
         if (data.getRssi() != 0) {

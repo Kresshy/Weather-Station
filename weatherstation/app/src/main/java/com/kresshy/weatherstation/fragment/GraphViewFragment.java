@@ -79,22 +79,18 @@ public class GraphViewFragment extends Fragment {
         populateChartsFromHistory();
 
         weatherViewModel
-                .getConnectedDeviceName()
+                .getWeatherUiState()
                 .observe(
                         getViewLifecycleOwner(),
-                        name -> {
-                            if (getActivity() instanceof WSActivity) {
-                                ((WSActivity) getActivity()).setToolbarTitle(name);
-                            }
-                        });
+                        state -> {
+                            if (state == null) return;
 
-        weatherViewModel
-                .getLatestWeatherData()
-                .observe(
-                        getViewLifecycleOwner(),
-                        weatherData -> {
-                            if (weatherData != null) {
-                                addEntry(weatherData);
+                            if (getActivity() instanceof WSActivity) {
+                                ((WSActivity) getActivity()).setToolbarTitle(state.getConnectedDeviceName());
+                            }
+
+                            if (state.getLatestData() != null) {
+                                addEntry(state.getLatestData());
                             }
                         });
     }

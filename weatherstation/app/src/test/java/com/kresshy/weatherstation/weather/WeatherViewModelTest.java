@@ -24,13 +24,14 @@ public class WeatherViewModelTest {
     @Rule public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
     @Mock private WeatherRepository weatherRepository;
+    @Mock private com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
 
     private WeatherViewModel weatherViewModel;
 
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        weatherViewModel = new WeatherViewModel(weatherRepository);
+        weatherViewModel = new WeatherViewModel(weatherRepository, getWeatherUiStateUseCase);
     }
 
     /**

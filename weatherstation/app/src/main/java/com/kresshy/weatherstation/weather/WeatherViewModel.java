@@ -20,10 +20,21 @@ import javax.inject.Inject;
 @HiltViewModel
 public class WeatherViewModel extends ViewModel {
     private final WeatherRepository weatherRepository;
+    private final com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
 
     @Inject
-    public WeatherViewModel(WeatherRepository weatherRepository) {
+    public WeatherViewModel(
+            WeatherRepository weatherRepository,
+            com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase) {
         this.weatherRepository = weatherRepository;
+        this.getWeatherUiStateUseCase = getWeatherUiStateUseCase;
+    }
+
+    /**
+     * @return Observable unified UI state containing all dashboard data.
+     */
+    public LiveData<WeatherUiState> getWeatherUiState() {
+        return getWeatherUiStateUseCase.execute();
     }
 
     /**
