@@ -221,7 +221,7 @@ public class DashboardFragment extends Fragment {
             String label = getSignalStrengthLabel(data.getRssi());
             binding.rssiText.setText(getString(R.string.rssi_format_with_label, data.getRssi(), label));
         } else {
-            binding.rssiText.setText(getString(R.string.rssi_na));
+            binding.rssiText.setText(getString(R.string.rssi_connected_only));
         }
 
         binding.currentWindText.setText(
