@@ -78,10 +78,14 @@ public class BluetoothConnection implements Connection {
 
         cancelTasks();
 
-        // Start the task to listen on a BluetoothServerSocket
-        acceptRunnable = new AcceptRunnable();
-        acceptFuture = executorService.submit(acceptRunnable);
-        Timber.d("SUBMIT AcceptRunnable");
+        // Start the task to listen on a BluetoothServerSocket only if we have advertise permission
+        if (PermissionHelper.hasAdvertisePermission(context)) {
+            acceptRunnable = new AcceptRunnable();
+            acceptFuture = executorService.submit(acceptRunnable);
+            Timber.d("SUBMIT AcceptRunnable");
+        } else {
+            Timber.w("Skipping AcceptRunnable: Missing BLUETOOTH_ADVERTISE permission");
+        }
 
         state = ConnectionState.disconnected;
         callback.onConnectionStateChange(ConnectionState.disconnected);
@@ -222,7 +226,12 @@ public class BluetoothConnection implements Connection {
                 if (!PermissionHelper.hasConnectPermission(context)) {
                     callback.onLogMessage("AcceptRunnable, Missing Permissions: BLUETOOTH_CONNECT");
                 }
-                if (bluetoothAdapter != null) {
+                if (!PermissionHelper.hasAdvertisePermission(context)) {
+                    callback.onLogMessage("AcceptRunnable, Missing Permissions: BLUETOOTH_ADVERTISE");
+                }
+                if (bluetoothAdapter != null && 
+                    PermissionHelper.hasConnectPermission(context) && 
+                    PermissionHelper.hasAdvertisePermission(context)) {
                     tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
                 }
             } catch (IOException e) {

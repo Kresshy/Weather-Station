@@ -12,6 +12,8 @@
     <string name="action_quit">Quit</string>
 
     <string name="pref_reconnect">Reconnect</string>
+    <string name="pref_disable_bluetooth_on_quit_title">Disable Bluetooth on Quit</string>
+    <string name="pref_disable_bluetooth_on_quit_summary">Automatically turn off Bluetooth when the app is closed</string>
     <string name="pref_reconnect_summ">Automatically reconnect on bluetooth connection interrupt</string>
     <string name="pref_simulator_title">Simulator Mode (Demo)</string>
     <string name="pref_simulator_summary">Generate dummy weather data to test thermal hunter logic</string>

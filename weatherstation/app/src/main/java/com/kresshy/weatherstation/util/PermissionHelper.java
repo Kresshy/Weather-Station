@@ -48,4 +48,19 @@ public class PermissionHelper {
             return true;
         }
     }
+
+    /**
+     * Checks if the application has the necessary permissions to advertise over Bluetooth.
+     *
+     * @param context The application context.
+     * @return true if advertising permissions are granted.
+     */
+    public static boolean hasAdvertisePermission(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADVERTISE)
+                    == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
+    }
 }

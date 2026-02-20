@@ -238,11 +238,7 @@ public class WSActivity extends AppCompatActivity {
             if (!weatherBluetoothManager.isBluetoothEnabled()) {
                 weatherBluetoothManager.enableBluetooth();
             }
-            if (!requestedEnableBluetooth) {
-                Timber.d("Starting Weather Service");
-                startWeatherService();
-                requestedEnableBluetooth = true;
-            }
+            requestedEnableBluetooth = true;
         } else {
             Snackbar.make(
                             binding.getRoot(),
@@ -431,8 +427,9 @@ public class WSActivity extends AppCompatActivity {
     /** Safely shuts down the app, stopping services and disabling Bluetooth if required. */
     private void quitApp() {
         stopWeatherService();
-        if (weatherBluetoothManager.isBluetoothEnabled()) {
-            Timber.d("Disabling bluetooth adapter");
+        boolean disableBluetoothOnQuit = sharedPreferences.getBoolean("pref_disable_bluetooth_on_quit", true);
+        if (disableBluetoothOnQuit && weatherBluetoothManager.isBluetoothEnabled()) {
+            Timber.d("Disabling bluetooth adapter as per user preference");
             weatherBluetoothManager.disableBluetooth();
         }
         finish();
