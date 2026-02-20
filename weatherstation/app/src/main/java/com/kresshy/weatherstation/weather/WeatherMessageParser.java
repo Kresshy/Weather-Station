@@ -30,15 +30,25 @@ public class WeatherMessageParser {
      * @return A parsed WeatherData object, or null if parsing fails.
      */
     public WeatherData parse(String rawData) {
-        if (rawData == null || !rawData.startsWith("WS_")) {
+        if (rawData == null) {
+            return null;
+        }
+
+        // Support both modern "WS_" and legacy "start_" prefixes
+        String pdu;
+        if (rawData.startsWith("WS_")) {
+            String[] parts = rawData.split("_");
+            if (parts.length < 2) return null;
+            pdu = parts[1];
+        } else if (rawData.startsWith("start_")) {
+            String[] parts = rawData.split("_");
+            if (parts.length < 2) return null;
+            pdu = parts[1];
+        } else {
             return null;
         }
 
         try {
-            String[] parts = rawData.split("_");
-            if (parts.length < 2) return null;
-
-            String pdu = parts[1];
             Timber.d("Parsing PDU: %s", pdu);
 
             // Attempt JSON parsing (Modern format)
