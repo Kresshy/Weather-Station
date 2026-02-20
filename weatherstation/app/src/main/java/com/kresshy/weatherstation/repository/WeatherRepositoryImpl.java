@@ -188,6 +188,11 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     @Override
+    public LiveData<Integer> getBluetoothState() {
+        return bluetoothManager.getBluetoothState();
+    }
+
+    @Override
     public LiveData<List<Parcelable>> getPairedDevices() {
         return pairedDevices;
     }

@@ -38,6 +38,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     private final MutableLiveData<List<BluetoothDevice>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
+    private final MutableLiveData<Integer> bluetoothState = new MutableLiveData<>(BluetoothAdapter.STATE_OFF);
     private final java.util.Map<String, Integer> deviceRssiMap = new java.util.HashMap<>();
 
     private boolean isRegistered = false;
@@ -47,8 +48,12 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
             new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                        Timber.d("Bluetooth turned ON");
+                    if (bluetoothAdapter != null) {
+                        int state = bluetoothAdapter.getState();
+                        bluetoothState.postValue(state);
+                        if (state == BluetoothAdapter.STATE_ON) {
+                            Timber.d("Bluetooth turned ON");
+                        }
                     }
                 }
             };
@@ -92,6 +97,9 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
             @ApplicationContext Context context, @Nullable BluetoothAdapter bluetoothAdapter) {
         this.context = context;
         this.bluetoothAdapter = bluetoothAdapter;
+        if (bluetoothAdapter != null) {
+            bluetoothState.postValue(bluetoothAdapter.getState());
+        }
     }
 
     @Override
@@ -171,6 +179,11 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     @Override
     public LiveData<String> getDiscoveryStatus() {
         return discoveryStatus;
+    }
+
+    @Override
+    public LiveData<Integer> getBluetoothState() {
+        return bluetoothState;
     }
 
     @Override

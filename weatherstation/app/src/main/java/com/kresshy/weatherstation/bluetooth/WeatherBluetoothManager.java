@@ -40,6 +40,11 @@ public interface WeatherBluetoothManager {
     androidx.lifecycle.LiveData<String> getDiscoveryStatus();
 
     /**
+     * @return Observable integer representing the current Bluetooth adapter state (ON/OFF).
+     */
+    androidx.lifecycle.LiveData<Integer> getBluetoothState();
+
+    /**
      * @param address The device address.
      * @return The last known RSSI for this device, or 0 if not found.
      */

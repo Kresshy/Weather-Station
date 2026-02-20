@@ -200,6 +200,16 @@ public class WSActivity extends AppCompatActivity {
                         status -> {
                             setTitle(status);
                         });
+
+        weatherViewModel
+                .getBluetoothState()
+                .observe(
+                        this,
+                        state -> {
+                            if (state == android.bluetooth.BluetoothAdapter.STATE_ON) {
+                                reconnectPreviousWeatherStation();
+                            }
+                        });
     }
 
     private void handlePermissionResult(Map<String, Boolean> result) {
@@ -273,30 +283,23 @@ public class WSActivity extends AppCompatActivity {
         super.onResume();
         Timber.d("ONRESUME");
 
-        // checking bluetoothadapter and bluetoothservice and make sure it is started
         if (!weatherBluetoothManager.isBluetoothEnabled()) {
             if (permissionsGranted) {
                 weatherBluetoothManager.enableBluetooth();
                 requestedEnableBluetooth = true;
             }
-        } else if (weatherBluetoothManager.isBluetoothEnabled()) {
+        } else {
             reconnectPreviousWeatherStation();
-            ConnectionState currentState = weatherViewModel.getConnectionState().getValue();
-            if (currentState == null) {
-                // Handle null case, e.g., default to disconnected
-                currentState = ConnectionState.disconnected;
-            }
-            switch (currentState) { // Using new LiveData
-                case connected:
-                case connecting:
-                    break;
-                case disconnected:
-                case stopped:
-                default:
-                    if (permissionsGranted) {
-                        startWeatherService();
-                    }
-                    break;
+        }
+
+        ConnectionState currentState = weatherViewModel.getConnectionState().getValue();
+        if (currentState == null) {
+            currentState = ConnectionState.disconnected;
+        }
+
+        if (currentState == ConnectionState.disconnected || currentState == ConnectionState.stopped) {
+            if (permissionsGranted && weatherBluetoothManager.isBluetoothEnabled()) {
+                startWeatherService();
             }
         }
     }

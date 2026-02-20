@@ -104,6 +104,13 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * @return Observable Bluetooth adapter state (ON/OFF).
+     */
+    public LiveData<Integer> getBluetoothState() {
+        return weatherRepository.getBluetoothState();
+    }
+
+    /**
      * @return List of previously paired Bluetooth devices.
      */
     public LiveData<List<android.os.Parcelable>> getPairedDevices() {

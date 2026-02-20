@@ -84,6 +84,11 @@ public interface WeatherRepository {
     LiveData<String> getDiscoveryStatus();
 
     /**
+     * @return Observable Bluetooth adapter state (ON/OFF).
+     */
+    LiveData<Integer> getBluetoothState();
+
+    /**
      * @return Observable list of paired Bluetooth devices.
      */
     LiveData<List<android.os.Parcelable>> getPairedDevices();
