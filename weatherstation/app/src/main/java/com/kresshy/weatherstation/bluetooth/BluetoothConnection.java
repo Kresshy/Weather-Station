@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat;
 import com.kresshy.weatherstation.connection.Connection;
 import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.connection.RawDataCallback;
+import com.kresshy.weatherstation.util.PermissionHelper;
 
 import timber.log.Timber;
 
@@ -217,9 +218,7 @@ public class BluetoothConnection implements Connection {
         public AcceptRunnable() {
             BluetoothServerSocket tmp = null;
             try {
-                if (ActivityCompat.checkSelfPermission(
-                                context, Manifest.permission.BLUETOOTH_CONNECT)
-                        != PackageManager.PERMISSION_GRANTED) {
+                if (!PermissionHelper.hasConnectPermission(context)) {
                     callback.onLogMessage("AcceptRunnable, Missing Permissions: BLUETOOTH_CONNECT");
                 }
                 tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
@@ -271,9 +270,7 @@ public class BluetoothConnection implements Connection {
             BluetoothSocket tmp = null;
             this.device = device;
             try {
-                if (ActivityCompat.checkSelfPermission(
-                                context, Manifest.permission.BLUETOOTH_CONNECT)
-                        != PackageManager.PERMISSION_GRANTED) {
+                if (!PermissionHelper.hasConnectPermission(context)) {
                     callback.onLogMessage(
                             "ConnectRunnable Constructor, Missing Permissions: BLUETOOTH_CONNECT");
                 }
@@ -286,8 +283,7 @@ public class BluetoothConnection implements Connection {
 
         @Override
         public void run() {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (!PermissionHelper.hasScanPermission(context)) {
                 callback.onToastMessage("Missing Permissions: BLUETOOTH_SCAN");
             }
             bluetoothAdapter.cancelDiscovery();

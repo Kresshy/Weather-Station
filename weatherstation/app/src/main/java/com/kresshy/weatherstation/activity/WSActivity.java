@@ -26,6 +26,7 @@ import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.databinding.ActivityMainBinding;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 import com.kresshy.weatherstation.service.WeatherService;
+import com.kresshy.weatherstation.util.PermissionHelper;
 import com.kresshy.weatherstation.weather.WeatherViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -203,23 +204,15 @@ public class WSActivity extends AppCompatActivity {
 
     private void handlePermissionResult(Map<String, Boolean> result) {
         Timber.d("handlePermissionResult");
-        boolean mandatoryGranted = true;
+        
+        boolean scanGranted = PermissionHelper.hasScanPermission(this);
+        boolean connectGranted = PermissionHelper.hasConnectPermission(this);
+        boolean mandatoryGranted = scanGranted && connectGranted;
 
         for (Map.Entry<String, Boolean> entry : result.entrySet()) {
             String permission = entry.getKey();
             boolean granted = entry.getValue();
             Timber.d("Permission: %s was %s!", permission, granted ? "granted" : "not granted");
-
-            // Define which permissions are absolute deal-breakers
-            if (!granted) {
-                if (permission.equals(Manifest.permission.BLUETOOTH_CONNECT)
-                        || permission.equals(Manifest.permission.BLUETOOTH_SCAN)
-                        || permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)
-                        || permission.equals(Manifest.permission.BLUETOOTH)
-                        || permission.equals(Manifest.permission.BLUETOOTH_ADMIN)) {
-                    mandatoryGranted = false;
-                }
-            }
         }
 
         if (mandatoryGranted) {

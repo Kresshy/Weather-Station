@@ -13,6 +13,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.kresshy.weatherstation.util.PermissionHelper;
+
 import dagger.hilt.android.qualifiers.ApplicationContext;
 
 import timber.log.Timber;
@@ -93,8 +95,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     @Override
     public void startDiscovery() {
         if (bluetoothAdapter != null) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (PermissionHelper.hasScanPermission(context)) {
                 discoveredDevices.postValue(new ArrayList<>());
                 discoveryStatus.postValue("Discovering...");
                 bluetoothAdapter.startDiscovery();
@@ -105,8 +106,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     @Override
     public void stopDiscovery() {
         if (bluetoothAdapter != null) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (PermissionHelper.hasScanPermission(context)) {
                 bluetoothAdapter.cancelDiscovery();
             }
         }
@@ -115,8 +115,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     @Override
     public void enableBluetooth() {
         if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (PermissionHelper.hasConnectPermission(context)) {
                 bluetoothAdapter.enable();
             }
         }
@@ -125,8 +124,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     @Override
     public void disableBluetooth() {
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (PermissionHelper.hasConnectPermission(context)) {
                 bluetoothAdapter.disable();
             }
         }
