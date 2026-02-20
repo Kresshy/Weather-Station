@@ -14,7 +14,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
 import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
 import com.kresshy.weatherstation.connection.ConnectionManager;
@@ -120,8 +119,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
         this.preferenceChangeListener =
                 (prefs, key) -> {
-                    if (WSConstants.KEY_WIND_DIFF.equals(key)
-                            || WSConstants.KEY_TEMP_DIFF.equals(key)) {
+                    if (KEY_WIND_DIFF.equals(key) || KEY_TEMP_DIFF.equals(key)) {
                         loadCorrections(prefs);
                     }
                 };
@@ -139,10 +137,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     private void loadCorrections(SharedPreferences sharedPreferences) {
-        correctionWind =
-                Double.parseDouble(sharedPreferences.getString(WSConstants.KEY_WIND_DIFF, "0.0"));
-        correctionTemp =
-                Double.parseDouble(sharedPreferences.getString(WSConstants.KEY_TEMP_DIFF, "0.0"));
+        correctionWind = Double.parseDouble(sharedPreferences.getString(KEY_WIND_DIFF, "0.0"));
+        correctionTemp = Double.parseDouble(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0"));
         Timber.d("Loaded corrections - wind: %f, temp: %f", correctionWind, correctionTemp);
     }
 

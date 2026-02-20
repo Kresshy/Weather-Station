@@ -14,8 +14,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.application.WSConstants;
 import com.kresshy.weatherstation.databinding.FragmentCalibrationBinding;
+import com.kresshy.weatherstation.repository.WeatherRepository;
 import com.kresshy.weatherstation.weather.WeatherViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -57,8 +57,10 @@ public class CalibrationFragment extends Fragment implements View.OnClickListene
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
         // Load current offsets into the edit texts
-        String currentWindOffset = sharedPreferences.getString(WSConstants.KEY_WIND_DIFF, "0.0");
-        String currentTempOffset = sharedPreferences.getString(WSConstants.KEY_TEMP_DIFF, "0.0");
+        String currentWindOffset =
+                sharedPreferences.getString(WeatherRepository.KEY_WIND_DIFF, "0.0");
+        String currentTempOffset =
+                sharedPreferences.getString(WeatherRepository.KEY_TEMP_DIFF, "0.0");
 
         binding.windOffsetEdit.setText(currentWindOffset);
         binding.tempOffsetEdit.setText(currentTempOffset);
@@ -88,8 +90,8 @@ public class CalibrationFragment extends Fragment implements View.OnClickListene
 
         sharedPreferences
                 .edit()
-                .putString(WSConstants.KEY_WIND_DIFF, windOffset)
-                .putString(WSConstants.KEY_TEMP_DIFF, tempOffset)
+                .putString(WeatherRepository.KEY_WIND_DIFF, windOffset)
+                .putString(WeatherRepository.KEY_TEMP_DIFF, tempOffset)
                 .apply();
 
         Timber.d("Manual Calibration saved - wind: %s, temp: %s", windOffset, tempOffset);
