@@ -252,6 +252,13 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             lastSaneData = weatherData;
 
             applyCorrections(weatherData);
+
+            // Add the last known RSSI if available
+            if (lastConnectedDevice != null) {
+                int rssi = bluetoothManager.getDeviceRssi(lastConnectedDevice.getAddress());
+                weatherData.setRssi(rssi);
+            }
+
             latestWeatherData.postValue(weatherData);
 
             ThermalAnalyzer.AnalysisResult result = thermalAnalyzer.analyze(weatherData);

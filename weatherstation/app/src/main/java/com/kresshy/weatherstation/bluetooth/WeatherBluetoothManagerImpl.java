@@ -35,6 +35,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     private final MutableLiveData<List<BluetoothDevice>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
+    private final java.util.Map<String, Integer> deviceRssiMap = new java.util.HashMap<>();
 
     private boolean isRegistered = false;
 
@@ -57,6 +58,8 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                     String action = intent.getAction();
                     if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                         BluetoothDevice device;
+                        int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, (short) 0);
+                        
                         if (android.os.Build.VERSION.SDK_INT
                                 >= android.os.Build.VERSION_CODES.TIRAMISU) {
                             device =
@@ -67,6 +70,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                         }
 
                         if (device != null) {
+                            deviceRssiMap.put(device.getAddress(), rssi);
                             List<BluetoothDevice> current = discoveredDevices.getValue();
                             if (current == null) current = new ArrayList<>();
                             if (!current.contains(device)) {
@@ -167,5 +171,11 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     @Override
     public LiveData<String> getDiscoveryStatus() {
         return discoveryStatus;
+    }
+
+    @Override
+    public int getDeviceRssi(String address) {
+        Integer rssi = deviceRssiMap.get(address);
+        return rssi != null ? rssi : 0;
     }
 }

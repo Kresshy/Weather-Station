@@ -38,4 +38,10 @@ public interface WeatherBluetoothManager {
      * @return Observable string representing the current scan status.
      */
     androidx.lifecycle.LiveData<String> getDiscoveryStatus();
+
+    /**
+     * @param address The device address.
+     * @return The last known RSSI for this device, or 0 if not found.
+     */
+    int getDeviceRssi(String address);
 }
