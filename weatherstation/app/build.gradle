@@ -26,6 +26,8 @@ android {
         warningsAsErrors true
         checkReleaseBuilds true
         explainIssues true
+        xmlReport true
+        htmlReport true
     }
 
     /**
@@ -177,7 +179,7 @@ task pmd(type: Pmd) {
     source = fileTree('src/main/java')
     ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml", "category/java/codestyle.xml"]
     reports {
-        xml.required = false
+        xml.required = true
         html.required = true
     }
 }

@@ -11,7 +11,6 @@ public class ConnectionManager {
     /** The active connection implementation. */
     public Connection connection;
 
-    private Context context;
     private RawDataCallback callback;
 
     /**
@@ -19,7 +18,6 @@ public class ConnectionManager {
      * @param callback Initial callback for data and state events.
      */
     public ConnectionManager(Context context, RawDataCallback callback) {
-        this.context = context;
         this.callback = callback;
         this.connection = ConnectionFactory.getConnection(context, callback);
     }

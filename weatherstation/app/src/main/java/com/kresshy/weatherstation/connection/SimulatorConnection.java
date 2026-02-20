@@ -20,7 +20,6 @@ public class SimulatorConnection implements Connection {
     private ConnectionState state = ConnectionState.stopped;
     private ScheduledExecutorService executor;
     private final Random random = new Random();
-    private final Gson gson = new Gson();
     private RawDataCallback callback;
 
     // Simulation state
