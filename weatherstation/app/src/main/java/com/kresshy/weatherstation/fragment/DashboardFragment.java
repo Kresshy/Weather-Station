@@ -204,9 +204,9 @@ public class DashboardFragment extends Fragment {
     private LineDataSet createSet(String label, int color) {
         LineDataSet set = new LineDataSet(new ArrayList<>(), label);
         set.setColor(color);
-        set.setLineWidth(3f);
+        set.setLineWidth(5f);
         set.setCircleColor(color);
-        set.setCircleRadius(2f);
+        set.setCircleRadius(3.5f);
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
