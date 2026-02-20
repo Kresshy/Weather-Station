@@ -84,6 +84,8 @@ public class WSActivity extends AppCompatActivity {
             navController = navHostFragment.getNavController();
         }
 
+        weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+
         appBarConfiguration =
                 new AppBarConfiguration.Builder(
                                 R.id.dashboardFragment,
@@ -136,8 +138,6 @@ public class WSActivity extends AppCompatActivity {
 
         Timber.d("Requesting Permissions!...");
         requestPermissionLauncher.launch(permissionList.toArray(new String[0]));
-
-        weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
 
         weatherBluetoothManager.registerReceivers();
 
