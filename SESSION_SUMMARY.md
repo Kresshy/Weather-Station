@@ -42,6 +42,14 @@ Successfully transformed the application into a robust, cross-version platform. 
 *   **Configurable Exit Behavior**: Added `Disable Bluetooth on Quit` preference (Default: ON). Allows users to choose if the app should release system Bluetooth resources or keep them active for other devices upon exit.
 *   **Modern Android Permissions**: Added and verified `BLUETOOTH_ADVERTISE` checks for Android 12+, ensuring server-socket components don't crash on newer API levels.
 
+## 🏗️ Dependency Injection Hardening (Hilt)
+
+### 🧩 Core Component Decoupling
+*   **Injectable Logging**: Transitioned `FileLoggingTree` to use Hilt injection. `WSApplication` no longer manually instantiates the logger, improving the initialization flow and testability.
+*   **Simulation Predictability**: Injected `java.util.Random` into `SimulatorConnection`. This allows for deterministic testing of the simulation logic by providing a mocked or seeded random instance via Hilt.
+*   **Fragment Consistency**: Refactored `DashboardFragment` and `GraphViewFragment` to inject `SharedPreferences` directly via Hilt, eliminating manual `PreferenceManager` calls and aligning with modern Android architectural patterns.
+*   **Centralized Providers**: Updated `AppModule` to provide missing global dependencies (`Random`), ensuring the entire application graph is managed by Hilt.
+
 ### 🚀 Deliverables & Field Testing
 *   **v26 APK**: Final stable build for today, verified for Android 6.0+ compatibility and featuring all new UI and configuration enhancements.
 
