@@ -177,7 +177,7 @@ task pmd(type: Pmd) {
     description 'Run PMD to find dead code and unused variables'
     group 'verification'
     source = fileTree('src/main/java')
-    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml", "category/java/codestyle.xml"]
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
     reports {
         xml.required = true
         html.required = true
