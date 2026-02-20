@@ -110,17 +110,9 @@ public interface WeatherRepository {
     LiveData<String> getConnectedDeviceName();
 
     /**
-     * @return Observable list of paired Bluetooth devices.
-     */
-    LiveData<List<android.os.Parcelable>> getPairedDevices();
-
-    /**
      * @return Observable list of discovered (unpaired) Bluetooth devices.
      */
     LiveData<List<android.os.Parcelable>> getDiscoveredDevices();
-
-    /** Refreshes the list of paired devices. */
-    void refreshPairedDevices();
 
     /** Clears the current discovery results. */
     void clearDiscoveredDevices();
@@ -143,13 +135,6 @@ public interface WeatherRepository {
      * @param device The BluetoothDevice or SimulatorDevice to connect to.
      */
     void connectToDevice(android.os.Parcelable device);
-
-    /**
-     * Connects to a device by its MAC address.
-     *
-     * @param address MAC address of the target device.
-     */
-    void connectToDeviceAddress(String address);
 
     /**
      * Posts a toast message to the UI.

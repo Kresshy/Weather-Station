@@ -27,8 +27,6 @@ public class FakeWeatherRepository implements WeatherRepository {
     private final MutableLiveData<String> logMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isDiscovering = new MutableLiveData<>(false);
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
-    private final MutableLiveData<List<Parcelable>> pairedDevices =
-            new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<Parcelable>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
 
@@ -151,17 +149,9 @@ public class FakeWeatherRepository implements WeatherRepository {
     }
 
     @Override
-    public LiveData<List<Parcelable>> getPairedDevices() {
-        return pairedDevices;
-    }
-
-    @Override
     public LiveData<List<Parcelable>> getDiscoveredDevices() {
         return discoveredDevices;
     }
-
-    @Override
-    public void refreshPairedDevices() {}
 
     @Override
     public void clearDiscoveredDevices() {}
@@ -188,11 +178,6 @@ public class FakeWeatherRepository implements WeatherRepository {
 
     @Override
     public void connectToDevice(Parcelable device) {
-        connectionState.postValue(ConnectionState.connecting);
-    }
-
-    @Override
-    public void connectToDeviceAddress(String address) {
         connectionState.postValue(ConnectionState.connecting);
     }
 

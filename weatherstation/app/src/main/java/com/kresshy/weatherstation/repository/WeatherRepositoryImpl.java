@@ -62,8 +62,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final MutableLiveData<String> logMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isDiscovering = new MutableLiveData<>();
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>();
-    private final MutableLiveData<List<Parcelable>> pairedDevices =
-            new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<Parcelable>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
 
@@ -238,35 +236,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     @Override
-    public LiveData<List<Parcelable>> getPairedDevices() {
-        return pairedDevices;
-    }
-
-    @Override
     public LiveData<List<Parcelable>> getDiscoveredDevices() {
         return discoveredDevices;
-    }
-
-    @Override
-    public void refreshPairedDevices() {
-        boolean useSimulator = sharedPreferences.getBoolean("pref_simulator_mode", false);
-
-        List<Parcelable> devices = new ArrayList<>();
-
-        if (useSimulator) {
-            devices.add(
-                    new SimulatorDevice("Simulator Station", SimulatorDevice.SIMULATOR_ADDRESS));
-        }
-
-        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-            if (PermissionHelper.hasConnectPermission(context)) {
-                Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-                devices.addAll(bondedDevices);
-            } else {
-                Timber.d("refreshPairedDevices: BLUETOOTH_CONNECT permission not granted");
-            }
-        }
-        pairedDevices.postValue(devices);
     }
 
     @Override
@@ -459,24 +430,5 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         shouldReconnect = true;
         reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
         connectionManager.connectToDevice(device);
-    }
-
-    @Override
-    public void connectToDeviceAddress(String address) {
-        sharedPreferences
-                .edit()
-                .putString(context.getString(R.string.PREFERENCE_DEVICE_ADDRESS), address)
-                .apply();
-
-        if (address.equals(SimulatorDevice.SIMULATOR_ADDRESS)
-                && sharedPreferences.getBoolean("pref_simulator_mode", false)) {
-            SimulatorDevice simDevice = new SimulatorDevice("Simulator Station", address);
-            connectToDevice(simDevice);
-        } else if (bluetoothAdapter != null) {
-            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-            connectToDevice(device);
-        } else {
-            Timber.e("Cannot connect: BluetoothAdapter is null");
-        }
     }
 }

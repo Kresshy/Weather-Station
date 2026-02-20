@@ -83,17 +83,7 @@ public class CalibrationFragment extends Fragment implements View.OnClickListene
         String windOffset = binding.windOffsetEdit.getText().toString();
         String tempOffset = binding.tempOffsetEdit.getText().toString();
 
-        // Default to 0.0 if empty
-        if (windOffset.isEmpty()) windOffset = "0.0";
-        if (tempOffset.isEmpty()) tempOffset = "0.0";
-
-        sharedPreferences
-                .edit()
-                .putString(WeatherRepository.KEY_WIND_DIFF, windOffset)
-                .putString(WeatherRepository.KEY_TEMP_DIFF, tempOffset)
-                .apply();
-
-        Timber.d("Manual Calibration saved - wind: %s, temp: %s", windOffset, tempOffset);
+        weatherViewModel.updateCalibration(windOffset, tempOffset);
 
         // Navigate back to the dashboard to see the effects
         Navigation.findNavController(v).navigate(R.id.dashboardFragment);

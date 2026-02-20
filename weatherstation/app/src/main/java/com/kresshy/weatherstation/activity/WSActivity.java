@@ -234,7 +234,7 @@ public class WSActivity extends AppCompatActivity {
 
         if (mandatoryGranted) {
             permissionsGranted = true;
-            weatherRepository.refreshPairedDevices();
+            weatherViewModel.refreshPairedDevices();
             if (!weatherBluetoothManager.isBluetoothEnabled()) {
                 weatherBluetoothManager.enableBluetooth();
             }
@@ -325,7 +325,7 @@ public class WSActivity extends AppCompatActivity {
                         R.string.ok,
                         (dialog, id) -> {
                             Timber.d("The device address is valid, attempting to reconnect");
-                            weatherRepository.connectToDeviceAddress(address);
+                            weatherViewModel.connectToDeviceAddress(address);
                             isReconnectDialogShowing = false;
                         });
 

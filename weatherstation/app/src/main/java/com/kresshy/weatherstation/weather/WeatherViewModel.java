@@ -21,13 +21,28 @@ import javax.inject.Inject;
 public class WeatherViewModel extends ViewModel {
     private final WeatherRepository weatherRepository;
     private final com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
+    private final com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
+    private final com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase;
+    private final com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
+    private final com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase;
+
+    private final androidx.lifecycle.MutableLiveData<List<android.os.Parcelable>> pairedDevices = 
+            new androidx.lifecycle.MutableLiveData<>(new java.util.ArrayList<>());
 
     @Inject
     public WeatherViewModel(
             WeatherRepository weatherRepository,
-            com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase) {
+            com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase,
+            com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase,
+            com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase,
+            com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase,
+            com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase) {
         this.weatherRepository = weatherRepository;
         this.getWeatherUiStateUseCase = getWeatherUiStateUseCase;
+        this.connectToDeviceUseCase = connectToDeviceUseCase;
+        this.getPairedDevicesUseCase = getPairedDevicesUseCase;
+        this.manageDiscoveryUseCase = manageDiscoveryUseCase;
+        this.updateCalibrationUseCase = updateCalibrationUseCase;
     }
 
     /**
@@ -35,6 +50,59 @@ public class WeatherViewModel extends ViewModel {
      */
     public LiveData<WeatherUiState> getWeatherUiState() {
         return getWeatherUiStateUseCase.execute();
+    }
+
+    /**
+     * @return Observable list of paired Bluetooth devices.
+     */
+    public LiveData<List<android.os.Parcelable>> getPairedDevices() {
+        return pairedDevices;
+    }
+
+    /**
+     * @return List of discovered (unpaired) Bluetooth devices.
+     */
+    public LiveData<List<android.os.Parcelable>> getDiscoveredDevices() {
+        return weatherRepository.getDiscoveredDevices();
+    }
+
+    /** Refreshes the list of paired devices. */
+    public void refreshPairedDevices() {
+        pairedDevices.setValue(getPairedDevicesUseCase.execute());
+    }
+
+    /** Clears the list of discovered devices. */
+    public void clearDiscoveredDevices() {
+        manageDiscoveryUseCase.clearResults();
+    }
+
+    /** Starts scanning for new Bluetooth devices. */
+    public void startDiscovery() {
+        manageDiscoveryUseCase.startDiscovery();
+    }
+
+    /** Stops the active Bluetooth scan. */
+    public void stopDiscovery() {
+        manageDiscoveryUseCase.stopDiscovery();
+    }
+
+    /**
+     * Attempts to connect to a specific Bluetooth device by its MAC address.
+     *
+     * @param address The MAC address of the weather station.
+     */
+    public void connectToDeviceAddress(String address) {
+        connectToDeviceUseCase.execute(address);
+    }
+
+    /**
+     * Persists new calibration offsets for wind and temperature.
+     *
+     * @param windOffset The wind speed offset (m/s).
+     * @param tempOffset The temperature offset (°C).
+     */
+    public void updateCalibration(String windOffset, String tempOffset) {
+        updateCalibrationUseCase.execute(windOffset, tempOffset);
     }
 
     /**
@@ -140,48 +208,5 @@ public class WeatherViewModel extends ViewModel {
      */
     public LiveData<String> getConnectedDeviceName() {
         return weatherRepository.getConnectedDeviceName();
-    }
-
-    /**
-     * @return List of previously paired Bluetooth devices.
-     */
-    public LiveData<List<android.os.Parcelable>> getPairedDevices() {
-        return weatherRepository.getPairedDevices();
-    }
-
-    /**
-     * @return List of discovered (unpaired) Bluetooth devices.
-     */
-    public LiveData<List<android.os.Parcelable>> getDiscoveredDevices() {
-        return weatherRepository.getDiscoveredDevices();
-    }
-
-    /** Refreshes the list of paired devices from the Bluetooth adapter. */
-    public void refreshPairedDevices() {
-        weatherRepository.refreshPairedDevices();
-    }
-
-    /** Clears the list of discovered devices. */
-    public void clearDiscoveredDevices() {
-        weatherRepository.clearDiscoveredDevices();
-    }
-
-    /** Starts scanning for new Bluetooth devices. */
-    public void startDiscovery() {
-        weatherRepository.startDiscovery();
-    }
-
-    /** Stops the active Bluetooth scan. */
-    public void stopDiscovery() {
-        weatherRepository.stopDiscovery();
-    }
-
-    /**
-     * Attempts to connect to a specific Bluetooth device by its MAC address.
-     *
-     * @param address The MAC address of the weather station.
-     */
-    public void connectToDeviceAddress(String address) {
-        weatherRepository.connectToDeviceAddress(address);
     }
 }
