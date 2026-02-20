@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 
 import com.kresshy.weatherstation.connection.Connection;
@@ -61,7 +62,7 @@ public class BluetoothConnection implements Connection {
     @Inject
     public BluetoothConnection(
             @dagger.hilt.android.qualifiers.ApplicationContext Context context,
-            BluetoothAdapter bluetoothAdapter) {
+            @Nullable BluetoothAdapter bluetoothAdapter) {
         this.state = ConnectionState.stopped;
         this.context = context;
         this.bluetoothAdapter = bluetoothAdapter;
@@ -221,7 +222,9 @@ public class BluetoothConnection implements Connection {
                 if (!PermissionHelper.hasConnectPermission(context)) {
                     callback.onLogMessage("AcceptRunnable, Missing Permissions: BLUETOOTH_CONNECT");
                 }
-                tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
+                if (bluetoothAdapter != null) {
+                    tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
+                }
             } catch (IOException e) {
                 Timber.e("Accept Thread " + e.getMessage());
             }
@@ -286,7 +289,9 @@ public class BluetoothConnection implements Connection {
             if (!PermissionHelper.hasScanPermission(context)) {
                 callback.onToastMessage("Missing Permissions: BLUETOOTH_SCAN");
             }
-            bluetoothAdapter.cancelDiscovery();
+            if (bluetoothAdapter != null) {
+                bluetoothAdapter.cancelDiscovery();
+            }
 
             try {
                 if (socket == null) return;

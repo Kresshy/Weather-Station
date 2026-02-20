@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -87,9 +88,10 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
             };
 
     @Inject
-    public WeatherBluetoothManagerImpl(@ApplicationContext Context context) {
+    public WeatherBluetoothManagerImpl(
+            @ApplicationContext Context context, @Nullable BluetoothAdapter bluetoothAdapter) {
         this.context = context;
-        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        this.bluetoothAdapter = bluetoothAdapter;
     }
 
     @Override

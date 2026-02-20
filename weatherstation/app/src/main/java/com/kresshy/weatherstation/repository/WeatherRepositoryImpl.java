@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -91,7 +92,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             WeatherMessageParser messageParser,
             WeatherBluetoothManager bluetoothManager,
             SharedPreferences sharedPreferences,
-            BluetoothAdapter bluetoothAdapter,
+            @Nullable BluetoothAdapter bluetoothAdapter,
             ConnectionManager connectionManager) {
         this.context = context;
         this.thermalAnalyzer = thermalAnalyzer;
@@ -383,9 +384,11 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         if (address.equals(SimulatorDevice.SIMULATOR_ADDRESS)
                 && sharedPreferences.getBoolean("pref_simulator_mode", false)) {
             connectToDevice(new SimulatorDevice("Simulator Station", address));
-        } else {
+        } else if (bluetoothAdapter != null) {
             BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
             connectToDevice(device);
+        } else {
+            Timber.e("Cannot connect: BluetoothAdapter is null");
         }
     }
 }
