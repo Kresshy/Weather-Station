@@ -353,19 +353,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
                 uiState.postValue(Resource.loading(null));
                 break;
             case connected:
-                uiState.postValue(Resource.success(null));
-                reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
-                if (lastConnectedDevice != null) {
-                    if (lastConnectedDevice instanceof BluetoothDevice) {
-                        if (PermissionHelper.hasConnectPermission(context)) {
-                            connectedDeviceName.postValue(((BluetoothDevice) lastConnectedDevice).getName());
-                        } else {
-                            connectedDeviceName.postValue("Weather Station");
-                        }
-                    } else if (lastConnectedDevice instanceof SimulatorDevice) {
-                        connectedDeviceName.postValue(((SimulatorDevice) lastConnectedDevice).getName());
-                    }
-                }
+                onConnected();
                 break;
             case disconnected:
             case stopped:
@@ -411,6 +399,18 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         connectionState.postValue(ConnectionState.connected);
         uiState.postValue(Resource.success(null));
         reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
+
+        if (lastConnectedDevice != null) {
+            if (lastConnectedDevice instanceof BluetoothDevice) {
+                if (PermissionHelper.hasConnectPermission(context)) {
+                    connectedDeviceName.postValue(((BluetoothDevice) lastConnectedDevice).getName());
+                } else {
+                    connectedDeviceName.postValue("Weather Station");
+                }
+            } else if (lastConnectedDevice instanceof SimulatorDevice) {
+                connectedDeviceName.postValue(((SimulatorDevice) lastConnectedDevice).getName());
+            }
+        }
     }
 
     @Override
@@ -470,7 +470,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
         if (address.equals(SimulatorDevice.SIMULATOR_ADDRESS)
                 && sharedPreferences.getBoolean("pref_simulator_mode", false)) {
-            connectToDevice(new SimulatorDevice("Simulator Station", address));
+            SimulatorDevice simDevice = new SimulatorDevice("Simulator Station", address);
+            connectToDevice(simDevice);
         } else if (bluetoothAdapter != null) {
             BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
             connectToDevice(device);
