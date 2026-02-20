@@ -38,6 +38,7 @@ import java.util.List;
 public class GraphViewFragment extends Fragment {
 
     private int numberOfSamples = 300;
+    @javax.inject.Inject SharedPreferences sharedPreferences;
 
     private WeatherViewModel weatherViewModel;
     private FragmentDashboardBinding binding;
@@ -66,8 +67,6 @@ public class GraphViewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(requireContext());
         numberOfSamples =
                 Integer.parseInt(
                         sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));

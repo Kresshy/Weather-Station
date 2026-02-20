@@ -19,11 +19,13 @@ import javax.inject.Inject;
 public class SimulatorConnection implements Connection {
     private ConnectionState state = ConnectionState.stopped;
     private ScheduledExecutorService executor;
-    private final Random random = new Random();
+    private final java.util.Random random;
     private RawDataCallback callback;
 
     @Inject
-    public SimulatorConnection() {}
+    public SimulatorConnection(java.util.Random random) {
+        this.random = random;
+    }
 
     // Simulation state
     private double currentTemp = 22.0;

@@ -41,7 +41,7 @@ import java.util.Locale;
 public class DashboardFragment extends Fragment {
 
     private int numSamples = 300;
-    private SharedPreferences sharedPreferences;
+    @javax.inject.Inject SharedPreferences sharedPreferences;
     private WeatherData previousData;
     private WeatherViewModel weatherViewModel;
     private FragmentDashboardBinding binding;
@@ -76,7 +76,6 @@ public class DashboardFragment extends Fragment {
             getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         numSamples =
                 Integer.parseInt(
                         sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));

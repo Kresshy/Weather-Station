@@ -32,7 +32,8 @@ public class FileLoggingTree extends Timber.DebugTree {
     /**
      * @param context Application context for accessing SharedPreferences.
      */
-    public FileLoggingTree(Context context) {
+    @javax.inject.Inject
+    public FileLoggingTree(@dagger.hilt.android.qualifiers.ApplicationContext Context context) {
         this.context = context;
     }
 

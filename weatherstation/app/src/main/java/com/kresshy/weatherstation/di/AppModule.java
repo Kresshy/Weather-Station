@@ -49,4 +49,11 @@ public class AppModule {
     public NotificationManager provideNotificationManager(@ApplicationContext Context context) {
         return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
+
+    /** Provides a singleton instance of Random. */
+    @Provides
+    @Singleton
+    public java.util.Random provideRandom() {
+        return new java.util.Random();
+    }
 }

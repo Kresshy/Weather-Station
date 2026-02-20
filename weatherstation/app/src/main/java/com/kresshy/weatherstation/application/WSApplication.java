@@ -17,6 +17,8 @@ import timber.log.Timber;
 @HiltAndroidApp
 public class WSApplication extends Application {
 
+    @javax.inject.Inject FileLoggingTree fileLoggingTree;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -30,7 +32,7 @@ public class WSApplication extends Application {
         if (Boolean.parseBoolean(
                 sharedPreferences.getString(
                         "pref_logging_enabled", Boolean.toString(Boolean.FALSE)))) {
-            Timber.plant(new FileLoggingTree(getApplicationContext()));
+            Timber.plant(fileLoggingTree);
         }
 
         Timber.d("ONCREATE");
