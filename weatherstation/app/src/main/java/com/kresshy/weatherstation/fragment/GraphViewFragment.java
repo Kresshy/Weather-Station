@@ -162,8 +162,17 @@ public class GraphViewFragment extends Fragment {
 
         // Pro: Area filling for better visual volume
         set.setDrawFilled(true);
-        set.setFillAlpha(40); // Subtle 15% opacity
+        set.setFillAlpha(85); // Increased to ~33% opacity for better visibility
         set.setFillColor(color);
+
+        // Use a gradient if on a modern device
+        if (com.github.mikephil.charting.utils.Utils.getSDKInt() >= 18) {
+            android.graphics.drawable.GradientDrawable gradientDrawable =
+                    new android.graphics.drawable.GradientDrawable(
+                            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                            new int[] {color, Color.TRANSPARENT});
+            set.setFillDrawable(gradientDrawable);
+        }
 
         // Smoothing out the edges
         set.setHighLightColor(Color.WHITE);
