@@ -1,63 +1,49 @@
-# Weather Station - Development Summary (Comprehensive)
+# Weather Station - Development Summary (Thermal Hunting Edition)
 
 ## 🎯 Overview
-Successfully transformed the legacy Weather Station project into a modern Android application using best practices, robust architecture, and a comprehensive testing suite. This summary captures all uncommitted work from recent development cycles.
+Successfully refocused the project on **free-flight aeromodelling** and **thermal detection**. Transformed the codebase into a robust, single-platform (Android) and single-node (Arduino) system with advanced data integrity and modern architecture.
 
-## 🏗 Architectural Evolution (Phases 1-22)
+## 🏗️ Architectural Evolution (Recent Session)
 
-### Build System & Modernization
-*   **Targeting Android 15**: Upgraded `compileSdk` and `targetSdk` to **35**.
-*   **Gradle 9 Integration**: Migrated to Gradle **9.2.1** and AGP **9.0.1**.
-*   **Dependency Injection**: Fully integrated **Dagger Hilt** across the application.
-*   **Jetpack Suite**: Implemented **ViewBinding**, **ViewModel**, **LiveData**, and **Jetpack Navigation**.
-*   **Java 8+ Features**: Integrated Java 8 Streams API for data processing (Phase 22).
+### Focus & Scope Refinement
+*   **Android-First**: Removed the legacy iOS application and Node.js simulator to consolidate development on the Android/Arduino core.
+*   **Single-Node Optimization**: Transitioned from multi-node complexity to a high-performance single-sensor configuration optimized for airfield deployment.
+*   **Dependency Injection Overhaul**: Eliminated static factories and manual context passing. Fully integrated **Dagger Hilt** for dynamic connection providing and core component management.
 
-### Repository & Data Layer
-*   **Repository Pattern**: Introduced `WeatherRepository` to centralize data flow.
-*   **Dagger Hilt**: Implemented `AppModule` and `RepositoryModule` for automated dependency management.
-*   **Logic Migration**: Moved business logic out of `WSActivity` into `WeatherViewModel` and `ThermalAnalyzer`.
+### Data Integrity & Stability
+*   **Double-Layer Spike Protection**:
+    *   **Firmware Layer**: Arduino now rejects `85.0°C` power-on defaults and `-127.0°C` OneWire errors.
+    *   **Application Layer**: `WeatherRepositoryImpl` now discards physically impossible temperature jumps (outlier rejection).
+*   **Communication Protocol**: Synchronized both layers to use the modern `WS_{JSON}_end` PDU format.
 
-### UI/UX Transformation
-*   **Jetpack Navigation**: Replaced custom drawer logic with `NavigationUI` and a formal `nav_graph.xml`.
-*   **Real-time Visualization**: Migrated from legacy `GraphView` to **MPAndroidChart** for smooth, live-updating charts.
-*   **Material Design**: Updated all layouts to use Material Components (CardView, LinearProgressIndicator, TextInputLayout).
-*   **Fragment-Based Architecture**:
-    *   `DashboardFragment`: Primary view with live charts and air quality status.
-    *   `CalibrationFragment`: Interactive UI for tuning sensor offsets.
-    *   `BluetoothDeviceListFragment`: Modernized list for station discovery.
+### UI/UX & Visual Improvements
+*   **Pro Charts**: Implemented **Cubic Bézier smoothing** for organic weather data visualization and reduced marker size for a professional look.
+*   **Notification Fix**: Added a custom **Wind Flag silhouette** vector drawable to resolve the "blank white rectangle" issue on modern Android versions.
+*   **Dialog Polish**: Resolved a lifecycle bug where the reconnect dialog would appear multiple times.
 
-### Communication & Hardware Logic
-*   **Protocol Support**: Enhanced `WeatherMessageParser` to handle both modern multi-node JSON (`WS_{JSON}_end`) and legacy Arduino strings.
-*   **Connection Abstraction**: Created `ConnectionManager` and `ConnectionFactory` to seamlessly switch between Bluetooth and Simulation modes.
-*   **Thermal Intelligence**: Implemented `ThermalAnalyzer` using Exponential Moving Averages (EMA) to detect flight windows.
-*   **Simulator 2.0**: Enhanced the `SimulatorConnection` with realistic air behavior (thermal pulses and baseline drift).
+### Codebase & Quality Control
+*   **Static Analysis**: Integrated **PMD** and **Android Lint** into the Gradle build to detect dead code and resource integrity issues.
+*   **Major Cleanup**:
+    *   Removed 18+ unused XML layouts and menus.
+    *   Eliminated redundant constants by moving essential keys to the `WeatherRepository` interface.
+    *   Cleaned up Windows-generated `Thumbs.db` and updated `.gitignore`.
+*   **Firmware Consolidation**: Unified multiple Arduino versions into a single, clean `weatherstation.ino` with interrupt-driven wind measurement.
 
-## ✅ Testing & Quality Assurance (Phase 23+)
+## ✅ Testing & Quality Assurance
 
 ### Testing Infrastructure
-*   **Robolectric & Espresso**: Integrated framework support for unit and UI testing.
-*   **Hilt Testing**: Configured `CustomHiltTestRunner` and `FakeWeatherRepository` for high-fidelity integration tests.
-
-### Verified Components
-*   **Core Logic**: `ThermalAnalyzerTest`, `WeatherMessageParserTest`, `WeatherDataTest`.
-*   **Repository**: `WeatherRepositoryImplTest` (includes Reconnection & Calibration logic).
-*   **Connection**: `ConnectionManagerTest`, `ConnectionFactoryTest`.
-*   **UI Integration**: `WSActivityTest` (verified Hilt injection and Navigation).
-
-### Documentation & Style
-*   **Javadoc**: Added comprehensive documentation to all 45 Java files.
-*   **Spotless**: Enforced code style consistency with `google-java-format`.
+*   **Refactored Test Suite**: Updated `WeatherRepositoryImplTest` and `ConnectionManagerTest` to utilize the new DI architecture.
+*   **New Test Cases**: Added verification for **Layer 2 Outlier Rejection** to ensure data spikes are correctly ignored.
 
 ## 🧪 Current Status
-*   **Total Unit Tests**: 33
-*   **Pass Rate**: 100%
-*   **Build Status**: Successful
-*   **Linter**: Spotless passing
+*   **Build Status**: Successful (`assembleDebug` passing)
+*   **Unit Tests**: All tests passing (including new architecture and stability tests)
+*   **Linter**: PMD, Android Lint, and Spotless passing
 
-## 🚀 Next Steps
-*   **Fragment Isolation Tests**: Implement tests for `DashboardFragment` visuals using `FragmentScenario`.
-*   **iOS Alignment**: Mirror the `ThermalAnalyzer` logic in the `weatherstation-ios` project.
-*   **Multi-Node Support**: Further refine the UI to display data from Node 1 and Node 2 simultaneously on the dashboard.
+## 🚀 Future Roadmap (`FUTURE_IMPROVEMENTS.md`)
+*   **Pressure-Drop Detection**: Integrate BME280/BMP280 for early "Pre-Thermal" warnings.
+*   **Ultrasonic Sensing**: Transition to 2D Ultrasonic Anemometers for zero-latency wind vectoring.
+*   **Acoustic Variometer**: Add variable-pitch audio alerts to help pilots keep their eyes on the model.
 
 ---
-*Generated by Gemini CLI based on Session History and Git Diff*
+*Generated by Gemini CLI - February 19, 2026*
