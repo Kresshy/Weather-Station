@@ -53,15 +53,19 @@ To ensure stable charts and reliable thermal analysis across various hardware ge
 1.  **Universal Legacy Parser (Application Layer)**:
     - **Backwards Compatibility**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
     - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats, allowing the app to work with every version of the station firmware without updates.
-    - **Whitespace Immunity**: Resilient to erratic formatting, extra newlines, and trailing spaces from older serial implementations.
 2.  **Bluetooth & Platform Stability**:
-    - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` to correctly manage Bluetooth and Location permissions across different API levels (handling the transition from legacy Bluetooth permissions to modern Android 12+ Scan/Connect permissions).
-    - **Race Condition Protection**: Resolved a critical socket-management bug in `BluetoothConnection.java` that caused instant disconnections after successful handshakes.
-    - **Fallback Support**: Implements automated RFCOMM fallback for improved pairing reliability on older Android devices.
-3.  **Sensor Filtering (Firmware & App Layers)**:
-    - **Outlier Rejection**: Discards temperature jumps > 10°C/sec (physically impossible air shifts).
-    - **OneWire Guard**: Firmware rejects `85.0°C` power-on defaults and `-127.0°C` bus errors.
-    - **Smoothing**: Uses Exponential Moving Averages (EMA) for trend detection and stable "Launch Suitability" scoring.
+    - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` to correctly manage Bluetooth and Location permissions across different API levels.
+    - **Java 8 Compatibility Refactor**: Removed all Java 8 `Stream` API usages to ensure the app runs on devices without modern language feature support (e.g., API 23).
+    - **Race Condition Protection**: Resolved a critical socket-management bug in `BluetoothConnection.java` that caused instant disconnections.
+
+## 📱 Legacy Device Compatibility (Android 6.0 - 11.0)
+
+While the app is optimized for modern Android versions, it fully supports legacy devices with the following limitations and requirements:
+
+- **Location Services Mandatory**: On Android 6.0 through 9.0, Bluetooth scanning **will not find any devices** unless the system **Location (GPS)** toggle is turned **ON** in the quick settings. This is a platform-level requirement for Bluetooth discovery on these versions.
+- **Hardware Limitations**: Emulators and devices without Bluetooth hardware can still run the app using **Simulator Mode** (enabled in Settings).
+- **UI Performance**: Complex charts are optimized with Cubic Bézier smoothing, but very old devices may experience slight frame drops during high-frequency data updates.
+- **Backgrounding**: Android 6 is aggressive with power management. Ensure "Battery Optimization" is disabled for the app to keep the weather service alive during long field sessions.
 
 ## 🧪 Testing & Quality Control
 
