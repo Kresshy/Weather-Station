@@ -152,9 +152,9 @@ public class GraphViewFragment extends Fragment {
     private LineDataSet createSet(String label, int color) {
         LineDataSet set = new LineDataSet(new ArrayList<>(), label);
         set.setColor(color);
-        set.setLineWidth(2.5f);
+        set.setLineWidth(3f);
         set.setCircleColor(color);
-        set.setCircleRadius(1.5f);
+        set.setCircleRadius(2f);
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
 
