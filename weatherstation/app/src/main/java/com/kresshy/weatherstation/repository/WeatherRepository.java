@@ -100,6 +100,11 @@ public interface WeatherRepository {
     LiveData<Integer> getBluetoothState();
 
     /**
+     * @return Observable currently connected device name.
+     */
+    LiveData<String> getConnectedDeviceName();
+
+    /**
      * @return Observable list of paired Bluetooth devices.
      */
     LiveData<List<android.os.Parcelable>> getPairedDevices();

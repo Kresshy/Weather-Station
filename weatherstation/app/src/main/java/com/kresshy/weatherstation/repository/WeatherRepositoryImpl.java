@@ -73,12 +73,13 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final MutableLiveData<Double> windTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
     private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(false);
+    private final MutableLiveData<String> connectedDeviceName = new MutableLiveData<>(null);
 
     private double correctionWind = 0.0;
     private double correctionTemp = 0.0;
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
-    private BluetoothDevice lastConnectedDevice;
+    private Parcelable lastConnectedDevice;
     private boolean shouldReconnect = false;
     private final ScheduledExecutorService reconnectExecutor =
             Executors.newSingleThreadScheduledExecutor();
@@ -180,6 +181,11 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     @Override
     public LiveData<Boolean> isLaunchDetectorEnabled() {
         return launchDetectorEnabled;
+    }
+
+    @Override
+    public LiveData<String> getConnectedDeviceName() {
+        return connectedDeviceName;
     }
 
     @Override
@@ -291,7 +297,13 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
             // Add the last known RSSI if available
             if (lastConnectedDevice != null) {
-                int rssi = bluetoothManager.getDeviceRssi(lastConnectedDevice.getAddress());
+                String address = "";
+                if (lastConnectedDevice instanceof BluetoothDevice) {
+                    address = ((BluetoothDevice) lastConnectedDevice).getAddress();
+                } else if (lastConnectedDevice instanceof SimulatorDevice) {
+                    address = ((SimulatorDevice) lastConnectedDevice).getAddress();
+                }
+                int rssi = bluetoothManager.getDeviceRssi(address);
                 weatherData.setRssi(rssi);
             }
 
@@ -326,10 +338,22 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             case connected:
                 uiState.postValue(Resource.success(null));
                 reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
+                if (lastConnectedDevice != null) {
+                    if (lastConnectedDevice instanceof BluetoothDevice) {
+                        if (PermissionHelper.hasConnectPermission(context)) {
+                            connectedDeviceName.postValue(((BluetoothDevice) lastConnectedDevice).getName());
+                        } else {
+                            connectedDeviceName.postValue("Weather Station");
+                        }
+                    } else if (lastConnectedDevice instanceof SimulatorDevice) {
+                        connectedDeviceName.postValue(((SimulatorDevice) lastConnectedDevice).getName());
+                    }
+                }
                 break;
             case disconnected:
             case stopped:
                 uiState.postValue(Resource.error("Disconnected", null));
+                connectedDeviceName.postValue(null);
                 if (shouldReconnect && lastConnectedDevice != null) {
                     scheduleReconnect();
                 }
@@ -343,7 +367,17 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         reconnectExecutor.schedule(
                 () -> {
                     if (shouldReconnect && lastConnectedDevice != null) {
-                        Timber.d("Attempting auto-reconnect to: %s", lastConnectedDevice.getName());
+                        String name = "Device";
+                        if (lastConnectedDevice instanceof BluetoothDevice) {
+                            if (PermissionHelper.hasConnectPermission(context)) {
+                                name = ((BluetoothDevice) lastConnectedDevice).getName();
+                            } else {
+                                name = "Weather Station";
+                            }
+                        } else if (lastConnectedDevice instanceof SimulatorDevice) {
+                            name = ((SimulatorDevice) lastConnectedDevice).getName();
+                        }
+                        Timber.d("Attempting auto-reconnect to: %s", name);
                         connectionManager.connectToDevice(lastConnectedDevice);
                     }
                 },
@@ -401,11 +435,9 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
     @Override
     public void connectToDevice(Parcelable device) {
-        if (device instanceof BluetoothDevice) {
-            lastConnectedDevice = (BluetoothDevice) device;
-            shouldReconnect = true;
-            reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
-        }
+        lastConnectedDevice = device;
+        shouldReconnect = true;
+        reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
         connectionManager.connectToDevice(device);
     }
 

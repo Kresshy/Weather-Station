@@ -19,6 +19,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.databinding.FragmentDashboardBinding;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherViewModel;
@@ -75,6 +76,20 @@ public class GraphViewFragment extends Fragment {
         }
 
         setupCharts();
+
+        weatherViewModel
+                .getConnectedDeviceName()
+                .observe(
+                        getViewLifecycleOwner(),
+                        name -> {
+                            if (getActivity() != null) {
+                                if (name != null) {
+                                    getActivity().setTitle(name);
+                                } else {
+                                    getActivity().setTitle(R.string.dashboard_view);
+                                }
+                            }
+                        });
 
         weatherViewModel
                 .getLatestWeatherData()

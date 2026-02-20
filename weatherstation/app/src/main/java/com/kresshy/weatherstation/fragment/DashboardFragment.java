@@ -145,6 +145,20 @@ public class DashboardFragment extends Fragment {
                         enabled -> {
                             binding.launchStatusCard.setVisibility(enabled ? View.VISIBLE : View.GONE);
                         });
+
+        weatherViewModel
+                .getConnectedDeviceName()
+                .observe(
+                        getViewLifecycleOwner(),
+                        name -> {
+                            if (getActivity() != null) {
+                                if (name != null) {
+                                    getActivity().setTitle(name);
+                                } else {
+                                    getActivity().setTitle(R.string.dashboard_view);
+                                }
+                            }
+                        });
     }
 
     private int getDecisionColor(WeatherRepository.LaunchDecision decision) {

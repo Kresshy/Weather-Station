@@ -118,6 +118,13 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * @return Observable currently connected device name.
+     */
+    public LiveData<String> getConnectedDeviceName() {
+        return weatherRepository.getConnectedDeviceName();
+    }
+
+    /**
      * @return List of previously paired Bluetooth devices.
      */
     public LiveData<List<android.os.Parcelable>> getPairedDevices() {
