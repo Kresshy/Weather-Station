@@ -15,7 +15,7 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 The repository is organized into two main components:
 
 1.  **/weatherstation**: The primary Android application (Java/Dagger Hilt).
-2.  **/arduino**: Firmware implementations for Arduino Nano/Micro/Uno.
+2.  **/arduino**: Unified firmware implementation (`weatherstation.ino`) for Arduino Nano/Micro/Uno.
 
 ## 🛠️ Hardware Requirements
 
@@ -31,9 +31,9 @@ To build a physical station, you will typically need:
 ## 📥 Getting Started
 
 ### 1. Arduino Setup
-Flash the firmware located in the `/arduino` directory.
-- **Dependencies**: `OneWire`, `ArduinoJson`, `SoftwareSerial`.
-- **Wiring**: Temperature sensor on pin 5, Anemometer interrupt on pin 2 (for newer versions).
+Flash the firmware located at `arduino/weatherstation.ino`.
+- **Dependencies**: `OneWire`, `ArduinoJson` (v5.x).
+- **Wiring**: See [WIRING_DIAGRAM.md](WIRING_DIAGRAM.md) for details.
 
 ### 2. Android App
 Open the `/weatherstation` folder in Android Studio.
@@ -53,6 +53,23 @@ To ensure stable charts and reliable thermal analysis, the system implements a *
     - **Outlier Rejection**: Discards any temperature jump greater than 10°C per second (physically impossible for air temperature).
     - **Smoothing**: Uses Exponential Moving Averages (EMA) for trend detection and stable "Launch Suitability" scoring.
 
+## 🧪 Testing & Quality Control
+
+The project includes a comprehensive suite of tools to ensure reliability:
+
+- **Unit Tests**: Verifies thermal analysis logic and data flow.
+  ```bash
+  ./gradlew test
+  ```
+- **Static Analysis (PMD)**: Checks for dead code and unused variables.
+  ```bash
+  ./gradlew pmd
+  ```
+- **Android Lint**: Verifies resource integrity and Android-specific best practices.
+  ```bash
+  ./gradlew lint
+  ```
+
 ## 📡 Protocol Specification
 
 The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communication:
@@ -71,7 +88,6 @@ The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communica
     ]
   }
   ```
-*Legacy support for space-separated values `{windSpeed} {temperature}` is also maintained.*
 
 ## 📄 License
 
