@@ -54,8 +54,9 @@ To ensure stable charts and reliable thermal analysis across various hardware ge
     - **Backwards Compatibility**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
     - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats, allowing the app to work with every version of the station firmware without updates.
     - **Whitespace Immunity**: Resilient to erratic formatting, extra newlines, and trailing spaces from older serial implementations.
-2.  **Bluetooth Stability (Connection Layer)**:
-    - **Race Condition Protection**: Resolved a critical socket-management bug that caused instant disconnections after successful handshakes.
+2.  **Bluetooth & Platform Stability**:
+    - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` to correctly manage Bluetooth and Location permissions across different API levels (handling the transition from legacy Bluetooth permissions to modern Android 12+ Scan/Connect permissions).
+    - **Race Condition Protection**: Resolved a critical socket-management bug in `BluetoothConnection.java` that caused instant disconnections after successful handshakes.
     - **Fallback Support**: Implements automated RFCOMM fallback for improved pairing reliability on older Android devices.
 3.  **Sensor Filtering (Firmware & App Layers)**:
     - **Outlier Rejection**: Discards temperature jumps > 10°C/sec (physically impossible air shifts).
