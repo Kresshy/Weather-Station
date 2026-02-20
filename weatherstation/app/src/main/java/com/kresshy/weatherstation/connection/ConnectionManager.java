@@ -1,9 +1,6 @@
 package com.kresshy.weatherstation.connection;
 
-import android.content.Context;
 import android.os.Parcelable;
-
-import dagger.hilt.android.qualifiers.ApplicationContext;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

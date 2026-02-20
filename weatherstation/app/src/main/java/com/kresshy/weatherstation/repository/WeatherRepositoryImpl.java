@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;

@@ -34,8 +34,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 
 /**
- * Unit tests for {@link WeatherRepositoryImpl}. Verifies data flow, calibration logic,
- * outlier rejection, and connection lifecycle management.
+ * Unit tests for {@link WeatherRepositoryImpl}. Verifies data flow, calibration logic, outlier
+ * rejection, and connection lifecycle management.
  */
 public class WeatherRepositoryImplTest {
 
@@ -59,7 +59,7 @@ public class WeatherRepositoryImplTest {
         when(bluetoothManager.getDiscoveredDevices())
                 .thenReturn(new MutableLiveData<>(new ArrayList<>()));
         when(bluetoothManager.getDiscoveryStatus()).thenReturn(new MutableLiveData<>(""));
-        
+
         // Mock SharedPreferences
         when(sharedPreferences.getString(anyString(), anyString())).thenReturn("0.0");
 
@@ -134,21 +134,21 @@ public class WeatherRepositoryImplTest {
         assertEquals(23.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
     }
 
-    /**
-     * Verifies that physically impossible temperature jumps (Layer 2 filter) are discarded.
-     */
+    /** Verifies that physically impossible temperature jumps (Layer 2 filter) are discarded. */
     @Test
     public void onRawDataReceived_RejectsOutlierSpikes() {
         String rawData1 = "WS_data1_end";
         WeatherData saneData = new WeatherData(5.0, 25.0);
-        
+
         String rawData2 = "WS_data2_end";
         WeatherData spikeData = new WeatherData(5.0, 45.0); // 20 degree jump!
 
         when(messageParser.parse(rawData1)).thenReturn(saneData);
         when(messageParser.parse(rawData2)).thenReturn(spikeData);
         when(thermalAnalyzer.analyze(any()))
-                .thenReturn(new ThermalAnalyzer.AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
+                .thenReturn(
+                        new ThermalAnalyzer.AnalysisResult(
+                                WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
 
         // First send sane data
         repository.onRawDataReceived(rawData1);
@@ -156,7 +156,7 @@ public class WeatherRepositoryImplTest {
 
         // Now send spike data
         repository.onRawDataReceived(rawData2);
-        
+
         // The value should STILL be 25.0 because the 45.0 spike was rejected
         assertEquals(25.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
         assertNotEquals(45.0, repository.getLatestWeatherData().getValue().getTemperature(), 0.001);
