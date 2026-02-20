@@ -23,6 +23,10 @@ graph TD
 
     subgraph Domain_Layer [Domain Layer - UseCases]
         GWUS[GetWeatherUiStateUseCase]
+        CTD[ConnectToDeviceUseCase]
+        GPD[GetPairedDevicesUseCase]
+        MD[ManageDiscoveryUseCase]
+        UC[UpdateCalibrationUseCase]
         TA[ThermalAnalyzer]
     end
 
@@ -42,8 +46,14 @@ graph TD
     %% Component Interactions
     UI_Layer --> WVM
     WVM --> GWUS
+    WVM --> CTD
+    WVM --> GPD
+    WVM --> MD
+    WVM --> UC
     GWUS --> WRI
     GWUS --> TA
+    CTD --> WRI
+    MD --> WRI
     WS --> WRI
     WRI --> CM
     WRI --> WBM
@@ -64,6 +74,10 @@ graph TD
 
 ### 1. **Domain Layer (Business Logic)**
 - **`GetWeatherUiStateUseCase`**: The central aggregator. It observes all data streams from the repository (sensor data, connection state, trends) and merges them into a single, immutable `WeatherUiState`.
+- **`ConnectToDeviceUseCase`**: Handles the logic of selecting between physical and virtual hardware and initiating connections.
+- **`GetPairedDevicesUseCase`**: Encapsulates logic for filtering and retrieving available weather stations based on system state and permissions.
+- **`ManageDiscoveryUseCase`**: Controls the lifecycle of Bluetooth scanning.
+- **`UpdateCalibrationUseCase`**: Manages the persistence of sensor offsets.
 - **`ThermalAnalyzer`**: Encapsulates the core EMA algorithm for detecting thermals.
 
 ### 2. **Data Layer (Repository & Hardware)**
