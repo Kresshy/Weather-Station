@@ -218,6 +218,9 @@ public class WSActivity extends AppCompatActivity {
         if (mandatoryGranted) {
             permissionsGranted = true;
             weatherRepository.refreshPairedDevices();
+            if (!weatherBluetoothManager.isBluetoothEnabled()) {
+                weatherBluetoothManager.enableBluetooth();
+            }
             if (!requestedEnableBluetooth) {
                 Timber.d("Starting Weather Service");
                 startWeatherService();
@@ -271,10 +274,10 @@ public class WSActivity extends AppCompatActivity {
         Timber.d("ONRESUME");
 
         // checking bluetoothadapter and bluetoothservice and make sure it is started
-        if (!weatherBluetoothManager.isBluetoothEnabled() && !requestedEnableBluetooth) {
+        if (!weatherBluetoothManager.isBluetoothEnabled()) {
             if (permissionsGranted) {
+                weatherBluetoothManager.enableBluetooth();
                 requestedEnableBluetooth = true;
-                // connectionManager.enableConnection(); // Removed
             }
         } else if (weatherBluetoothManager.isBluetoothEnabled()) {
             reconnectPreviousWeatherStation();
