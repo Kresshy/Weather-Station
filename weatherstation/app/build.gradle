@@ -8,6 +8,7 @@ plugins {
     id 'com.android.application'
     id 'com.diffplug.spotless'
     id 'com.google.dagger.hilt.android'
+    id 'pmd'
 }
 
 android {
@@ -17,6 +18,15 @@ android {
 
     namespace 'com.kresshy.weatherstation'
     compileSdk 35
+
+    lint {
+        abortOnError false
+        checkDependencies true
+        ignoreWarnings false
+        warningsAsErrors true
+        checkReleaseBuilds true
+        explainIssues true
+    }
 
     /**
      * compileSdk specifies the Android API level Gradle should use to
@@ -154,4 +164,20 @@ dependencies {
     testImplementation 'androidx.test.espresso:espresso-contrib:3.6.1'
     testImplementation 'com.google.dagger:hilt-android-testing:2.51.1'
     testAnnotationProcessor 'com.google.dagger:hilt-android-compiler:2.51.1'
+}
+
+pmd {
+    toolVersion = "7.0.0"
+    ignoreFailures = true
+}
+
+task pmd(type: Pmd) {
+    description 'Run PMD to find dead code and unused variables'
+    group 'verification'
+    source = fileTree('src/main/java')
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml", "category/java/codestyle.xml"]
+    reports {
+        xml.required = false
+        html.required = true
+    }
 }
