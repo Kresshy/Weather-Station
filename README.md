@@ -59,9 +59,12 @@ To ensure stable charts and reliable thermal analysis across various hardware ge
     - **Proactive Reconnection**: Automatically prompts to reconnect to the last known station immediately after Bluetooth is enabled on startup.
     - **Race Condition Protection**: Resolved socket-management bugs that caused disconnections during state transitions.
 3.  **UI/UX & Visualization**:
+    - **Data Persistence**: Implemented a historical data buffer (300 samples) that persists across fragment navigation, ensuring charts don't reset when switching between views.
+    - **Responsive Toolbar**: Automatically adjusts toolbar height for wide/landscape screen ratios to maximize vertical space for data.
+    - **Dynamic Device Titles**: The toolbar title now dynamically displays the name of the connected weather station (e.g., "WS-STATION-01" or "Simulator Station").
     - **High-Visibility Charts**: Enhanced aesthetics with bold **5.0f** lines and prominent **3.5f** solid data points for clear airfield viewing.
-    - **Dynamic Status**: Replaces cryptic "RSSI: N/A" with a clear "Status: Connected" message when signal strength is unavailable.
     - **User-Friendly Signal**: Maps raw dBm values to intuitive labels (Excellent, Good, Fair, Poor).
+    - **Dynamic Status**: Replaces cryptic "RSSI: N/A" with a clear "Status: Connected" message when signal strength is unavailable.
 
 ## 📱 Legacy Device Compatibility (Android 6.0 - 11.0)
 

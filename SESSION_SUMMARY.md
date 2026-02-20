@@ -1,7 +1,7 @@
 # Weather Station - Development Summary (Compatibility & Configuration Edition)
 
 ## 🎯 Overview
-Successfully transformed the application into a robust, cross-version platform. Resolved critical field-testing crashes on Android 6.0, implemented a universal legacy protocol parser, and made the core Thermal Analysis features fully configurable by the user.
+Successfully transformed the application into a robust, cross-version platform. Resolved all critical field-testing crashes on Android 6.0, implemented a universal legacy protocol parser, and made the core Thermal Analysis features fully configurable by the user. Enhanced the UI with data persistence and responsive design elements.
 
 ## 🏗️ Architectural Evolution (Current Session)
 
@@ -10,34 +10,33 @@ Successfully transformed the application into a robust, cross-version platform. 
     - Added support for both modern `WS_` and legacy `start_` PDU prefixes.
     - Implemented a "fallback" parsing logic that handles both JSON (modern) and space-separated/comma-separated (legacy) air data.
 *   **Platform Compatibility (Android 6.0+)**:
-    - **Permission System**: Implemented `PermissionHelper` to centralize and correct permission checks across API levels.
-    - **Java 8 Compatibility**: Removed all Java 8 `Stream` API usages to prevent `NoSuchMethodError` on older devices.
-    - **Emulator Support**: Added `@Nullable` support for `BluetoothAdapter` to prevent crashes on hardware without Bluetooth.
+    - **Permission System**: Implemented `PermissionHelper` to centralize and correct permission checks across API levels (legacy vs modern Bluetooth/Location requirements).
+    - **Java 8 Compatibility**: Removed all Java 8 `Stream` API usages from `ThermalAnalyzer` and `BluetoothDeviceListFragment` to prevent `NoSuchMethodError` on API 23.
+    - **API Resiliency**: Fixed crashes related to `setProgress` animation, `NotificationManager` retrieval, and `PendingIntent` flags on older devices.
+*   **Bluetooth Stability & Emulator Support**:
+    - Identified and resolved a race condition in `BluetoothConnection.java` where successful connections were closing their own sockets.
+    - Added `@Nullable` support for `BluetoothAdapter` to allow the app to launch on emulators and non-Bluetooth devices for simulation.
+    - **Proactive Reconnection**: The app now listens for Bluetooth hardware state changes and automatically triggers the reconnection prompt as soon as the adapter is enabled.
 
 ### ⚙️ User Configuration
 *   **Launch Detector Settings**:
-    - **Enable Toggle**: Added a preference to turn real-time thermal detection ON/OFF.
+    - **Enable Toggle**: Added a preference to turn real-time thermal detection ON/OFF (Default: OFF).
     - **Adjustable Sensitivity**: Added "Low", "Normal", and "High" sensitivity modes to allow pilots to customize thermal detection aggressiveness (multiplying scores by 0.7x to 1.3x).
-    - **Reactive UI**: The Dashboard automatically hides/shows the launch suitability card based on the enabled state.
-
-### 📶 Signal & Monitoring
-*   **RSSI Display & Labels**:
-    - Updated `WeatherBluetoothManager` to capture signal strength during initial scans.
-    - Added user-friendly labels (Excellent, Good, Fair, Poor) to the RSSI display.
-    - Added "Status: Connected" fallback when signal strength is unavailable.
 
 ### 🎨 UI/UX & Aesthetics
-*   **Pro Chart Styling**: Refined chart aesthetics for high visibility:
-    - **Line Width**: Increased to **5.0f** (Bold).
-    - **Data Points**: Solid filled circles with **3.5f** radius.
-*   **Proactive Reconnection**: The app now listens for Bluetooth hardware state changes and automatically triggers the reconnection prompt as soon as the adapter is enabled.
+*   **Data Persistence**: Implemented a historical data buffer (300 samples) in `WeatherRepositoryImpl` that persists across fragment navigation, ensuring charts don't reset when switching between views.
+*   **Dynamic Toolbar**:
+    - **Responsive Height**: Implemented resource qualifiers (`values-land`, `values-w600dp`) to automatically shrink toolbar height on wider screens.
+    - **Dynamic Titles**: The toolbar title now dynamically displays the name of the connected weather station (or Simulator) and persists across navigation.
+*   **Pro Chart Styling**: Bold **5.0f** lines and solid **3.5f** data points for maximum airfield visibility.
+*   **RSSI Display**: Added user-friendly labels (Excellent, Good, Fair, Poor) and a "Status: Connected" fallback.
 
 ### 🚀 Deliverables & Field Testing
-*   **v18 APK**: Built and staged `WeatherStation-v18.apk`, featuring full configuration support and Android 6 compatibility.
+*   **v26 APK**: Final stable build for today, verified for Android 6.0+ compatibility and featuring all new UI and configuration enhancements.
 
 ## ✅ Quality Control
 *   **Build Status**: Successful (`assembleDebug` passing).
-*   **Unit Tests**: All tests passing.
+*   **Git Identity**: Configured repository identity to `Szabolcs Varadi <kresshy@gmail.com>`.
 *   **Documentation**: Updated `README.md` and `SESSION_SUMMARY.md`.
 
 ---
