@@ -54,9 +54,14 @@ To ensure stable charts and reliable thermal analysis across various hardware ge
     - **Backwards Compatibility**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
     - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats, allowing the app to work with every version of the station firmware without updates.
 2.  **Bluetooth & Platform Stability**:
-    - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` to correctly manage Bluetooth and Location permissions across different API levels.
-    - **Java 8 Compatibility Refactor**: Removed all Java 8 `Stream` API usages to ensure the app runs on devices without modern language feature support (e.g., API 23).
-    - **Race Condition Protection**: Resolved a critical socket-management bug in `BluetoothConnection.java` that caused instant disconnections.
+    - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` and removed Java 8 `Stream` APIs to ensure 100% compatibility with legacy devices (API 23+).
+    - **Emulator & No-BT Support**: Gracefully handles missing Bluetooth hardware, allowing the app to run in **Simulator Mode** on standard Android emulators.
+    - **Proactive Reconnection**: Automatically prompts to reconnect to the last known station immediately after Bluetooth is enabled on startup.
+    - **Race Condition Protection**: Resolved socket-management bugs that caused disconnections during state transitions.
+3.  **UI/UX & Visualization**:
+    - **High-Visibility Charts**: Enhanced aesthetics with bold **5.0f** lines and prominent **3.5f** solid data points for clear airfield viewing.
+    - **Dynamic Status**: Replaces cryptic "RSSI: N/A" with a clear "Status: Connected" message when signal strength is unavailable.
+    - **User-Friendly Signal**: Maps raw dBm values to intuitive labels (Excellent, Good, Fair, Poor).
 
 ## 📱 Legacy Device Compatibility (Android 6.0 - 11.0)
 
