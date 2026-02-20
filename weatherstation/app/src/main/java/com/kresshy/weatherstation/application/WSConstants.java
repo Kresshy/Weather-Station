@@ -6,9 +6,6 @@ package com.kresshy.weatherstation.application;
  */
 public class WSConstants {
 
-    // --- SharedPreferences Keys ---
-    public static final String KEY_PREF_RECONNECT = "pref_reconnect";
-
     // --- Calibration Keys ---
     public static final String KEY_WIND_DIFF = "KEY_WIND_DIFF";
     public static final String KEY_TEMP_DIFF = "KEY_TEMP_DIFF";
