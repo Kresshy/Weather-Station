@@ -54,7 +54,7 @@ This document outlines potential hardware and software enhancements to evolve th
 
 ### 4. Live Data Sharing (Cloud/Firebase)
 *   **The Upgrade:** Push station readings to a central MQTT or Firebase broker.
-*   **The Benefit:** Allows multiple pilots at a contest to see the same "Master Station" data simultaneously on their own devices.
+*   **The Benefit:** Allows multiple pilots at a contest to see the same station data simultaneously on their own devices.
 
 ---
 

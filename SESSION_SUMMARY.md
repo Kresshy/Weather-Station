@@ -61,6 +61,13 @@ Successfully transformed the application into a robust, cross-version platform. 
 *   **Fragment Consistency**: Refactored `DashboardFragment` and `GraphViewFragment` to inject `SharedPreferences` directly via Hilt, eliminating manual `PreferenceManager` calls and aligning with modern Android architectural patterns.
 *   **Centralized Providers**: Updated `AppModule` to provide missing global dependencies (`Random`), ensuring the entire application graph is managed by Hilt.
 
+## 🧹 Repository Consolidation & Cleanup
+
+### ✂️ Legacy Code Removal
+*   **Multi-Node Deprecation**: Removed all legacy multi-station/relay Arduino code (`arduino/Janne`, `arduino/JIDownWind*`, `arduino/JIUpWind*`). This eliminates the primary source of junk data and communication lag reported in field tests.
+*   **Definitive Firmware**: Consolidated the project on `arduino/weatherstation.ino` as the single, standardized firmware for all stations. This version includes non-blocking sensor logic and high-precision calculations.
+*   **Documentation Alignment**: Updated `README.md` and `FUTURE_IMPROVEMENTS.md` to reflect the single-node focus and remove references to deprecated legacy components.
+
 ### 🚀 Deliverables & Field Testing
 *   **v26 APK**: Final stable build for today, verified for Android 6.0+ compatibility and featuring all new UI and configuration enhancements.
 
