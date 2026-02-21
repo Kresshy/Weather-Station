@@ -3,7 +3,6 @@ package com.kresshy.weatherstation.bluetooth;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -45,11 +44,9 @@ public class BluetoothConnection implements Connection {
     private BluetoothDevice bluetoothDevice = null;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private Future<?> acceptFuture;
     private Future<?> connectFuture;
     private Future<?> connectedFuture;
 
-    private AcceptRunnable acceptRunnable;
     private ConnectRunnable connectRunnable;
     private ConnectedRunnable connectedRunnable;
 
@@ -77,15 +74,6 @@ public class BluetoothConnection implements Connection {
         Timber.d("START SERVICE");
 
         cancelTasks();
-
-        // Start the task to listen on a BluetoothServerSocket only if we have advertise permission
-        if (PermissionHelper.hasAdvertisePermission(context)) {
-            acceptRunnable = new AcceptRunnable();
-            acceptFuture = executorService.submit(acceptRunnable);
-            Timber.d("SUBMIT AcceptRunnable");
-        } else {
-            Timber.w("Skipping AcceptRunnable: Missing BLUETOOTH_ADVERTISE permission");
-        }
 
         state = ConnectionState.disconnected;
         callback.onConnectionStateChange(ConnectionState.disconnected);
@@ -136,14 +124,6 @@ public class BluetoothConnection implements Connection {
             connectedRunnable = null;
         }
 
-        // Cancel the accept thread because we only want to connect to one device
-        if (acceptFuture != null) {
-            acceptFuture.cancel(true);
-            if (acceptRunnable != null) acceptRunnable.cancel();
-            acceptFuture = null;
-            acceptRunnable = null;
-        }
-
         // Start the task to manage the connection and perform transmissions
         connectedRunnable = new ConnectedRunnable(socket);
         connectedFuture = executorService.submit(connectedRunnable);
@@ -174,13 +154,6 @@ public class BluetoothConnection implements Connection {
             if (connectedRunnable != null) connectedRunnable.cancel();
             connectedFuture = null;
             connectedRunnable = null;
-        }
-
-        if (acceptFuture != null) {
-            acceptFuture.cancel(true);
-            if (acceptRunnable != null) acceptRunnable.cancel();
-            acceptFuture = null;
-            acceptRunnable = null;
         }
     }
 
@@ -214,63 +187,6 @@ public class BluetoothConnection implements Connection {
     @Override
     public void setCallback(RawDataCallback callback) {
         this.callback = callback;
-    }
-
-    /** Thread that listens for incoming RFCOMM connections. */
-    private class AcceptRunnable implements Runnable {
-        private final BluetoothServerSocket mmServerSocket;
-
-        public AcceptRunnable() {
-            BluetoothServerSocket tmp = null;
-            try {
-                if (!PermissionHelper.hasConnectPermission(context)) {
-                    callback.onLogMessage("AcceptRunnable, Missing Permissions: BLUETOOTH_CONNECT");
-                }
-                if (!PermissionHelper.hasAdvertisePermission(context)) {
-                    callback.onLogMessage("AcceptRunnable, Missing Permissions: BLUETOOTH_ADVERTISE");
-                }
-                if (bluetoothAdapter != null && 
-                    PermissionHelper.hasConnectPermission(context) && 
-                    PermissionHelper.hasAdvertisePermission(context)) {
-                    tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
-                }
-            } catch (IOException e) {
-                Timber.e("Accept Thread " + e.getMessage());
-            }
-            mmServerSocket = tmp;
-        }
-
-        @Override
-        public void run() {
-            BluetoothSocket socket = null;
-            while (state != ConnectionState.connected) {
-                try {
-                    if (mmServerSocket == null) break;
-                    socket = mmServerSocket.accept();
-                } catch (IOException e) {
-                    Timber.e("AcceptRunnable: " + e.getMessage());
-                    break;
-                }
-                if (socket != null) {
-                    Timber.d("Connected");
-                    connected(socket);
-                    try {
-                        mmServerSocket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                }
-            }
-        }
-
-        public void cancel() {
-            try {
-                if (mmServerSocket != null) mmServerSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /** Thread that attempts to initiate an outgoing RFCOMM connection. */

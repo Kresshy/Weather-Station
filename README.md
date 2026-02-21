@@ -9,6 +9,7 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 - **Advanced Trend Analysis**: Uses Exponential Moving Averages (EMA) to detect subtle thermal pulses, providing a "Launch Suitability" score (0-100).
 - **Data Visualization**: Interactive real-time graphs for monitoring temperature and wind speed trends during a flight session.
 - **Mobile Access**: Modern Android application (Java) optimized for field use.
+- **Global Compatibility**: Full support for international locales (comma/dot decimal separators) and legacy data formats.
 
 ## 🏗️ System Architecture
 
@@ -17,7 +18,7 @@ The application follows **Clean Architecture** principles, separating concerns i
 1.  **UI Layer (MVVM)**: Fragments observe a unified `WeatherUiState` from the `WeatherViewModel`.
 2.  **Domain Layer (UseCases)**: Encapsulates business logic (Thermal Analysis, Connection logic, Discovery management) into individual, testable UseCase classes.
 3.  **Data Layer (Repository)**: `WeatherRepositoryImpl` acts as a lean data provider, orchestrating hardware connections and raw data parsing.
-4.  **Hardware/Connection**: Manages physical Bluetooth communication and software simulation.
+4.  **Hardware/Connection**: Manages physical Bluetooth communication (Client Mode) and software simulation.
 
 The repository is organized into two main components:
 
@@ -59,22 +60,21 @@ Open the `/weatherstation` folder in Android Studio.
 To ensure stable charts and reliable thermal analysis across various hardware generations, the system implements a multi-layer compatibility and filtering strategy:
 
 1.  **Universal Legacy Parser (Application Layer)**:
+    - **Locale Independence**: Automatically detects and handles both dot (`.`) and comma (`,`) decimal separators, preventing crashes on devices with European or other international settings.
     - **Backwards Compatibility**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
-    - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats, allowing the app to work with every version of the station firmware without updates.
+    - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats.
 2.  **Bluetooth & Platform Stability**:
+    - **Client-Only Architecture**: Optimized for stability by removing server-socket logic (`AcceptRunnable`), ensuring the app functions strictly as a robust client.
     - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` and removed Java 8 `Stream` APIs to ensure 100% compatibility with legacy devices (API 23+).
     - **Emulator & No-BT Support**: Gracefully handles missing Bluetooth hardware, allowing the app to run in **Simulator Mode** on standard Android emulators.
     - **Proactive Reconnection**: Automatically prompts to reconnect to the last known station immediately after Bluetooth is enabled on startup.
     - **Noise Resilience**: Enhanced frame synchronization logic to discard debugging output and junk data from older firmware versions (e.g., v12), ensuring stable data visualization.
-    - **Race Condition Protection**: Resolved socket-management bugs that caused disconnections during state transitions and fixed duplicate service initialization.
 3.  **UI/UX & Visualization**:
-    - **Configurable Exit Behavior**: Added a user preference to toggle whether Bluetooth should be automatically disabled when quitting the app.
-    - **Data Persistence**: Implemented a historical data buffer (300 samples) that persists across fragment navigation, ensuring charts don't reset when switching between views.
-    - **Responsive Toolbar**: Automatically adjusts toolbar height for wide/landscape screen ratios to maximize vertical space for data.
-    - **Dynamic Device Titles**: The toolbar title now dynamically displays the name of the connected weather station (e.g., "WS-STATION-01" or "Simulator Station").
-    - **High-Visibility Charts**: Enhanced aesthetics with bold **5.0f** lines and prominent **3.5f** solid data points for clear airfield viewing.
-    - **User-Friendly Signal**: Maps raw dBm values to intuitive labels (Excellent, Good, Fair, Poor).
-    - **Dynamic Status**: Replaces cryptic "RSSI: N/A" with a clear "Status: Connected" message when signal strength is unavailable.
+    - **Non-Intrusive Exit**: By default, the app no longer disables the system Bluetooth adapter on exit, preserving connectivity for other devices.
+    - **Data Persistence**: Implemented a historical data buffer (300 samples) that persists across fragment navigation.
+    - **Responsive Toolbar**: Automatically adjusts toolbar height for wide/landscape screen ratios.
+    - **Dynamic Device Titles**: The toolbar title now dynamically displays the name of the connected weather station.
+    - **High-Visibility Charts**: Enhanced aesthetics with bold **5.0f** lines and prominent **3.5f** solid data points.
 
 ## 📱 Legacy Device Compatibility (Android 6.0 - 11.0)
 

@@ -133,16 +133,16 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     private void loadCorrections(SharedPreferences sharedPreferences) {
-        correctionWind = Double.parseDouble(sharedPreferences.getString(KEY_WIND_DIFF, "0.0"));
-        correctionTemp = Double.parseDouble(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0"));
+        correctionWind = parseDoubleSafe(sharedPreferences.getString(KEY_WIND_DIFF, "0.0"), 0.0);
+        correctionTemp = parseDoubleSafe(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0"), 0.0);
         Timber.d("Loaded corrections - wind: %f, temp: %f", correctionWind, correctionTemp);
     }
 
     private void loadLaunchDetectorSettings(SharedPreferences sharedPreferences) {
         boolean enabled = sharedPreferences.getBoolean(PREF_LAUNCH_DETECTOR_ENABLED, false);
         double sensitivity =
-                Double.parseDouble(
-                        sharedPreferences.getString(PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0"));
+                parseDoubleSafe(
+                        sharedPreferences.getString(PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0"), 1.0);
 
         thermalAnalyzer.setEnabled(enabled);
         thermalAnalyzer.setSensitivity(sensitivity);
@@ -156,6 +156,17 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         Timber.d(
                 "Loaded Launch Detector Settings - enabled: %b, sensitivity: %.1f",
                 enabled, sensitivity);
+    }
+
+    private double parseDoubleSafe(String value, double defaultValue) {
+        if (value == null) return defaultValue;
+        try {
+            // Replace comma with dot to handle European locales correctly
+            return Double.parseDouble(value.replace(',', '.'));
+        } catch (NumberFormatException e) {
+            Timber.w("Failed to parse double: %s, using default: %f", value, defaultValue);
+            return defaultValue;
+        }
     }
 
     @Override

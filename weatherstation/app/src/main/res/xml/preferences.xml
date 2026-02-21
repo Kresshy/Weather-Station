@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="Bluetooth Settings">
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="pref_disable_bluetooth_on_quit"
             android:summary="@string/pref_disable_bluetooth_on_quit_summary"
             android:title="@string/pref_disable_bluetooth_on_quit_title" />

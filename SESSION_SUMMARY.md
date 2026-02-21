@@ -1,22 +1,24 @@
 # Weather Station - Development Summary (Compatibility & Configuration Edition)
 
 ## 🎯 Overview
-Successfully transformed the application into a robust, cross-version platform. Resolved all critical field-testing crashes on Android 6.0, implemented a universal legacy protocol parser, and made the core Thermal Analysis features fully configurable by the user. Enhanced the UI with data persistence and responsive design elements.
+Successfully transformed the application into a robust, cross-version platform. Resolved all critical field-testing crashes on Android 6.0, implemented a universal legacy protocol parser, and made the core Thermal Analysis features fully configurable by the user. Addressed key issues identified in field testing (Xiaomi/International locales), ensuring the app is now robust for global deployment.
 
 ## 🏗️ Architectural Evolution (Current Session)
 
 ### 📡 Protocol & Compatibility
 *   **Universal Legacy Parser**: 
-    - Added support for both modern `WS_` and legacy `start_` PDU prefixes.
-    - Implemented a "fallback" parsing logic that handles both JSON (modern) and space-separated/comma-separated (legacy) air data.
+    - **Locale Independence**: Implemented `parseDoubleSafe` logic in both `WeatherRepositoryImpl` and `WeatherMessageParser`. This ensures the app correctly handles both dot (`.`) and comma (`,`) decimal separators, resolving potential crashes on devices with European/International locale settings (e.g., Hungarian, German).
+    - **Dual Prefix Support**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
+    - **Fallback Parsing**: Handles both JSON (modern) and space-separated/comma-separated (legacy) air data.
 *   **Platform Compatibility (Android 6.0+)**:
     - **Permission System**: Implemented `PermissionHelper` to centralize and correct permission checks across API levels (legacy vs modern Bluetooth/Location requirements).
+    - **Streamlined Permissions**: Removed the unused `BLUETOOTH_ADVERTISE` permission request, as the app now functions exclusively as a client.
     - **Java 8 Compatibility**: Removed all Java 8 `Stream` API usages from `ThermalAnalyzer` and `BluetoothDeviceListFragment` to prevent `NoSuchMethodError` on API 23.
     - **API Resiliency**: Fixed crashes related to `setProgress` animation, `NotificationManager` retrieval, and `PendingIntent` flags on older devices.
-*   **Bluetooth Stability & Emulator Support**:
-    - Identified and resolved a race condition in `BluetoothConnection.java` where successful connections were closing their own sockets.
-    - Added `@Nullable` support for `BluetoothAdapter` to allow the app to launch on emulators and non-Bluetooth devices for simulation.
+*   **Bluetooth Stability & Client Optimization**:
+    - **Client-Only Architecture**: Removed the `AcceptRunnable` (Server Socket) logic from `BluetoothConnection`. This eliminates resource waste and error logs related to "read failed" on server sockets, as the app is strictly a client connecting to a station.
     - **Proactive Reconnection**: The app now listens for Bluetooth hardware state changes and automatically triggers the reconnection prompt as soon as the adapter is enabled.
+    - **Non-Intrusive Teardown**: Changed the default "Disable Bluetooth on Quit" preference to `false`. The app no longer forcefully disables the system Bluetooth adapter on exit by default, improving the user experience on modern devices.
 
 ### ⚙️ User Configuration
 *   **Launch Detector Settings**:
@@ -39,8 +41,7 @@ Successfully transformed the application into a robust, cross-version platform. 
 
 ### ⚙️ Lifecycle & System Integration
 *   **Duplicate Startup Fix**: Eliminated redundant `WeatherService` initializations by centralizing startup logic in `onResume`, preventing socket conflicts and `AcceptRunnable` failures.
-*   **Configurable Exit Behavior**: Added `Disable Bluetooth on Quit` preference (Default: ON). Allows users to choose if the app should release system Bluetooth resources or keep them active for other devices upon exit.
-*   **Modern Android Permissions**: Added and verified `BLUETOOTH_ADVERTISE` checks for Android 12+, ensuring server-socket components don't crash on newer API levels.
+*   **Modern Android Permissions**: Verified `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` checks for Android 12+, ensuring compatibility without unnecessary permissions.
 
 ## 🏗️ Architectural Refinement (Clean Architecture)
 
@@ -69,13 +70,11 @@ Successfully transformed the application into a robust, cross-version platform. 
 *   **Documentation Alignment**: Updated `README.md` and `FUTURE_IMPROVEMENTS.md` to reflect the single-node focus and remove references to deprecated legacy components.
 
 ### 🚀 Deliverables & Field Testing
-*   **v26 APK**: Final stable build for today, verified for Android 6.0+ compatibility and featuring all new UI and configuration enhancements.
-
-## ✅ Quality Control
+*   **v27 APK**: Final build for testing, featuring locale fixes and client-only optimizations.
 *   **Build Status**: Successful (`assembleDebug` passing).
 *   **Unit Testing**: Expanded test suite with `BluetoothFrameSyncTest` and updated `WeatherMessageParserTest` to verify noise resilience and robust frame extraction.
 *   **Git Identity**: Configured repository identity to `Szabolcs Varadi <kresshy@gmail.com>`.
 *   **Documentation**: Updated `README.md` and `SESSION_SUMMARY.md`.
 
 ---
-*Generated by Gemini CLI - February 20, 2026*
+*Generated by Gemini CLI - February 21, 2026*

@@ -122,7 +122,6 @@ public class WSActivity extends AppCompatActivity {
         // ask all runtime permissions
         ArrayList<String> permissionList = new ArrayList<>();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissionList.add(Manifest.permission.BLUETOOTH_ADVERTISE);
             permissionList.add(Manifest.permission.BLUETOOTH_CONNECT);
             permissionList.add(Manifest.permission.BLUETOOTH_SCAN);
         } else {
@@ -252,7 +251,6 @@ public class WSActivity extends AppCompatActivity {
     private void relaunchPermissions() {
         ArrayList<String> permissionList = new ArrayList<>();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissionList.add(Manifest.permission.BLUETOOTH_ADVERTISE);
             permissionList.add(Manifest.permission.BLUETOOTH_CONNECT);
             permissionList.add(Manifest.permission.BLUETOOTH_SCAN);
         } else {

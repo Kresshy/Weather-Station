@@ -93,11 +93,11 @@ public class WeatherMessageParser {
      */
     private WeatherData parseLegacy(String pdu) {
         try {
-            // Split by any whitespace or special separators
-            String[] parts = pdu.split("[\\s,;]+");
+            // Split by any whitespace. Avoid splitting by comma to support comma decimal separator.
+            String[] parts = pdu.split("\\s+");
             if (parts.length >= 2) {
-                double windSpeed = Double.parseDouble(parts[0]);
-                double temperature = Double.parseDouble(parts[1]);
+                double windSpeed = parseDoubleSafe(parts[0], 0.0);
+                double temperature = parseDoubleSafe(parts[1], 0.0);
                 
                 int nodeId = 0;
                 if (parts.length >= 3) {
@@ -108,9 +108,20 @@ public class WeatherMessageParser {
                 
                 return new WeatherData(windSpeed, temperature, nodeId);
             }
-        } catch (NumberFormatException e) {
-            Timber.e("Invalid legacy format: %s", pdu);
+        } catch (Exception e) {
+            Timber.e(e, "Invalid legacy format: %s", pdu);
         }
         return null;
+    }
+
+    private double parseDoubleSafe(String value, double defaultValue) {
+        if (value == null) return defaultValue;
+        try {
+            // Handle both dot and comma as decimal separator
+            return Double.parseDouble(value.replace(',', '.'));
+        } catch (NumberFormatException e) {
+            Timber.w("Failed to parse double in legacy message: %s", value);
+            return defaultValue;
+        }
     }
 }
