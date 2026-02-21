@@ -43,9 +43,11 @@ To build a physical station, you will typically need:
 ## 📥 Getting Started
 
 ### 1. Arduino Setup
-Flash the firmware located at `arduino/weatherstation.ino`.
+Flash the definitive firmware located at **`arduino/weatherstation.ino`**.
+- **Note**: The legacy code in the `/arduino/Janne` folder is deprecated and should not be used for new stations.
 - **Dependencies**: `OneWire`, `ArduinoJson` (v5.x).
 - **Wiring**: See [WIRING_DIAGRAM.md](WIRING_DIAGRAM.md) for details.
+- **Baud Rate**: Ensure your Bluetooth module is configured for **9600 baud** (standard default).
 
 ### 2. Android App
 Open the `/weatherstation` folder in Android Studio.
