@@ -7,17 +7,17 @@ public interface Connection {
     /**
      * Starts the connection service.
      *
-     * @param callback Callback for state changes.
+     * @param listener Listener for state changes.
      */
-    public void start(RawDataCallback callback);
+    public void start(HardwareEventListener listener);
 
     /**
      * Attempts to connect to a specific device.
      *
      * @param device The device to connect to.
-     * @param callback Callback for data and state updates.
+     * @param listener Listener for data and state updates.
      */
-    public void connect(Parcelable device, RawDataCallback callback);
+    public void connect(Parcelable device, HardwareEventListener listener);
 
     /** Shuts down the connection and cleans up resources. */
     public void stop();
@@ -35,9 +35,9 @@ public interface Connection {
     public ConnectionState getState();
 
     /**
-     * Updates the active data/state callback.
+     * Updates the active data/state listener.
      *
-     * @param callback The new callback.
+     * @param listener The new listener.
      */
-    void setCallback(RawDataCallback callback);
+    void setCallback(HardwareEventListener listener);
 }

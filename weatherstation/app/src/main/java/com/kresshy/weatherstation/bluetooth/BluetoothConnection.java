@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.kresshy.weatherstation.connection.Connection;
 import com.kresshy.weatherstation.connection.ConnectionState;
-import com.kresshy.weatherstation.connection.RawDataCallback;
+import com.kresshy.weatherstation.connection.HardwareEventListener;
 import com.kresshy.weatherstation.util.PermissionHelper;
 
 import timber.log.Timber;
@@ -33,7 +33,7 @@ import javax.inject.Inject;
 public class BluetoothConnection implements Connection {
     private ConnectionState state;
     private final Context context;
-    private RawDataCallback callback;
+    private HardwareEventListener listener;
 
     private static final String NAME = "WeatherStation";
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -65,24 +65,24 @@ public class BluetoothConnection implements Connection {
     /**
      * Starts the connection service, listening for incoming connections.
      *
-     * @param callback The callback to notify.
+     * @param listener The listener to notify.
      */
-    public synchronized void start(RawDataCallback callback) {
+    public synchronized void start(HardwareEventListener listener) {
         Timber.d("START SERVICE");
 
         cancelTasks();
 
         state = ConnectionState.disconnected;
-        callback.onConnectionStateChange(ConnectionState.disconnected);
+        listener.onConnectionStateChange(ConnectionState.disconnected);
     }
 
     /**
      * Attempts to connect to a specific Bluetooth device.
      *
      * @param device The remote BluetoothDevice.
-     * @param callback The callback to notify.
+     * @param listener The listener to notify.
      */
-    public synchronized void connect(Parcelable device, RawDataCallback callback) {
+    public synchronized void connect(Parcelable device, HardwareEventListener listener) {
         Timber.d("connect to: " + device);
 
         state = ConnectionState.connecting;
@@ -95,7 +95,7 @@ public class BluetoothConnection implements Connection {
         connectFuture = executorService.submit(connectRunnable);
         Timber.d("SUBMIT ConnectRunnable " + device);
 
-        callback.onConnectionStateChange(ConnectionState.connecting);
+        listener.onConnectionStateChange(ConnectionState.connecting);
     }
 
     /**
@@ -127,7 +127,7 @@ public class BluetoothConnection implements Connection {
         Timber.d("SUBMIT ConnectedRunnable");
 
         state = ConnectionState.connected;
-        callback.onConnectionStateChange(ConnectionState.connected);
+        listener.onConnectionStateChange(ConnectionState.connected);
     }
 
     /** Stops all active threads and closes sockets. */
@@ -135,7 +135,7 @@ public class BluetoothConnection implements Connection {
         Timber.d("stop");
         cancelAllTasks();
         state = ConnectionState.stopped;
-        callback.onConnectionStateChange(ConnectionState.stopped);
+        listener.onConnectionStateChange(ConnectionState.stopped);
     }
 
     private void cancelAllTasks() {
@@ -182,8 +182,8 @@ public class BluetoothConnection implements Connection {
     }
 
     @Override
-    public void setCallback(RawDataCallback callback) {
-        this.callback = callback;
+    public void setCallback(HardwareEventListener listener) {
+        this.listener = listener;
     }
 
     /** Thread that attempts to initiate an outgoing RFCOMM connection. */
@@ -196,7 +196,7 @@ public class BluetoothConnection implements Connection {
             this.device = device;
             try {
                 if (!PermissionHelper.hasConnectPermission(context)) {
-                    callback.onLogMessage(
+                    listener.onLogMessage(
                             "ConnectRunnable Constructor, Missing Permissions: BLUETOOTH_CONNECT");
                 }
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
@@ -209,7 +209,7 @@ public class BluetoothConnection implements Connection {
         @Override
         public void run() {
             if (!PermissionHelper.hasScanPermission(context)) {
-                callback.onToastMessage("Missing Permissions: BLUETOOTH_SCAN");
+                listener.onToastMessage("Missing Permissions: BLUETOOTH_SCAN");
             }
             if (bluetoothAdapter != null) {
                 bluetoothAdapter.cancelDiscovery();
@@ -229,7 +229,7 @@ public class BluetoothConnection implements Connection {
                     connected(fallbackSocket);
                 } catch (IOException connectException2) {
                     Timber.e("FALLBACK CONNECT_FAIL " + connectException2.getMessage());
-                    callback.onToastMessage("Failed to connect...");
+                    listener.onToastMessage("Failed to connect...");
                     try {
                         socket.close();
                     } catch (IOException e) {
@@ -259,7 +259,7 @@ public class BluetoothConnection implements Connection {
             this.socket = socket;
             InputStream tmpInputStream = null;
             OutputStream tmpOutputStream = null;
-            callback.onConnected();
+            listener.onConnected();
 
             try {
                 tmpInputStream = socket.getInputStream();
@@ -300,7 +300,7 @@ public class BluetoothConnection implements Connection {
                                 String fullMessage =
                                         curMsg.substring(startIdx, endIdx + endMarker.length());
                                 Timber.d("New weather data available " + fullMessage);
-                                callback.onRawDataReceived(fullMessage);
+                                listener.onRawDataReceived(fullMessage);
 
                                 // Discard processed data including the junk before startIdx
                                 curMsg.delete(0, endIdx + endMarker.length());

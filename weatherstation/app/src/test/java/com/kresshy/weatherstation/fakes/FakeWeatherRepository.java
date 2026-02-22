@@ -17,6 +17,7 @@ public class FakeWeatherRepository implements WeatherRepository {
 
     private final MutableLiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
             processedWeatherData = new MutableLiveData<>();
+    private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
     private final MutableLiveData<String> toastMessage = new MutableLiveData<>();
     private final MutableLiveData<String> logMessage = new MutableLiveData<>();
 
@@ -28,6 +29,11 @@ public class FakeWeatherRepository implements WeatherRepository {
     private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(true);
 
     // --- Control Methods for Testing ---
+
+    /** Manually updates the latest weather data. */
+    public void setWeatherData(WeatherData data) {
+        latestWeatherData.postValue(data);
+    }
 
     /** Manually updates the atomic heartbeat. */
     public void setProcessedWeatherData(
@@ -76,6 +82,11 @@ public class FakeWeatherRepository implements WeatherRepository {
     @Override
     public LiveData<Boolean> isLaunchDetectorEnabled() {
         return launchDetectorEnabled;
+    }
+
+    @Override
+    public LiveData<WeatherData> getLatestWeatherData() {
+        return latestWeatherData;
     }
 
     @Override

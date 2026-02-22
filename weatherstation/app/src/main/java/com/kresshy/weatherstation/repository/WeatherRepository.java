@@ -63,6 +63,11 @@ public interface WeatherRepository {
     LiveData<Boolean> isLaunchDetectorEnabled();
 
     /**
+     * @return Observable latest weather measurement.
+     */
+    LiveData<WeatherData> getLatestWeatherData();
+
+    /**
      * @return List of historical weather data points for chart persistence.
      */
     List<WeatherData> getHistoricalWeatherData();

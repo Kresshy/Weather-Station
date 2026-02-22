@@ -104,7 +104,7 @@ graph TD
 The hardware orchestrator. Encapsulates `BluetoothAdapter`, `ConnectionManager`, and discovery logic. It provides the "Raw String" stream to the Data Plane and manages the `ConnectionState`.
 
 ### 3. **Data Plane (`WeatherRepository`)**
-The analytical engine. It implements `RawDataCallback` to receive strings from the Control Plane, runs the `WeatherMessageParser`, and triggers the `ThermalAnalyzer` to produce the **Single Heartbeat**.
+The analytical engine. It implements `HardwareEventListener` to receive strings from the Control Plane, runs the `WeatherMessageParser`, and triggers the `ThermalAnalyzer` to produce the **Single Heartbeat**.
 
 ### 4. **UI State (UDF)**
 **`WeatherUiState`** is an immutable snapshot of the entire dashboard. This ensures that UI updates are atomic, consistent, and lag-free across fragments.

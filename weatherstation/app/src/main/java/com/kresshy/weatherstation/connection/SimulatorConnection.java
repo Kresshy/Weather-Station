@@ -19,7 +19,7 @@ public class SimulatorConnection implements Connection {
     private ConnectionState state = ConnectionState.stopped;
     private ScheduledExecutorService executor;
     private final java.util.Random random;
-    private RawDataCallback callback;
+    private HardwareEventListener listener;
 
     @Inject
     public SimulatorConnection(java.util.Random random) {
@@ -33,27 +33,27 @@ public class SimulatorConnection implements Connection {
     private int thermalTicks = 0;
 
     @Override
-    public void start(RawDataCallback callback) {
-        this.callback = callback;
+    public void start(HardwareEventListener listener) {
+        this.listener = listener;
         state = ConnectionState.disconnected;
-        callback.onConnectionStateChange(state);
+        listener.onConnectionStateChange(state);
         Timber.d("Simulator started");
     }
 
     @Override
-    public void connect(Parcelable device, RawDataCallback callback) {
-        this.callback = callback;
+    public void connect(Parcelable device, HardwareEventListener listener) {
+        this.listener = listener;
         state = ConnectionState.connecting;
-        callback.onConnectionStateChange(state);
+        listener.onConnectionStateChange(state);
 
         // Simulate connection delay
         Executors.newSingleThreadScheduledExecutor()
                 .schedule(
                         () -> {
                             state = ConnectionState.connected;
-                            if (this.callback != null) {
-                                this.callback.onConnectionStateChange(state);
-                                this.callback.onConnected();
+                            if (this.listener != null) {
+                                this.listener.onConnectionStateChange(state);
+                                this.listener.onConnected();
                                 startDataSimulation();
                             }
                         },
@@ -66,7 +66,7 @@ public class SimulatorConnection implements Connection {
         executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(
                 () -> {
-                    if (state != ConnectionState.connected || callback == null) return;
+                    if (state != ConnectionState.connected || listener == null) return;
 
                     // --- Realistic Air Simulation ---
                     // 2% chance to start a thermal
@@ -100,8 +100,8 @@ public class SimulatorConnection implements Connection {
                                     currentWind, currentTemp);
 
                     String pdu = "WS_" + json + "_end";
-                    if (callback != null) {
-                        callback.onRawDataReceived(pdu);
+                    if (listener != null) {
+                        listener.onRawDataReceived(pdu);
                     }
                 },
                 0,
@@ -128,7 +128,7 @@ public class SimulatorConnection implements Connection {
     }
 
     @Override
-    public void setCallback(RawDataCallback callback) {
-        this.callback = callback;
+    public void setCallback(HardwareEventListener listener) {
+        this.listener = listener;
     }
 }

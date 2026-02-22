@@ -17,21 +17,21 @@ import org.junit.Test;
 public class ConnectionManagerTest {
 
     private ConnectionManager connectionManager;
-    private RawDataCallback callback;
+    private HardwareEventListener listener;
     private Connection connection;
 
     @Before
     public void setUp() {
-        callback = mock(RawDataCallback.class);
+        listener = mock(HardwareEventListener.class);
         connection = mock(Connection.class);
         connectionManager = new ConnectionManager(connection);
-        connectionManager.setCallback(callback);
+        connectionManager.setListener(listener);
     }
 
     @Test
     public void startConnection_CallsStartOnConnection() {
         connectionManager.startConnection();
-        verify(connection).start(callback);
+        verify(connection).start(listener);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class ConnectionManagerTest {
     public void connectToDevice_CallsConnectOnConnection() {
         Parcelable device = mock(Parcelable.class);
         connectionManager.connectToDevice(device);
-        verify(connection).connect(device, callback);
+        verify(connection).connect(device, listener);
     }
 
     @Test

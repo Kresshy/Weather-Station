@@ -19,14 +19,14 @@ public class SimulatorConnectionTest {
 
     private SimulatorConnection simulatorConnection;
     private Random mockRandom;
-    private RawDataCallback mockCallback;
+    private HardwareEventListener mockListener;
 
     @Before
     public void setUp() {
         mockRandom = mock(Random.class);
-        mockCallback = mock(RawDataCallback.class);
+        mockListener = mock(HardwareEventListener.class);
         simulatorConnection = new SimulatorConnection(mockRandom);
-        simulatorConnection.setCallback(mockCallback);
+        simulatorConnection.setCallback(mockListener);
     }
 
     @Test
@@ -37,16 +37,16 @@ public class SimulatorConnectionTest {
         // Force random drifts/increments to be predictable
         when(mockRandom.nextDouble()).thenReturn(0.5);
 
-        simulatorConnection.start(mockCallback);
+        simulatorConnection.start(mockListener);
         // We need to trigger the private startDataSimulation indirectly via connect
-        simulatorConnection.connect(null, mockCallback);
+        simulatorConnection.connect(null, mockListener);
 
         // Wait for at least one or two ticks of the simulation (1Hz)
         Thread.sleep(2500);
 
         // Verify that raw data was received
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(mockCallback, atLeastOnce()).onRawDataReceived(captor.capture());
+        verify(mockListener, atLeastOnce()).onRawDataReceived(captor.capture());
 
         // We could parse the JSON here to verify the temperature is rising,
         // but the main point is that we successfully controlled the "random" pulse.

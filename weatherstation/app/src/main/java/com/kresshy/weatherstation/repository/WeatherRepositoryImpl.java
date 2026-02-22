@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.kresshy.weatherstation.connection.ConnectionState;
-import com.kresshy.weatherstation.connection.RawDataCallback;
+import com.kresshy.weatherstation.connection.HardwareEventListener;
 import com.kresshy.weatherstation.weather.ThermalAnalyzer;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherMessageParser;
@@ -28,7 +28,7 @@ import javax.inject.Singleton;
  * and managing hardware connection lifecycles (with auto-reconnect).
  */
 @Singleton
-public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback {
+public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventListener {
 
     private final Context context;
     private final ThermalAnalyzer thermalAnalyzer;
@@ -37,6 +37,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
     private final MutableLiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
             processedWeatherData = new MutableLiveData<>();
+    private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
     private final MutableLiveData<String> toastMessage = new MutableLiveData<>();
     private final MutableLiveData<String> logMessage = new MutableLiveData<>();
 
@@ -52,6 +53,9 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private double correctionWind = 0.0;
     private double correctionTemp = 0.0;
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+
+    private static final double MAX_TEMP_JUMP = 10.0; // Max physically possible jump in deg/sec
+    private WeatherData lastSaneData = null;
 
     /** Primary constructor used by Hilt. */
     @Inject
@@ -71,7 +75,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
                 instanceof com.kresshy.weatherstation.bluetooth.WeatherConnectionControllerImpl) {
             ((com.kresshy.weatherstation.bluetooth.WeatherConnectionControllerImpl)
                             connectionController)
-                    .setDataCallback(this);
+                    .setHardwareEventListener(this);
         }
 
         loadCorrections(sharedPreferences);
@@ -158,6 +162,11 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     @Override
+    public LiveData<WeatherData> getLatestWeatherData() {
+        return latestWeatherData;
+    }
+
+    @Override
     public List<WeatherData> getHistoricalWeatherData() {
         synchronized (historicalData) {
             return new ArrayList<>(historicalData);
@@ -174,16 +183,11 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         return logMessage;
     }
 
-    // --- RawDataCallback Implementation ---
-
-    private static final double MAX_TEMP_JUMP = 10.0; // Max physically possible jump in deg/sec
-    private WeatherData lastSaneData = null;
+    // --- HardwareEventListener Implementation ---
 
     /**
      * Called when a raw string message is received from the hardware. Parses the message, applies
      * calibration, and triggers thermal analysis.
-     *
-     * @param data The raw string from the sensor.
      */
     @Override
     public void onRawDataReceived(String data) {
@@ -228,6 +232,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             tempTrend.postValue(result.tempTrend);
             windTrend.postValue(result.windTrend);
             thermalScore.postValue(result.score);
+            latestWeatherData.postValue(weatherData);
         }
     }
 

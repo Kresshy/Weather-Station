@@ -12,7 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.kresshy.weatherstation.connection.ConnectionManager;
 import com.kresshy.weatherstation.connection.ConnectionState;
-import com.kresshy.weatherstation.connection.RawDataCallback;
+import com.kresshy.weatherstation.connection.HardwareEventListener;
 import com.kresshy.weatherstation.util.PermissionHelper;
 import com.kresshy.weatherstation.util.Resource;
 
@@ -81,29 +81,29 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
         bluetoothManager.getDiscoveryStatus().observeForever(discoveryStatus::postValue);
     }
 
-    public void setDataCallback(RawDataCallback callback) {
-        connectionManager.setCallback(
-                new RawDataCallback() {
+    public void setHardwareEventListener(HardwareEventListener listener) {
+        connectionManager.setListener(
+                new HardwareEventListener() {
                     @Override
                     public void onRawDataReceived(String data) {
-                        callback.onRawDataReceived(data);
+                        listener.onRawDataReceived(data);
                     }
 
                     @Override
                     public void onConnectionStateChange(ConnectionState state) {
                         handleConnectionStateChange(state);
-                        callback.onConnectionStateChange(state);
+                        listener.onConnectionStateChange(state);
                     }
 
                     @Override
                     public void onConnected() {
                         handleOnConnected();
-                        callback.onConnected();
+                        listener.onConnected();
                     }
 
                     @Override
                     public void onToastMessage(String message) {
-                        callback.onToastMessage(message);
+                        listener.onToastMessage(message);
                         if (message.toLowerCase().contains("failed")
                                 || message.toLowerCase().contains("missing")) {
                             uiState.postValue(Resource.error(message, null));
@@ -112,7 +112,7 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
 
                     @Override
                     public void onLogMessage(String message) {
-                        callback.onLogMessage(message);
+                        listener.onLogMessage(message);
                     }
                 });
     }

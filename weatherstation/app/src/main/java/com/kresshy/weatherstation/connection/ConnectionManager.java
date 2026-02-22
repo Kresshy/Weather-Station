@@ -14,7 +14,7 @@ public class ConnectionManager {
     /** The active connection implementation. */
     public final Connection connection;
 
-    private RawDataCallback callback;
+    private HardwareEventListener listener;
 
     /**
      * @param connection Injected connection implementation.
@@ -26,7 +26,7 @@ public class ConnectionManager {
 
     /** Starts the connection service. */
     public void startConnection() {
-        connection.start(callback);
+        connection.start(listener);
     }
 
     /** Shuts down the active connection. */
@@ -40,7 +40,7 @@ public class ConnectionManager {
      * @param device The device descriptor.
      */
     public void connectToDevice(Parcelable device) {
-        connection.connect(device, callback);
+        connection.connect(device, listener);
     }
 
     /**
@@ -51,15 +51,14 @@ public class ConnectionManager {
     }
 
     /**
-     * Updates the callback used for receiving data and state updates. Useful when the repository or
-     * service instance changes.
+     * Updates the listener used for receiving data and state updates.
      *
-     * @param callback The new callback implementation.
+     * @param listener The new listener implementation.
      */
-    public void setCallback(RawDataCallback callback) {
-        this.callback = callback;
+    public void setListener(HardwareEventListener listener) {
+        this.listener = listener;
         if (connection != null) {
-            connection.setCallback(callback);
+            connection.setCallback(listener);
         }
     }
 }
