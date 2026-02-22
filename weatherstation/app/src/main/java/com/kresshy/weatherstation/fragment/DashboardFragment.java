@@ -51,6 +51,7 @@ public class DashboardFragment extends Fragment {
     private LineDataSet temperatureSet;
     private long totalPointsAddedWind = 0;
     private long totalPointsAddedTemp = 0;
+    private java.util.Date lastProcessedTimestamp = null;
     private final SimpleDateFormat timeFormat =
             new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
@@ -315,8 +316,15 @@ public class DashboardFragment extends Fragment {
         binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
         binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
 
-        addEntryToChart(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
-        addEntryToChart(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
+        // Deduplication Logic: Only add to charts if the weather data timestamp is new.
+        // This prevents the "4 points per second" issue caused by MediatorLiveData
+        // firing for every field change (trends, scores, etc.) in the repository.
+        if (lastProcessedTimestamp == null || data.getTimestamp().after(lastProcessedTimestamp)) {
+            lastProcessedTimestamp = data.getTimestamp();
+            addEntryToChart(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
+            addEntryToChart(
+                    binding.temperatureChart, temperatureSet, (float) data.getTemperature());
+        }
     }
 
     private String getSignalStrengthLabel(int rssi) {

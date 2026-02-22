@@ -47,6 +47,7 @@ public class GraphViewFragment extends Fragment {
     private LineDataSet temperatureSet;
     private long totalPointsAddedWind = 0;
     private long totalPointsAddedTemp = 0;
+    private java.util.Date lastProcessedTimestamp = null;
 
     public GraphViewFragment() {
         // Required empty public constructor
@@ -199,8 +200,12 @@ public class GraphViewFragment extends Fragment {
         binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
         binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
 
-        addValueToSet(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
-        addValueToSet(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
+        // Only add to charts if the weather data is new
+        if (lastProcessedTimestamp == null || data.getTimestamp().after(lastProcessedTimestamp)) {
+            lastProcessedTimestamp = data.getTimestamp();
+            addValueToSet(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
+            addValueToSet(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
+        }
     }
 
     private void addValueToSet(LineChart chart, LineDataSet set, float value) {
