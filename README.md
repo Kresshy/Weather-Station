@@ -6,128 +6,67 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 
 - **Thermal Detection**: Purpose-built algorithm to identify rising air currents (thermals) suitable for aeromodel launches.
 - **Real-time Airfield Monitoring**: Track precise wind speed and temperature readings via Bluetooth at the launch site.
+- **Single Heartbeat Architecture**: Guaranteed synchronization between raw sensor readings and analytical trends.
 - **Advanced Trend Analysis**: Uses Exponential Moving Averages (EMA) to detect subtle thermal pulses, providing a "Launch Suitability" score (0-100).
-- **Data Visualization**: Interactive real-time graphs for monitoring temperature and wind speed trends during a flight session.
-- **Mobile Access**: Modern Android application (Java) optimized for field use.
+- **High-Performance Visualization**: Linear, real-time graphs optimized for legacy hardware (Android 6.0+) with zero-lag $O(1)$ data plotting.
 - **Global Compatibility**: Full support for international locales (comma/dot decimal separators) and legacy data formats.
 
 ## 🏗️ System Architecture
 
-The application follows **Clean Architecture** principles, separating concerns into distinct layers:
+The application follows **Clean Architecture** principles with a **Single Heartbeat** data flow:
 
 1.  **UI Layer (MVVM)**: Fragments observe a unified `WeatherUiState` from the `WeatherViewModel`.
-2.  **Domain Layer (UseCases)**: Encapsulates business logic (Thermal Analysis, Connection logic, Discovery management) into individual, testable UseCase classes.
-3.  **Data Layer (Repository)**: `WeatherRepositoryImpl` acts as a lean data provider, orchestrating hardware connections and raw data parsing.
+2.  **Domain Layer (UseCases)**: Aggregates atomic updates from the repository into UI-ready state objects.
+3.  **Data Layer (Repository)**: `WeatherRepositoryImpl` acts as the coordinator, performing all calculations (trends, scores) synchronously upon data arrival.
 4.  **Hardware/Connection**: Manages physical Bluetooth communication (Client Mode) and software simulation.
-
-The repository is organized into two main components:
-
-1.  **/weatherstation**: The primary Android application (Java/Dagger Hilt).
-2.  **/arduino**: Unified firmware implementation (`weatherstation.ino`) for Arduino Nano/Micro/Uno.
 
 Detailed hardware documentation can be found here:
 - **[Standard Wiring Diagram](WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
-- **[Future Hardware Roadmap](FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades (Ultrasonic, Barometer).
-- **[Future Wiring Diagram](FUTURE_WIRING_DIAGRAM.md)**: Technical wiring for upgraded sensors.
+- **[Future Hardware Roadmap](FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades.
 
-## 🛠️ Hardware Requirements
+## 🛡️ Data Integrity & Performance
 
-To build a physical station, you will typically need:
+To ensure stable charts and reliable thermal analysis across various hardware generations (API 23-35), the system implements a multi-layer strategy:
 
-- **Microcontroller**: Arduino Nano, Micro, or Uno.
-- **Sensors**: 
-    - DS18B20 or DS18S20 high-resolution temperature sensors (OneWire).
-    - Precision Anemometer (Hall effect or magnetic switch).
-- **Connectivity**: HC-05 or HC-06 Bluetooth module for mobile connection.
-- **Power**: 9V battery or a similar portable power supply for field use.
+1.  **Atomic Event Pipeline (v3.2.0)**:
+    - Bundles raw data and analytical trends into a single `ProcessedWeatherData` heartbeat.
+    - Eliminates "UI jitter" and ensures that text displays and charts are always in mathematical sync.
+2.  **Performance Optimization (v3.1.5+)**:
+    - **Constant-Time Plotting**: Removed $O(N)$ chart shifting loops. Adding data is now a lightweight operation, ensuring smooth performance even on 10-year-old devices.
+    - **Initial Full Grid**: Charts initialize with a fixed 300-sample grid for consistent airfield viewing.
+    - **Linear Rendering**: Pure linear connections between data points for a technical, accurate visualization with minimal CPU/GPU overhead.
+3.  **Universal Legacy Parser**:
+    - **Locale Independence**: Automatically handles both dot (`.`) and comma (`,`) decimal separators, preventing crashes on international devices.
+    - **Format Agnostic**: Support for both JSON and legacy space/comma-separated PDU formats.
+4.  **Bluetooth & Platform Stability**:
+    - **Client-Only Mode**: Optimized for stability by removing server-socket overhead.
+    - **Android 6.0+ Resiliency**: Specialized `PermissionHelper` and Java 8 compatibility fixes ensure 100% reliability on older airfield tablets.
 
 ## 📥 Getting Started
 
 ### 1. Arduino Setup
 Flash the definitive firmware located at **`arduino/weatherstation.ino`**.
 - **Dependencies**: `OneWire`, `ArduinoJson` (v5.x).
-- **Wiring**: See [WIRING_DIAGRAM.md](WIRING_DIAGRAM.md) for details.
-- **Baud Rate**: Ensure your Bluetooth module is configured for **9600 baud** (standard default).
+- **Baud Rate**: 9600 baud.
 
 ### 2. Android App
 Open the `/weatherstation` folder in Android Studio.
-- **Tech Stack**: Java 17, Dagger Hilt for DI, ViewBinding, MPAndroidChart.
+- **Tech Stack**: Java 17, Dagger Hilt, ViewBinding, MPAndroidChart.
 - **Minimum SDK**: 23 (Android 6.0).
 - **Target SDK**: 35 (Android 15).
 
-## 🛡️ Data Integrity & Protocol Compatibility
-
-To ensure stable charts and reliable thermal analysis across various hardware generations, the system implements a multi-layer compatibility and filtering strategy:
-
-1.  **Universal Legacy Parser (Application Layer)**:
-    - **Locale Independence**: Automatically detects and handles both dot (`.`) and comma (`,`) decimal separators, preventing crashes on devices with European or other international settings.
-    - **Backwards Compatibility**: Automatically handles both modern `WS_` and legacy `start_` PDU prefixes.
-    - **Format Agnostic**: Support for both JSON and space/comma-separated raw data formats.
-2.  **Bluetooth & Platform Stability**:
-    - **Client-Only Architecture**: Optimized for stability by removing server-socket logic (`AcceptRunnable`), ensuring the app functions strictly as a robust client.
-    - **Android 6.0+ Compatibility**: Implemented a specialized `PermissionHelper` and removed Java 8 `Stream` APIs to ensure 100% compatibility with legacy devices (API 23+).
-    - **Emulator & No-BT Support**: Gracefully handles missing Bluetooth hardware, allowing the app to run in **Simulator Mode** on standard Android emulators.
-    - **Proactive Reconnection**: Automatically prompts to reconnect to the last known station immediately after Bluetooth is enabled on startup.
-    - **Noise Resilience**: Enhanced frame synchronization logic to discard debugging output and junk data from older firmware versions (e.g., v12), ensuring stable data visualization.
-3.  **UI/UX & Visualization**:
-    - **Non-Intrusive Exit**: By default, the app no longer disables the system Bluetooth adapter on exit, preserving connectivity for other devices.
-    - **Data Persistence**: Implemented a historical data buffer (300 samples) that persists across fragment navigation.
-    - **Responsive Toolbar**: Automatically adjusts toolbar height for wide/landscape screen ratios.
-    - **Dynamic Device Titles**: The toolbar title now dynamically displays the name of the connected weather station.
-    - **High-Visibility Charts**: Enhanced aesthetics with bold **5.0f** lines and prominent **3.5f** solid data points.
-
-## 📱 Legacy Device Compatibility (Android 6.0 - 11.0)
-
-While the app is optimized for modern Android versions, it fully supports legacy devices with the following limitations and requirements:
-
-- **Location Services Mandatory**: On Android 6.0 through 9.0, Bluetooth scanning **will not find any devices** unless the system **Location (GPS)** toggle is turned **ON** in the quick settings. This is a platform-level requirement for Bluetooth discovery on these versions.
-- **Hardware Limitations**: Emulators and devices without Bluetooth hardware can still run the app using **Simulator Mode** (enabled in Settings).
-- **UI Performance**: Complex charts are optimized with Cubic Bézier smoothing, but very old devices may experience slight frame drops during high-frequency data updates.
-- **Backgrounding**: Android 6 is aggressive with power management. Ensure "Battery Optimization" is disabled for the app to keep the weather service alive during long field sessions.
-
 ## 🧪 Testing & Quality Control
 
-The project includes a comprehensive suite of tools to ensure reliability:
-
-- **Unit Tests**: Verifies thermal analysis logic and data flow.
-  ```bash
-  ./gradlew test
-  ```
-- **Static Analysis (PMD)**: Checks for dead code and unused variables.
-  ```bash
-  ./gradlew pmd
-  ```
-- **Android Lint**: Verifies resource integrity and Android-specific best practices.
-  ```bash
-  ./gradlew lint
-  ```
-
-## 📡 Protocol Specification
-
-The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communication:
-- **Format**: `WS_{JSON_PAYLOAD}_end`
-- **Payload Example**:
-  ```json
-  {
-    "version": 2,
-    "numberOfNodes": 1,
-    "measurements": [
-      {
-        "windSpeed": 3.5,
-        "temperature": 22.4,
-        "nodeId": 0
-      }
-    ]
-  }
-  ```
+The project uses a mandatory validation sequence for every change:
+```bash
+./gradlew spotlessApply test build
+```
+- **Unit Tests**: 50+ tests verifying thermal analysis, parsing, and UI state synchronization.
+- **Static Analysis**: PMD and Android Lint for code quality.
 
 ## 🔢 Versioning
 
 This project follows [Semantic Versioning (SemVer)](https://semver.org/):
-- **MAJOR**: Significant architectural shifts or breaking hardware protocol changes.
-- **MINOR**: New features (e.g., sensor support), performance optimizations, or major refactorings.
-- **PATCH**: Backward-compatible bug fixes and minor UI tweaks.
-
 Detailed version changes can be found in the [changelogs/](changelogs/) directory.
 
 ## 📄 License

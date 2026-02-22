@@ -6,6 +6,14 @@ This document describes the high-level architecture of the Weather Station Andro
 
 The application follows a modern **MVVM (Model-View-ViewModel)** pattern, powered by **Dagger Hilt** for dependency injection and **Jetpack LiveData** for reactive data streams.
 
+### 💓 The Single Heartbeat Pattern
+To ensure absolute synchronization between raw sensor data and calculated analytical trends (like temperature deltas), the app uses a **Single Heartbeat** architecture. 
+
+1.  **Repository** receives raw data.
+2.  **Repository** immediately calculates all trends and scores.
+3.  **Repository** publishes a single, atomic `ProcessedWeatherData` object.
+4.  **UI Layer** receives this single event and updates all views (charts and text) in a single frame.
+
 ```mermaid
 graph TD
     subgraph UI_Layer [UI Layer - Fragments]
@@ -27,11 +35,11 @@ graph TD
         GPD[GetPairedDevicesUseCase]
         MD[ManageDiscoveryUseCase]
         UC[UpdateCalibrationUseCase]
-        TA[ThermalAnalyzer]
     end
 
     subgraph Data_Layer [Data Layer - Repository & Connection]
         WRI[WeatherRepositoryImpl]
+        TA[ThermalAnalyzer]
         WMP[WeatherMessageParser]
         CM[ConnectionManager]
         WBM[WeatherBluetoothManager]
@@ -51,18 +59,18 @@ graph TD
     WVM --> MD
     WVM --> UC
     GWUS --> WRI
-    GWUS --> TA
     CTD --> WRI
     MD --> WRI
     WS --> WRI
+    WRI -- "Internal Calc" --> TA
     WRI --> CM
     WRI --> WBM
     WRI --> WMP
     CM --> BC
     CM --> SC
 
-    %% Data Flow (LiveData / UDF)
-    WRI -- "Raw Data Streams" --> GWUS
+    %% Data Flow (Single Heartbeat)
+    WRI -- "ProcessedWeatherData (Atomic)" --> GWUS
     GWUS -- "WeatherUiState" --> WVM
     WVM -- "Observe State" --> UI_Layer
     WRI -- "LiveData" --> WS
@@ -73,16 +81,16 @@ graph TD
 ## 🧩 Key Components
 
 ### 1. **Domain Layer (Business Logic)**
-- **`GetWeatherUiStateUseCase`**: The central aggregator. It observes all data streams from the repository (sensor data, connection state, trends) and merges them into a single, immutable `WeatherUiState`.
+- **`GetWeatherUiStateUseCase`**: The central aggregator. It observes the atomic heartbeat from the repository and transforms it into a unified, immutable `WeatherUiState`.
 - **`ConnectToDeviceUseCase`**: Handles the logic of selecting between physical and virtual hardware and initiating connections.
-- **`GetPairedDevicesUseCase`**: Encapsulates logic for filtering and retrieving available weather stations based on system state and permissions.
+- **`GetPairedDevicesUseCase`**: Encapsulates logic for filtering available weather stations.
 - **`ManageDiscoveryUseCase`**: Controls the lifecycle of Bluetooth scanning.
 - **`UpdateCalibrationUseCase`**: Manages the persistence of sensor offsets.
-- **`ThermalAnalyzer`**: Encapsulates the core EMA algorithm for detecting thermals.
 
 ### 2. **Data Layer (Repository & Hardware)**
-- **`WeatherRepositoryImpl`**: The single source of truth for raw data. It orchestrates hardware connections via `ConnectionManager` and handles data parsing.
-- **`WeatherMessageParser`**: Handles protocol-level string extraction and JSON/Legacy parsing.
+- **`WeatherRepositoryImpl`**: The coordinator. It orchestrates hardware connections, triggers the `ThermalAnalyzer`, and publishes the atomic `ProcessedWeatherData` heartbeat.
+- **`ThermalAnalyzer`**: Encapsulates the EMA algorithm. It is triggered synchronously by the Repository upon data arrival.
+- **`WeatherMessageParser`**: Handles protocol-level string extraction and locale-independent parsing (supporting both `.` and `,` separators).
 - **`Connection Management`**: Abstraction layer (`ConnectionManager`) switching between physical Bluetooth (`BluetoothConnection`) and software simulation (`SimulatorConnection`).
 
 ### 3. **Background Services**
@@ -97,13 +105,13 @@ The app is divided into three primary Hilt modules:
 
 - **`AppModule`**: Provides global singletons like `Gson`, `SharedPreferences`, `Random`, and system services.
 - **`RepositoryModule`**: Binds the repository and Bluetooth manager interfaces to their concrete implementations.
-- **`ConnectionModule`**: Contains the logic to provide either `BluetoothConnection` or `SimulatorConnection` based on the user's "Simulator Mode" preference.
+- **`ConnectionModule`**: Contains the logic to provide either `BluetoothConnection` or `SimulatorConnection` based on user preference.
 
-## 📡 Data Flow Path
+## 📡 Data Flow Path (Single Heartbeat)
 1. **Hardware** sends raw string: `WS_{"windSpeed": 5.2, ...}_end`.
 2. **`BluetoothConnection`** receives bytes, syncs frames, and sends them to the Repository.
 3. **`WeatherRepository`** passes the string to `WeatherMessageParser`.
-4. **`WeatherMessageParser`** returns a `WeatherData` object.
-5. **`GetWeatherUiStateUseCase`** observes the repository, triggers `ThermalAnalyzer`, and merges all info into a new `WeatherUiState`.
-6. **`WeatherViewModel`** exposes the unified `WeatherUiState` stream.
-7. **Fragments** observe the single state object and update the UI atomically.
+4. **`WeatherRepository`** immediately triggers `ThermalAnalyzer` with the parsed data.
+5. **`WeatherRepository`** bundles raw data + trends into a **`ProcessedWeatherData`** object and posts it.
+6. **`GetWeatherUiStateUseCase`** observes the heartbeat and creates a new **`WeatherUiState`**.
+7. **Fragments** observe the single state object and update charts/text atomically.
