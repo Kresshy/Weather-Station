@@ -49,6 +49,8 @@ public class DashboardFragment extends Fragment {
 
     private LineDataSet windSpeedSet;
     private LineDataSet temperatureSet;
+    private long totalPointsAddedWind = 0;
+    private long totalPointsAddedTemp = 0;
     private final SimpleDateFormat timeFormat =
             new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
@@ -206,11 +208,13 @@ public class DashboardFragment extends Fragment {
     private void populateChartsFromHistory() {
         List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
         if (history != null && !history.isEmpty()) {
+            totalPointsAddedWind = 0;
+            totalPointsAddedTemp = 0;
             for (WeatherData data : history) {
                 windSpeedSet.addEntry(
-                        new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
+                        new Entry(totalPointsAddedWind++, (float) data.getWindSpeed()));
                 temperatureSet.addEntry(
-                        new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
+                        new Entry(totalPointsAddedTemp++, (float) data.getTemperature()));
             }
             binding.windSpeedChart.getData().notifyDataChanged();
             binding.windSpeedChart.notifyDataSetChanged();
@@ -268,7 +272,6 @@ public class DashboardFragment extends Fragment {
         xAxis.setAvoidFirstLastClipping(true);
         xAxis.setEnabled(true);
         xAxis.setAxisMinimum(0f);
-        xAxis.setAxisMaximum(numSamples);
 
         chart.getAxisLeft().setTextColor(Color.GRAY);
         chart.getAxisRight().setEnabled(false);
@@ -326,12 +329,12 @@ public class DashboardFragment extends Fragment {
 
     /** Appends a new value to a chart and shifts the window if capacity is reached. */
     private void addEntryToChart(LineChart chart, LineDataSet set, float value) {
-        // Efficiency Optimization: Instead of shifting O(N) entries,
-        // we use increasing X coordinates and just set the visible window.
-        set.addEntry(new Entry(set.getEntryCount(), value));
+        // Efficiency Optimization: Use increasing X coordinates and set the visible window.
+        float nextX = (set == windSpeedSet) ? totalPointsAddedWind++ : totalPointsAddedTemp++;
+        set.addEntry(new Entry(nextX, value));
 
-        // Prune data to keep memory usage low (though not O(N) shift,
-        // we remove the oldest entry which is faster).
+        // Prune data to keep memory usage low.
+        // We keep a buffer of 2x the requested samples for smooth scrolling back if allowed.
         if (set.getEntryCount() > numSamples * 2) {
             set.removeEntry(0);
         }
@@ -341,7 +344,7 @@ public class DashboardFragment extends Fragment {
 
         // Ensure the chart "scrolls" to the right.
         chart.setVisibleXRangeMaximum(numSamples);
-        chart.moveViewToX(set.getEntryCount());
+        chart.moveViewToX(nextX);
 
         // Avoid excessive redraws by only invalidating if it's on screen.
         chart.invalidate();

@@ -45,6 +45,8 @@ public class GraphViewFragment extends Fragment {
 
     private LineDataSet windSpeedSet;
     private LineDataSet temperatureSet;
+    private long totalPointsAddedWind = 0;
+    private long totalPointsAddedTemp = 0;
 
     public GraphViewFragment() {
         // Required empty public constructor
@@ -107,11 +109,13 @@ public class GraphViewFragment extends Fragment {
     private void populateChartsFromHistory() {
         List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
         if (history != null && !history.isEmpty()) {
+            totalPointsAddedWind = 0;
+            totalPointsAddedTemp = 0;
             for (WeatherData data : history) {
                 windSpeedSet.addEntry(
-                        new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
+                        new Entry(totalPointsAddedWind++, (float) data.getWindSpeed()));
                 temperatureSet.addEntry(
-                        new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
+                        new Entry(totalPointsAddedTemp++, (float) data.getTemperature()));
             }
             binding.windSpeedChart.getData().notifyDataChanged();
             binding.windSpeedChart.notifyDataSetChanged();
@@ -177,7 +181,6 @@ public class GraphViewFragment extends Fragment {
         xAxis.setDrawGridLines(false);
         xAxis.setEnabled(true);
         xAxis.setAxisMinimum(0f);
-        xAxis.setAxisMaximum(numberOfSamples);
 
         chart.getAxisLeft().setTextColor(Color.LTGRAY);
         chart.getAxisLeft().setDrawGridLines(true);
@@ -202,7 +205,8 @@ public class GraphViewFragment extends Fragment {
 
     private void addValueToSet(LineChart chart, LineDataSet set, float value) {
         // Efficiency Optimization: Use increasing X coordinates and set the visible window.
-        set.addEntry(new Entry(set.getEntryCount(), value));
+        float nextX = (set == windSpeedSet) ? totalPointsAddedWind++ : totalPointsAddedTemp++;
+        set.addEntry(new Entry(nextX, value));
 
         // Prune data if it becomes too large to keep memory usage low.
         if (set.getEntryCount() > numberOfSamples * 2) {
@@ -214,7 +218,7 @@ public class GraphViewFragment extends Fragment {
 
         // Ensure the chart "scrolls" to the right and maintains fixed visible window.
         chart.setVisibleXRangeMaximum(numberOfSamples);
-        chart.moveViewToX(set.getEntryCount());
+        chart.moveViewToX(nextX);
 
         chart.invalidate();
     }
