@@ -306,13 +306,13 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
                 }
             }
 
-            latestWeatherData.postValue(weatherData);
-
             ThermalAnalyzer.AnalysisResult result = thermalAnalyzer.analyze(weatherData);
             launchDecision.postValue(result.decision);
             tempTrend.postValue(result.tempTrend);
             windTrend.postValue(result.windTrend);
             thermalScore.postValue(result.score);
+
+            latestWeatherData.postValue(weatherData);
         }
     }
 

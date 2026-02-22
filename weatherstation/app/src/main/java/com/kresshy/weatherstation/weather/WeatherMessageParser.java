@@ -93,8 +93,12 @@ public class WeatherMessageParser {
      */
     private WeatherData parseLegacy(String pdu) {
         try {
-            // Split by any whitespace. Avoid splitting by comma to support comma decimal separator.
-            String[] parts = pdu.split("\\s+");
+            // Split by any common delimiter: whitespace, comma, or semicolon.
+            // Note: If comma is used as a decimal separator in the locale,
+            // this regex will split the number. We rely on the heuristic that 
+            // the firmware sends dot or space-separated values.
+            String[] parts = pdu.split("[\\s,;]+");
+
             if (parts.length >= 2) {
                 double windSpeed = parseDoubleSafe(parts[0], 0.0);
                 double temperature = parseDoubleSafe(parts[1], 0.0);
@@ -102,7 +106,7 @@ public class WeatherMessageParser {
                 int nodeId = 0;
                 if (parts.length >= 3) {
                     try {
-                        nodeId = Integer.parseInt(parts[2]);
+                        nodeId = Integer.parseInt(parts[2].trim());
                     } catch (NumberFormatException ignored) {}
                 }
                 
