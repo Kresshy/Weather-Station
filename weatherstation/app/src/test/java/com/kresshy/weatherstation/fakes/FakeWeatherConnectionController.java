@@ -23,6 +23,7 @@ public class FakeWeatherConnectionController implements WeatherConnectionControl
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
     private final MutableLiveData<List<Parcelable>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
+    private final List<Parcelable> pairedDevices = new ArrayList<>();
     private final MutableLiveData<Integer> bluetoothState = new MutableLiveData<>(0);
 
     @Override
@@ -58,6 +59,11 @@ public class FakeWeatherConnectionController implements WeatherConnectionControl
     @Override
     public LiveData<List<Parcelable>> getDiscoveredDevices() {
         return discoveredDevices;
+    }
+
+    @Override
+    public List<Parcelable> getPairedDevices() {
+        return pairedDevices;
     }
 
     @Override
@@ -108,5 +114,10 @@ public class FakeWeatherConnectionController implements WeatherConnectionControl
 
     public void setConnectedDeviceName(String name) {
         connectedDeviceName.postValue(name);
+    }
+
+    public void setPairedDevices(List<Parcelable> devices) {
+        pairedDevices.clear();
+        pairedDevices.addAll(devices);
     }
 }

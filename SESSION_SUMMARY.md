@@ -41,7 +41,7 @@ Successfully transformed the application into a robust, high-performance platfor
 *   **Versioning**: Formally adopted **Semantic Versioning (SemVer)** with detailed [changelogs/](changelogs/).
 
 ### 🚀 Latest Deliverable
-*   **v3.3.0 APK**: Architectural release formally separating processing logic from connection management.
+*   **v3.3.1 APK**: Finalized architectural release with total encapsulation of hardware logic in the Control Plane and a hardened DI graph.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---

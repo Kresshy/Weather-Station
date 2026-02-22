@@ -206,6 +206,33 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
     }
 
     @Override
+    public List<Parcelable> getPairedDevices() {
+        boolean useSimulator = sharedPreferences.getBoolean("pref_simulator_mode", false);
+        List<Parcelable> devices = new ArrayList<>();
+
+        // 1. Add Simulator if enabled
+        if (useSimulator) {
+            devices.add(
+                    new SimulatorDevice("Simulator Station", SimulatorDevice.SIMULATOR_ADDRESS));
+        }
+
+        // 2. Add Physical Paired Devices if Bluetooth is available and enabled
+        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+            if (PermissionHelper.hasConnectPermission(context)) {
+                java.util.Set<android.bluetooth.BluetoothDevice> bondedDevices =
+                        bluetoothAdapter.getBondedDevices();
+                if (bondedDevices != null) {
+                    devices.addAll(bondedDevices);
+                }
+            } else {
+                Timber.d("Controller: BLUETOOTH_CONNECT permission not granted");
+            }
+        }
+
+        return devices;
+    }
+
+    @Override
     public boolean isBluetoothEnabled() {
         return bluetoothManager.isBluetoothEnabled();
     }

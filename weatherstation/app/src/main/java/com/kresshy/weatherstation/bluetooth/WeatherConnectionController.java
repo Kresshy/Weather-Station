@@ -51,6 +51,11 @@ public interface WeatherConnectionController {
     LiveData<List<Parcelable>> getDiscoveredDevices();
 
     /**
+     * @return List of currently paired devices (including Simulator if enabled).
+     */
+    List<Parcelable> getPairedDevices();
+
+    /**
      * @return true if Bluetooth is currently enabled.
      */
     boolean isBluetoothEnabled();
