@@ -30,18 +30,18 @@ Successfully transformed the application into a robust, high-performance platfor
 *   **Trend Visibility**: Trends (delta values) are now always calculated and displayed, even when the Launch Detector is toggled OFF, providing continuous diagnostics.
 *   **Non-Intrusive Bluetooth**: Changed the default setting to keep system Bluetooth active when exiting the app.
 
-### 🛂 Plane Separation (Control vs. Data)
-*   **Decoupled Architecture (v3.3.0)**: Formally separated the application into a **Data Plane** (`WeatherRepository`) and a **Control Plane** (`WeatherConnectionController`). 
-*   **Clean Responsibility**: The Repository now exclusively handles data processing and analysis, while the Controller manages hardware lifecycles and connections. This prevents the "God Object" anti-pattern and simplifies testing.
+### 🏛️ Activity Delegation (The Slim Activity)
+*   **Delegated Architecture (v3.4.0)**: Refactored the monolith `WSActivity` by extracting core responsibilities into specialized delegates: `PermissionDelegate`, `NavigationDelegate`, and `UIEventDelegate`.
+*   **Maintainability**: The activity is now 60% smaller, acting solely as a coordinator. This makes the UI logic much easier to test and extend without breaking unrelated features.
 
 ## 🧪 Testing & Quality Control
-*   **Expanded Coverage**: Added `GetWeatherUiStateUseCaseTest` and updated `ThermalAnalyzerTest` to verify the new heartbeat architecture.
-*   **Fake Objects**: Introduced `FakeWeatherConnectionController` to maintain test integrity across the plane separation.
-*   **Test Status**: All 50 unit tests passing.
+*   **Expanded Coverage**: Added `GetWeatherUiStateUseCaseTest` and updated `ThermalAnalyzerTest` to verify the heartbeat architecture.
+*   **Fake Objects**: Introduced `FakeWeatherConnectionController` and `FakeWeatherConnectionController` to maintain test integrity.
+*   **Test Status**: All 50+ unit tests passing.
 *   **Versioning**: Formally adopted **Semantic Versioning (SemVer)** with detailed [changelogs/](changelogs/).
 
 ### 🚀 Latest Deliverable
-*   **v3.3.2 APK**: Standardized architectural release with improved interface naming (`HardwareEventListener`) and 100% test alignment.
+*   **v3.4.0 APK**: Architectural release implementing Activity Delegation for improved maintainability and cleaner UI logic.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---
