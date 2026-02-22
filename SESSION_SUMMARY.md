@@ -76,7 +76,7 @@ Successfully transformed the application into a robust, high-performance, cross-
 *   **Documentation Alignment**: Updated `README.md` and `FUTURE_IMPROVEMENTS.md` to reflect the single-node focus and formalize Semantic Versioning (SemVer).
 
 ### 🚀 Deliverables & Field Testing
-*   **v3.2.0 APK**: Architectural release implementing the "Single Heartbeat" pattern for guaranteed UI atomicity and reduced churn.
+*   **v3.2.1 APK**: Visual update implementing linear charting and fixed initial 300-sample viewports for consistent airfield monitoring.
 *   **Build Status**: Successful (`assembleDebug` passing).
 
 *   **Unit Testing**: Expanded test suite with `BluetoothFrameSyncTest` and updated `WeatherMessageParserTest` to verify noise resilience and robust frame extraction.

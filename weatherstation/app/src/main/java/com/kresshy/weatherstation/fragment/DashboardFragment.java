@@ -272,6 +272,7 @@ public class DashboardFragment extends Fragment {
         xAxis.setAvoidFirstLastClipping(true);
         xAxis.setEnabled(true);
         xAxis.setAxisMinimum(0f);
+        xAxis.setAxisMaximum(numSamples);
 
         chart.getAxisLeft().setTextColor(Color.GRAY);
         chart.getAxisRight().setEnabled(false);
@@ -287,9 +288,7 @@ public class DashboardFragment extends Fragment {
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
 
-        // Performance Optimization: HORIZONTAL_BEZIER is slightly less CPU intensive
-        // than CUBIC_BEZIER while still providing high-quality smoothing.
-        set.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
+        set.setMode(LineDataSet.Mode.LINEAR);
         return set;
     }
 
@@ -343,8 +342,11 @@ public class DashboardFragment extends Fragment {
         chart.notifyDataSetChanged();
 
         // Ensure the chart "scrolls" to the right.
-        chart.setVisibleXRangeMaximum(numSamples);
-        chart.moveViewToX(nextX);
+        if (nextX >= numSamples) {
+            chart.getXAxis().resetAxisMaximum();
+            chart.setVisibleXRangeMaximum(numSamples);
+            chart.moveViewToX(nextX);
+        }
 
         // Avoid excessive redraws by only invalidating if it's on screen.
         chart.invalidate();

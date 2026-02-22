@@ -181,6 +181,7 @@ public class GraphViewFragment extends Fragment {
         xAxis.setDrawGridLines(false);
         xAxis.setEnabled(true);
         xAxis.setAxisMinimum(0f);
+        xAxis.setAxisMaximum(numberOfSamples);
 
         chart.getAxisLeft().setTextColor(Color.LTGRAY);
         chart.getAxisLeft().setDrawGridLines(true);
@@ -217,8 +218,11 @@ public class GraphViewFragment extends Fragment {
         chart.notifyDataSetChanged();
 
         // Ensure the chart "scrolls" to the right and maintains fixed visible window.
-        chart.setVisibleXRangeMaximum(numberOfSamples);
-        chart.moveViewToX(nextX);
+        if (nextX >= numberOfSamples) {
+            chart.getXAxis().resetAxisMaximum();
+            chart.setVisibleXRangeMaximum(numberOfSamples);
+            chart.moveViewToX(nextX);
+        }
 
         chart.invalidate();
     }
@@ -232,15 +236,13 @@ public class GraphViewFragment extends Fragment {
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
 
-        // Performance: Use HORIZONTAL_BEZIER for slightly lower CPU usage.
-        set.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
-        set.setCubicIntensity(0.15f);
+        // Performance: Use LINEAR mode
+        set.setMode(LineDataSet.Mode.LINEAR);
 
-        // Solid fill (only if needed, but keeping for visual consistency)
+        // Solid fill
         set.setDrawFilled(true);
         set.setFillAlpha(110);
         set.setFillColor(color);
-
         set.setHighLightColor(Color.WHITE);
         set.setDrawHorizontalHighlightIndicator(false);
 
