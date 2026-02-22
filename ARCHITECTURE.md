@@ -4,19 +4,15 @@ This document describes the high-level architecture of the Weather Station Andro
 
 ## 🏗️ Architectural Overview
 
-The application follows a modern **MVVM (Model-View-ViewModel)** pattern with a strict separation between the **Control Plane** and the **Data Plane**.
+The application follows a modern **MVVM (Model-View-ViewModel)** pattern with a strict separation between the **Control Plane** and the **Data Plane**, bridged by a dedicated **Domain Layer (UseCases)**.
 
 ### 🛂 Plane Separation
-To prevent architectural bloat and ensure maintainability, the application logic is divided into two primary planes:
-
-1.  **Data Plane (`WeatherRepository`)**: Responsible for sensor data processing, protocol parsing, and analytical trend calculation. It implements the **Single Heartbeat** pattern to publish atomic updates.
-2.  **Control Plane (`WeatherConnectionController`)**: Responsible for hardware lifecycles, Bluetooth adapter state, device discovery, and connection orchestration (including auto-reconnect).
+1.  **Data Plane (`WeatherRepository`)**: Handles the "What". It manages sensor data processing, protocol parsing, and analytical trend calculation.
+2.  **Control Plane (`WeatherConnectionController`)**: Handles the "How". It manages hardware lifecycles, Bluetooth adapter state, and connection orchestration.
 
 ### 💓 The Single Heartbeat Pattern
-1.  **Repository** receives raw data from the Control Plane.
-2.  **Repository** synchronously calculates all trends and scores.
-3.  **Repository** publishes an atomic **`ProcessedWeatherData`** heartbeat.
-4.  **UI Layer** receives this single event, ensuring charts and text are always synchronized.
+*   The **Data Plane** processes raw data immediately upon arrival and publishes a single, atomic **`ProcessedWeatherData`** heartbeat.
+*   This ensuring that all UI components (charts, trends, scores) are perfectly synchronized.
 
 ```mermaid
 graph TD
@@ -33,10 +29,20 @@ graph TD
         WUS[WeatherUiState]
     end
 
+    subgraph Domain_Layer [Domain Layer - UseCases]
+        GWUS[GetWeatherUiStateUseCase]
+        CTD[ConnectToDeviceUseCase]
+        GPD[GetPairedDevicesUseCase]
+        MD[ManageDiscoveryUseCase]
+        UC[UpdateCalibrationUseCase]
+    end
+
     subgraph Control_Plane [Control Plane]
         WCC[WeatherConnectionController]
         CM[ConnectionManager]
         WBM[WeatherBluetoothManager]
+        BC[BluetoothConnection]
+        SC[SimulatorConnection]
     end
 
     subgraph Data_Plane [Data Plane]
@@ -49,20 +55,37 @@ graph TD
         WS[WeatherService]
     end
 
-    %% Component Interactions
+    %% UI to ViewModel
     UI_Layer --> WVM
-    WVM --> GWUS[UseCases]
-    
-    %% UseCase to Plane delegation
-    GWUS --> WCC
+    WVM --> WUS
+
+    %% ViewModel to UseCases
+    WVM --> GWUS
+    WVM --> CTD
+    WVM --> GPD
+    WVM --> MD
+    WVM --> UC
+
+    %% UseCase to Plane interactions
     GWUS --> WRI
-    
-    %% Data Flow
+    GWUS --> WCC
+    CTD --> WCC
+    GPD --> WCC
+    MD --> WCC
+    UC --> WRI
+
+    %% Data Flow Pipeline
     WCC -- "Raw String" --> WRI
     WRI -- "Processed Heartbeat" --> GWUS
-    GWUS -- "WeatherUiState" --> WVM
-    WVM -- "Observe State" --> UI_Layer
     
+    %% Internal Plane Logic
+    WCC --> CM
+    WCC --> WBM
+    CM --> BC
+    CM --> SC
+    WRI --> TA
+    WRI --> WMP
+
     %% Background Service
     WS -- "Observe Heartbeat" --> WRI
     WS -- "Control Lifecycle" --> WCC
@@ -70,19 +93,26 @@ graph TD
 
 ## 🧩 Key Components
 
-### 1. **Control Plane (`WeatherConnectionController`)**
-Orchestrates the hardware. It manages `BluetoothAdapter` states, handles discovery broadcasts, and maintains the `ConnectionState`. It provides the "raw" data pipeline to the Data Plane.
+### 1. **Domain Layer (Specific UseCases)**
+- **`GetWeatherUiStateUseCase`**: The central aggregator. Observes the atomic heartbeat from the **Data Plane** and hardware state from the **Control Plane** to build the unified `WeatherUiState`.
+- **`ConnectToDeviceUseCase`**: Executes connection requests. It tells the **Control Plane** which MAC address to target.
+- **`GetPairedDevicesUseCase`**: Requests the list of available weather stations (physical or simulator) from the **Control Plane**.
+- **`ManageDiscoveryUseCase`**: Controls the lifecycle of Bluetooth scanning via the **Control Plane**.
+- **`UpdateCalibrationUseCase`**: Passes user-defined sensor offsets to the **Data Plane** for persistence and application.
 
-### 2. **Data Plane (`WeatherRepository`)**
-Processes the data. It takes raw strings, runs them through the `WeatherMessageParser`, triggers `ThermalAnalyzer` for trend calculations, and manages the historical data buffer.
+### 2. **Control Plane (`WeatherConnectionController`)**
+The hardware orchestrator. Encapsulates `BluetoothAdapter`, `ConnectionManager`, and discovery logic. It provides the "Raw String" stream to the Data Plane and manages the `ConnectionState`.
 
-### 3. **Domain Layer (UseCases)**
-The bridge between planes. UseCases like `GetWeatherUiStateUseCase` aggregate data from the Data Plane and hardware state from the Control Plane to provide a unified `WeatherUiState` to the ViewModel.
+### 3. **Data Plane (`WeatherRepository`)**
+The analytical engine. It implements `RawDataCallback` to receive strings from the Control Plane, runs the `WeatherMessageParser`, and triggers the `ThermalAnalyzer` to produce the **Single Heartbeat**.
 
 ### 4. **UI State (UDF)**
 **`WeatherUiState`** is an immutable snapshot of the entire dashboard. This ensures that UI updates are atomic, consistent, and lag-free across fragments.
 
-## 💉 Dependency Injection (Hilt)
-- **`AppModule`**: Global singletons (Gson, SharedPreferences).
-- **`RepositoryModule`**: Binds the Data and Control plane interfaces to their concrete implementations.
-- **`ConnectionModule`**: Logic for switching between Bluetooth and Simulator hardware.
+## 📡 Data Flow Path (The Heartbeat)
+1. **Hardware** sends raw string: `WS_{"windSpeed": 5.2, ...}_end`.
+2. **Control Plane** receives bytes, syncs frames, and passes the string to the **Data Plane**.
+3. **Data Plane** parses the string and synchronously calculates trends and scores via **`ThermalAnalyzer`**.
+4. **Data Plane** bundles everything into **`ProcessedWeatherData`** and posts it.
+5. **`GetWeatherUiStateUseCase`** merges this heartbeat with connection status.
+6. **Fragments** receive the new state and update all views in a single frame.
