@@ -27,15 +27,19 @@ public class GetPairedDevicesUseCase {
     private final SharedPreferences sharedPreferences;
     private final BluetoothAdapter bluetoothAdapter;
     private final Context context;
+    private final com.kresshy.weatherstation.bluetooth.WeatherConnectionController
+            connectionController;
 
     @Inject
     public GetPairedDevicesUseCase(
             SharedPreferences sharedPreferences,
             @androidx.annotation.Nullable BluetoothAdapter bluetoothAdapter,
-            @ApplicationContext Context context) {
+            @ApplicationContext Context context,
+            com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController) {
         this.sharedPreferences = sharedPreferences;
         this.bluetoothAdapter = bluetoothAdapter;
         this.context = context;
+        this.connectionController = connectionController;
     }
 
     /**

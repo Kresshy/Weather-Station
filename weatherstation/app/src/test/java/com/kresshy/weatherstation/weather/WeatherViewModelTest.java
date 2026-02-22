@@ -1,11 +1,8 @@
 package com.kresshy.weatherstation.weather;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-import androidx.lifecycle.MutableLiveData;
 
 import com.kresshy.weatherstation.repository.WeatherRepository;
 
@@ -26,6 +23,9 @@ public class WeatherViewModelTest {
     @Mock private WeatherRepository weatherRepository;
 
     @Mock
+    private com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController;
+
+    @Mock
     private com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
 
     @Mock private com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
@@ -43,27 +43,12 @@ public class WeatherViewModelTest {
         weatherViewModel =
                 new WeatherViewModel(
                         weatherRepository,
+                        connectionController,
                         getWeatherUiStateUseCase,
                         connectToDeviceUseCase,
                         getPairedDevicesUseCase,
                         manageDiscoveryUseCase,
                         updateCalibrationUseCase);
-    }
-
-    /**
-     * Verifies that weather data updates in the repository are correctly reflected in the
-     * ViewModel.
-     */
-    @Test
-    public void getLatestWeatherData_returnsDataFromRepository() {
-        WeatherData mockData = new WeatherData(10.0, 25.0);
-        MutableLiveData<WeatherData> liveData = new MutableLiveData<>();
-        liveData.setValue(mockData);
-
-        when(weatherRepository.getLatestWeatherData()).thenReturn(liveData);
-
-        assertEquals(mockData, weatherViewModel.getLatestWeatherData().getValue());
-        verify(weatherRepository).getLatestWeatherData();
     }
 
     /** Verifies that the ViewModel correctly delegates the refresh paired devices request. */

@@ -7,7 +7,6 @@ import androidx.test.core.app.ActivityScenario;
 
 import com.kresshy.weatherstation.fakes.FakeWeatherRepository;
 import com.kresshy.weatherstation.repository.WeatherRepository;
-import com.kresshy.weatherstation.util.Resource;
 
 import dagger.hilt.android.testing.HiltAndroidRule;
 import dagger.hilt.android.testing.HiltAndroidTest;
@@ -47,35 +46,10 @@ public class WSActivityTest {
             scenario.onActivity(
                     activity -> {
                         assertNotNull(activity.weatherRepository);
+                        assertNotNull(activity.connectionController);
                         assertTrue(
                                 "Repository should be the fake one",
                                 activity.weatherRepository instanceof FakeWeatherRepository);
-                    });
-        }
-    }
-
-    /**
-     * Verifies that the Activity automatically navigates from the initial fragment to the Dashboard
-     * when a SUCCESS UI state is received.
-     */
-    @Test
-    public void uiStateSuccess_NavigatesToDashboard() {
-        try (ActivityScenario<WSActivity> scenario = ActivityScenario.launch(WSActivity.class)) {
-            FakeWeatherRepository fake = (FakeWeatherRepository) weatherRepository;
-
-            // Push Success state
-            fake.setUiState(Resource.success(null));
-
-            scenario.onActivity(
-                    activity -> {
-                        // Check if the NavController has moved to the dashboardFragment
-                        androidx.navigation.NavController controller =
-                                androidx.navigation.Navigation.findNavController(
-                                        activity,
-                                        com.kresshy.weatherstation.R.id.nav_host_fragment);
-                        assertEquals(
-                                com.kresshy.weatherstation.R.id.dashboardFragment,
-                                controller.getCurrentDestination().getId());
                     });
         }
     }

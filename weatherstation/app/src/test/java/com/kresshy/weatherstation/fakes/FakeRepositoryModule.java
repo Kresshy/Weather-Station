@@ -3,6 +3,7 @@ package com.kresshy.weatherstation.fakes;
 import static org.mockito.Mockito.mock;
 
 import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
+import com.kresshy.weatherstation.bluetooth.WeatherConnectionController;
 import com.kresshy.weatherstation.di.RepositoryModule;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 
@@ -33,5 +34,12 @@ public class FakeRepositoryModule {
     @Singleton
     public WeatherBluetoothManager provideWeatherBluetoothManager() {
         return mock(WeatherBluetoothManager.class);
+    }
+
+    /** Provides a fake connection controller for tests. */
+    @Provides
+    @Singleton
+    public WeatherConnectionController provideWeatherConnectionController() {
+        return new FakeWeatherConnectionController();
     }
 }

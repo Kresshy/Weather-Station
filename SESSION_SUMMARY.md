@@ -30,13 +30,18 @@ Successfully transformed the application into a robust, high-performance platfor
 *   **Trend Visibility**: Trends (delta values) are now always calculated and displayed, even when the Launch Detector is toggled OFF, providing continuous diagnostics.
 *   **Non-Intrusive Bluetooth**: Changed the default setting to keep system Bluetooth active when exiting the app.
 
+### 🛂 Plane Separation (Control vs. Data)
+*   **Decoupled Architecture (v3.3.0)**: Formally separated the application into a **Data Plane** (`WeatherRepository`) and a **Control Plane** (`WeatherConnectionController`). 
+*   **Clean Responsibility**: The Repository now exclusively handles data processing and analysis, while the Controller manages hardware lifecycles and connections. This prevents the "God Object" anti-pattern and simplifies testing.
+
 ## 🧪 Testing & Quality Control
-*   **Expanded Coverage**: Added `GetWeatherUiStateUseCaseTest` and updated `ThermalAnalyzerTest` to verify the new heartbeat architecture and trend persistence.
+*   **Expanded Coverage**: Added `GetWeatherUiStateUseCaseTest` and updated `ThermalAnalyzerTest` to verify the new heartbeat architecture.
+*   **Fake Objects**: Introduced `FakeWeatherConnectionController` to maintain test integrity across the plane separation.
 *   **Test Status**: All 50 unit tests passing.
 *   **Versioning**: Formally adopted **Semantic Versioning (SemVer)** with detailed [changelogs/](changelogs/).
 
 ### 🚀 Latest Deliverable
-*   **v3.2.1 APK**: Production-stable build featuring all performance, architectural, and visual refinements.
+*   **v3.3.0 APK**: Architectural release formally separating processing logic from connection management.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---

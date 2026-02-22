@@ -23,9 +23,11 @@ public class GetWeatherUiStateUseCaseTest {
 
     @Mock private WeatherRepository repository;
 
+    @Mock
+    private com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController;
+
     private GetWeatherUiStateUseCase useCase;
 
-    private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
     private final MutableLiveData<ProcessedWeatherData> processedWeatherData =
             new MutableLiveData<>();
     private final MutableLiveData<WeatherRepository.LaunchDecision> launchDecision =
@@ -42,18 +44,19 @@ public class GetWeatherUiStateUseCaseTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Setup mock returns for all repository LiveData streams
-        when(repository.getLatestWeatherData()).thenReturn(latestWeatherData);
+        // Setup mock returns for repository (Data Plane)
         when(repository.getProcessedWeatherData()).thenReturn(processedWeatherData);
         when(repository.getLaunchDecision()).thenReturn(launchDecision);
         when(repository.getTempTrend()).thenReturn(tempTrend);
         when(repository.getWindTrend()).thenReturn(windTrend);
         when(repository.getThermalScore()).thenReturn(thermalScore);
         when(repository.isLaunchDetectorEnabled()).thenReturn(launchDetectorEnabled);
-        when(repository.getConnectionState()).thenReturn(connectionState);
-        when(repository.getConnectedDeviceName()).thenReturn(connectedDeviceName);
 
-        useCase = new GetWeatherUiStateUseCase(repository);
+        // Setup mock returns for controller (Control Plane)
+        when(connectionController.getConnectionState()).thenReturn(connectionState);
+        when(connectionController.getConnectedDeviceName()).thenReturn(connectedDeviceName);
+
+        useCase = new GetWeatherUiStateUseCase(repository, connectionController);
     }
 
     @Test

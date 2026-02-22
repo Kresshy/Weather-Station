@@ -21,7 +21,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.kresshy.weatherstation.R;
-import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
 import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.databinding.ActivityMainBinding;
 import com.kresshy.weatherstation.repository.WeatherRepository;
@@ -50,7 +49,9 @@ public class WSActivity extends AppCompatActivity {
     private boolean permissionsGranted;
 
     @Inject public WeatherRepository weatherRepository;
-    @Inject public WeatherBluetoothManager weatherBluetoothManager;
+
+    @Inject
+    public com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController;
 
     private WeatherViewModel weatherViewModel;
 
@@ -141,7 +142,7 @@ public class WSActivity extends AppCompatActivity {
         Timber.d("Requesting Permissions!...");
         requestPermissionLauncher.launch(permissionList.toArray(new String[0]));
 
-        weatherBluetoothManager.registerReceivers();
+        connectionController.registerReceivers();
 
         weatherViewModel
                 .getToastMessage()
@@ -237,8 +238,8 @@ public class WSActivity extends AppCompatActivity {
         if (mandatoryGranted) {
             permissionsGranted = true;
             weatherViewModel.refreshPairedDevices();
-            if (!weatherBluetoothManager.isBluetoothEnabled()) {
-                weatherBluetoothManager.enableBluetooth();
+            if (!connectionController.isBluetoothEnabled()) {
+                connectionController.enableBluetooth();
             } else {
                 // If bluetooth is already on, offer to reconnect now that permissions are granted
                 reconnectPreviousWeatherStation();
@@ -290,9 +291,9 @@ public class WSActivity extends AppCompatActivity {
         super.onResume();
         Timber.d("ONRESUME");
 
-        if (!weatherBluetoothManager.isBluetoothEnabled()) {
+        if (!connectionController.isBluetoothEnabled()) {
             if (permissionsGranted) {
-                weatherBluetoothManager.enableBluetooth();
+                connectionController.enableBluetooth();
                 requestedEnableBluetooth = true;
             }
         } else {
@@ -306,7 +307,7 @@ public class WSActivity extends AppCompatActivity {
 
         if (currentState == ConnectionState.disconnected
                 || currentState == ConnectionState.stopped) {
-            if (permissionsGranted && weatherBluetoothManager.isBluetoothEnabled()) {
+            if (permissionsGranted && connectionController.isBluetoothEnabled()) {
                 startWeatherService();
             }
         }
@@ -380,7 +381,7 @@ public class WSActivity extends AppCompatActivity {
         Timber.d("ONDESTROY");
 
         stopWeatherService();
-        weatherBluetoothManager.unregisterReceivers();
+        connectionController.unregisterReceivers();
     }
 
     @Override
@@ -433,10 +434,10 @@ public class WSActivity extends AppCompatActivity {
     private void quitApp() {
         stopWeatherService();
         boolean disableBluetoothOnQuit =
-                sharedPreferences.getBoolean("pref_disable_bluetooth_on_quit", true);
-        if (disableBluetoothOnQuit && weatherBluetoothManager.isBluetoothEnabled()) {
+                sharedPreferences.getBoolean("pref_disable_bluetooth_on_quit", false);
+        if (disableBluetoothOnQuit && connectionController.isBluetoothEnabled()) {
             Timber.d("Disabling bluetooth adapter as per user preference");
-            weatherBluetoothManager.disableBluetooth();
+            connectionController.disableBluetooth();
         }
         finish();
     }

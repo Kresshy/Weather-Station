@@ -2,6 +2,8 @@ package com.kresshy.weatherstation.di;
 
 import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
 import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManagerImpl;
+import com.kresshy.weatherstation.bluetooth.WeatherConnectionController;
+import com.kresshy.weatherstation.bluetooth.WeatherConnectionControllerImpl;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 import com.kresshy.weatherstation.repository.WeatherRepositoryImpl;
 
@@ -28,4 +30,10 @@ public abstract class RepositoryModule {
     @Singleton
     public abstract WeatherBluetoothManager bindWeatherBluetoothManager(
             WeatherBluetoothManagerImpl weatherBluetoothManagerImpl);
+
+    /** Binds the WeatherConnectionController implementation. */
+    @Binds
+    @Singleton
+    public abstract WeatherConnectionController bindWeatherConnectionController(
+            WeatherConnectionControllerImpl weatherConnectionControllerImpl);
 }

@@ -1,22 +1,13 @@
 package com.kresshy.weatherstation.repository;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Parcelable;
 
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
-import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
-import com.kresshy.weatherstation.connection.ConnectionManager;
 import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.connection.RawDataCallback;
-import com.kresshy.weatherstation.util.PermissionHelper;
-import com.kresshy.weatherstation.util.Resource;
 import com.kresshy.weatherstation.weather.ThermalAnalyzer;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherMessageParser;
@@ -27,9 +18,6 @@ import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -43,24 +31,14 @@ import javax.inject.Singleton;
 public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback {
 
     private final Context context;
-    private final ConnectionManager connectionManager;
-    private final BluetoothAdapter bluetoothAdapter;
     private final ThermalAnalyzer thermalAnalyzer;
     private final WeatherMessageParser messageParser;
-    private final WeatherBluetoothManager bluetoothManager;
     private final SharedPreferences sharedPreferences;
 
-    private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
     private final MutableLiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
             processedWeatherData = new MutableLiveData<>();
-    private final MutableLiveData<Resource<Void>> uiState = new MutableLiveData<>();
-    private final MutableLiveData<ConnectionState> connectionState = new MutableLiveData<>();
     private final MutableLiveData<String> toastMessage = new MutableLiveData<>();
     private final MutableLiveData<String> logMessage = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> isDiscovering = new MutableLiveData<>();
-    private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>();
-    private final MutableLiveData<List<Parcelable>> discoveredDevices =
-            new MutableLiveData<>(new ArrayList<>());
 
     private final MutableLiveData<LaunchDecision> launchDecision =
             new MutableLiveData<>(LaunchDecision.WAITING);
@@ -68,7 +46,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final MutableLiveData<Double> windTrend = new MutableLiveData<>(0.0);
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
     private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(false);
-    private final MutableLiveData<String> connectedDeviceName = new MutableLiveData<>(null);
     private final List<WeatherData> historicalData = new ArrayList<>();
     private static final int MAX_HISTORY_SIZE = 300;
 
@@ -76,33 +53,26 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private double correctionTemp = 0.0;
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
-    private Parcelable lastConnectedDevice;
-    private boolean shouldReconnect = false;
-    private final ScheduledExecutorService reconnectExecutor =
-            Executors.newSingleThreadScheduledExecutor();
-    private long reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
-    private static final long INITIAL_RECONNECT_DELAY_MS = 2000; // 2 seconds
-    private static final long MAX_RECONNECT_DELAY_MS = 32000; // 32 seconds
-
     /** Primary constructor used by Hilt. */
     @Inject
     public WeatherRepositoryImpl(
             @ApplicationContext Context context,
             ThermalAnalyzer thermalAnalyzer,
             WeatherMessageParser messageParser,
-            WeatherBluetoothManager bluetoothManager,
             SharedPreferences sharedPreferences,
-            @Nullable BluetoothAdapter bluetoothAdapter,
-            ConnectionManager connectionManager) {
+            com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController) {
         this.context = context;
         this.thermalAnalyzer = thermalAnalyzer;
         this.messageParser = messageParser;
-        this.bluetoothManager = bluetoothManager;
         this.sharedPreferences = sharedPreferences;
-        this.bluetoothAdapter = bluetoothAdapter;
-        this.connectionManager = connectionManager;
 
-        this.connectionManager.setCallback(this);
+        // Bridge with the Control Plane
+        if (connectionController
+                instanceof com.kresshy.weatherstation.bluetooth.WeatherConnectionControllerImpl) {
+            ((com.kresshy.weatherstation.bluetooth.WeatherConnectionControllerImpl)
+                            connectionController)
+                    .setDataCallback(this);
+        }
 
         loadCorrections(sharedPreferences);
         loadLaunchDetectorSettings(sharedPreferences);
@@ -117,16 +87,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
                     }
                 };
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
-
-        // Bridge BluetoothManager data to Repository LiveData
-        bluetoothManager
-                .getDiscoveredDevices()
-                .observeForever(devices -> discoveredDevices.postValue(new ArrayList<>(devices)));
-        bluetoothManager.getDiscoveryStatus().observeForever(discoveryStatus::postValue);
-
-        // Set initial connection state
-        connectionState.postValue(ConnectionState.stopped);
-        isDiscovering.postValue(false);
     }
 
     private void loadCorrections(SharedPreferences sharedPreferences) {
@@ -198,30 +158,10 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     }
 
     @Override
-    public LiveData<String> getConnectedDeviceName() {
-        return connectedDeviceName;
-    }
-
-    @Override
-    public LiveData<Resource<Void>> getUiState() {
-        return uiState;
-    }
-
-    @Override
-    public LiveData<WeatherData> getLatestWeatherData() {
-        return latestWeatherData;
-    }
-
-    @Override
     public List<WeatherData> getHistoricalWeatherData() {
         synchronized (historicalData) {
             return new ArrayList<>(historicalData);
         }
-    }
-
-    @Override
-    public LiveData<ConnectionState> getConnectionState() {
-        return connectionState;
     }
 
     @Override
@@ -232,31 +172,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     @Override
     public LiveData<String> getLogMessage() {
         return logMessage;
-    }
-
-    @Override
-    public LiveData<Boolean> isDiscovering() {
-        return isDiscovering;
-    }
-
-    @Override
-    public LiveData<String> getDiscoveryStatus() {
-        return discoveryStatus;
-    }
-
-    @Override
-    public LiveData<Integer> getBluetoothState() {
-        return bluetoothManager.getBluetoothState();
-    }
-
-    @Override
-    public LiveData<List<Parcelable>> getDiscoveredDevices() {
-        return discoveredDevices;
-    }
-
-    @Override
-    public void clearDiscoveredDevices() {
-        discoveredDevices.postValue(new ArrayList<>());
     }
 
     // --- RawDataCallback Implementation ---
@@ -289,18 +204,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
 
             applyCorrections(weatherData);
 
-            // Add the last known RSSI if available
-            if (lastConnectedDevice != null) {
-                String address = "";
-                if (lastConnectedDevice instanceof BluetoothDevice) {
-                    address = ((BluetoothDevice) lastConnectedDevice).getAddress();
-                } else if (lastConnectedDevice instanceof SimulatorDevice) {
-                    address = ((SimulatorDevice) lastConnectedDevice).getAddress();
-                }
-                int rssi = bluetoothManager.getDeviceRssi(address);
-                weatherData.setRssi(rssi);
-            }
-
             // Track historical data for chart persistence
             synchronized (historicalData) {
                 historicalData.add(weatherData);
@@ -325,7 +228,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             tempTrend.postValue(result.tempTrend);
             windTrend.postValue(result.windTrend);
             thermalScore.postValue(result.score);
-            latestWeatherData.postValue(weatherData);
         }
     }
 
@@ -334,126 +236,23 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         data.setTemperature(data.getTemperature() + correctionTemp);
     }
 
-    /**
-     * Called when the underlying hardware connection state changes. Triggers UI state updates and
-     * manages the auto-reconnect logic.
-     *
-     * @param state The new {@link ConnectionState}.
-     */
     @Override
     public void onConnectionStateChange(ConnectionState state) {
-        connectionState.postValue(state);
-        switch (state) {
-            case connecting:
-                uiState.postValue(Resource.loading(null));
-                break;
-            case connected:
-                onConnected();
-                break;
-            case disconnected:
-            case stopped:
-                uiState.postValue(Resource.error("Disconnected", null));
-                connectedDeviceName.postValue(null);
-                if (shouldReconnect && lastConnectedDevice != null) {
-                    scheduleReconnect();
-                }
-                break;
-        }
-    }
-
-    /** Schedules a reconnection attempt with exponential backoff. */
-    private void scheduleReconnect() {
-        Timber.d("Scheduling reconnect in %d ms", reconnectDelayMs);
-        reconnectExecutor.schedule(
-                () -> {
-                    if (shouldReconnect && lastConnectedDevice != null) {
-                        String name = "Device";
-                        if (lastConnectedDevice instanceof BluetoothDevice) {
-                            if (PermissionHelper.hasConnectPermission(context)) {
-                                name = ((BluetoothDevice) lastConnectedDevice).getName();
-                            } else {
-                                name = "Weather Station";
-                            }
-                        } else if (lastConnectedDevice instanceof SimulatorDevice) {
-                            name = ((SimulatorDevice) lastConnectedDevice).getName();
-                        }
-                        Timber.d("Attempting auto-reconnect to: %s", name);
-                        connectionManager.connectToDevice(lastConnectedDevice);
-                    }
-                },
-                reconnectDelayMs,
-                TimeUnit.MILLISECONDS);
-
-        // Exponential backoff
-        reconnectDelayMs = Math.min(reconnectDelayMs * 2, MAX_RECONNECT_DELAY_MS);
+        // Handled by Controller
     }
 
     @Override
     public void onConnected() {
-        Timber.d("Connection established.");
-        connectionState.postValue(ConnectionState.connected);
-        uiState.postValue(Resource.success(null));
-        reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
-
-        if (lastConnectedDevice != null) {
-            if (lastConnectedDevice instanceof BluetoothDevice) {
-                if (PermissionHelper.hasConnectPermission(context)) {
-                    connectedDeviceName.postValue(
-                            ((BluetoothDevice) lastConnectedDevice).getName());
-                } else {
-                    connectedDeviceName.postValue("Weather Station");
-                }
-            } else if (lastConnectedDevice instanceof SimulatorDevice) {
-                connectedDeviceName.postValue(((SimulatorDevice) lastConnectedDevice).getName());
-            }
-        }
+        // Handled by Controller
     }
 
     @Override
     public void onToastMessage(String message) {
         toastMessage.postValue(message);
-        if (message.toLowerCase().contains("failed") || message.toLowerCase().contains("missing")) {
-            uiState.postValue(Resource.error(message, null));
-        }
     }
 
     @Override
     public void onLogMessage(String message) {
         logMessage.postValue(message);
-    }
-
-    // Proxy methods for ConnectionManager actions
-    @Override
-    public void startConnection() {
-        shouldReconnect = true;
-        connectionManager.startConnection();
-    }
-
-    @Override
-    public void stopConnection() {
-        shouldReconnect = false;
-        thermalAnalyzer.reset();
-        synchronized (historicalData) {
-            historicalData.clear();
-        }
-        connectionManager.stopConnection();
-    }
-
-    @Override
-    public void startDiscovery() {
-        bluetoothManager.startDiscovery();
-    }
-
-    @Override
-    public void stopDiscovery() {
-        bluetoothManager.stopDiscovery();
-    }
-
-    @Override
-    public void connectToDevice(Parcelable device) {
-        lastConnectedDevice = device;
-        shouldReconnect = true;
-        reconnectDelayMs = INITIAL_RECONNECT_DELAY_MS;
-        connectionManager.connectToDevice(device);
     }
 }

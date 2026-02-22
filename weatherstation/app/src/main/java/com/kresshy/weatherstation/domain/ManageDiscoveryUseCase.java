@@ -1,7 +1,5 @@
 package com.kresshy.weatherstation.domain;
 
-import com.kresshy.weatherstation.repository.WeatherRepository;
-
 import javax.inject.Inject;
 
 /**
@@ -10,25 +8,27 @@ import javax.inject.Inject;
  */
 public class ManageDiscoveryUseCase {
 
-    private final WeatherRepository repository;
+    private final com.kresshy.weatherstation.bluetooth.WeatherConnectionController
+            connectionController;
 
     @Inject
-    public ManageDiscoveryUseCase(WeatherRepository repository) {
-        this.repository = repository;
+    public ManageDiscoveryUseCase(
+            com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController) {
+        this.connectionController = connectionController;
     }
 
     /** Starts scanning for new devices. */
     public void startDiscovery() {
-        repository.startDiscovery();
+        connectionController.startDiscovery();
     }
 
     /** Stops any active scan. */
     public void stopDiscovery() {
-        repository.stopDiscovery();
+        connectionController.stopDiscovery();
     }
 
-    /** Clears previously discovered devices from the repository buffer. */
+    /** Clears previously discovered devices from the controller buffer. */
     public void clearResults() {
-        repository.clearDiscoveredDevices();
+        connectionController.clearDiscoveredDevices();
     }
 }

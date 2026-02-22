@@ -39,6 +39,7 @@ public class WeatherService extends LifecycleService {
     private static final int NOTIFICATION_ID = 1;
 
     @Inject WeatherRepository weatherRepository;
+    @Inject com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController;
     @Inject NotificationManager notificationManager;
 
     @Override
@@ -47,15 +48,18 @@ public class WeatherService extends LifecycleService {
         createNotificationChannel();
         startForegroundService();
 
-        // Observe weather data to update notification text in real-time
+        // Observe atomic heartbeat to update notification text in real-time
         weatherRepository
-                .getLatestWeatherData()
+                .getProcessedWeatherData()
                 .observe(
                         this,
-                        weatherData -> {
-                            if (weatherData != null) {
+                        processedData -> {
+                            if (processedData != null && processedData.getWeatherData() != null) {
+                                com.kresshy.weatherstation.weather.WeatherData weatherData =
+                                        processedData.getWeatherData();
                                 updateNotification(
                                         String.format(
+                                                java.util.Locale.getDefault(),
                                                 "Temp: %.1f°C, Wind: %.1f m/s",
                                                 weatherData.getTemperature(),
                                                 weatherData.getWindSpeed()));
@@ -73,12 +77,12 @@ public class WeatherService extends LifecycleService {
                 stopSelf();
                 return START_NOT_STICKY;
             } else if (ACTION_RECONNECT.equals(action)) {
-                weatherRepository.startConnection();
+                connectionController.startConnection();
             }
         }
 
         Timber.d("WeatherService started");
-        weatherRepository.startConnection();
+        connectionController.startConnection();
         return START_STICKY;
     }
 
@@ -156,6 +160,6 @@ public class WeatherService extends LifecycleService {
     public void onDestroy() {
         super.onDestroy();
         Timber.d("WeatherService destroyed");
-        weatherRepository.stopConnection();
+        connectionController.stopConnection();
     }
 }

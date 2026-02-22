@@ -13,13 +13,12 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 
 ## 🏗️ System Architecture
 
-The application follows **Clean Architecture** principles with a **Single Heartbeat** data flow:
+The application follows **Clean Architecture** principles with a decoupled **Control vs. Data Plane** design:
 
 1.  **UI Layer (MVVM)**: Fragments observe a unified `WeatherUiState` from the `WeatherViewModel`.
-2.  **Domain Layer (UseCases)**: Aggregates atomic updates from the repository into UI-ready state objects.
-3.  **Data Layer (Repository)**: `WeatherRepositoryImpl` acts as the coordinator, performing all calculations (trends, scores) synchronously upon data arrival.
-4.  **Hardware/Connection**: Manages physical Bluetooth communication (Client Mode) and software simulation.
-
+2.  **Domain Layer (UseCases)**: The bridge that aggregates data from both planes.
+3.  **Data Plane (`WeatherRepository`)**: Exclusively handles sensor data processing, parsing, and analytical trends using the **Single Heartbeat** pattern.
+4.  **Control Plane (`WeatherConnectionController`)**: Exclusively handles hardware lifecycles, Bluetooth adapter management, and connection orchestration.
 Detailed hardware documentation can be found here:
 - **[Standard Wiring Diagram](WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
 - **[Future Hardware Roadmap](FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades.

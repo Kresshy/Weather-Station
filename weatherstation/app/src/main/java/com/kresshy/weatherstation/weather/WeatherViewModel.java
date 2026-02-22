@@ -20,6 +20,8 @@ import javax.inject.Inject;
 @HiltViewModel
 public class WeatherViewModel extends ViewModel {
     private final WeatherRepository weatherRepository;
+    private final com.kresshy.weatherstation.bluetooth.WeatherConnectionController
+            connectionController;
     private final com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase
             getWeatherUiStateUseCase;
     private final com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
@@ -34,12 +36,14 @@ public class WeatherViewModel extends ViewModel {
     @Inject
     public WeatherViewModel(
             WeatherRepository weatherRepository,
+            com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController,
             com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase,
             com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase,
             com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase,
             com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase,
             com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase) {
         this.weatherRepository = weatherRepository;
+        this.connectionController = connectionController;
         this.getWeatherUiStateUseCase = getWeatherUiStateUseCase;
         this.connectToDeviceUseCase = connectToDeviceUseCase;
         this.getPairedDevicesUseCase = getPairedDevicesUseCase;
@@ -65,7 +69,7 @@ public class WeatherViewModel extends ViewModel {
      * @return List of discovered (unpaired) Bluetooth devices.
      */
     public LiveData<List<android.os.Parcelable>> getDiscoveredDevices() {
-        return weatherRepository.getDiscoveredDevices();
+        return connectionController.getDiscoveredDevices();
     }
 
     /** Refreshes the list of paired devices. */
@@ -111,7 +115,7 @@ public class WeatherViewModel extends ViewModel {
      * @return Observable UI state (LOADING, SUCCESS, ERROR).
      */
     public LiveData<Resource<Void>> getUiState() {
-        return weatherRepository.getUiState();
+        return connectionController.getUiState();
     }
 
     /**
@@ -153,14 +157,7 @@ public class WeatherViewModel extends ViewModel {
      * @return Observable connection state (connected, disconnected, etc.).
      */
     public LiveData<ConnectionState> getConnectionState() {
-        return weatherRepository.getConnectionState();
-    }
-
-    /**
-     * @return Observable latest weather data point.
-     */
-    public LiveData<WeatherData> getLatestWeatherData() {
-        return weatherRepository.getLatestWeatherData();
+        return connectionController.getConnectionState();
     }
 
     /**
@@ -188,27 +185,27 @@ public class WeatherViewModel extends ViewModel {
      * @return true if Bluetooth discovery is currently running.
      */
     public LiveData<Boolean> isDiscovering() {
-        return weatherRepository.isDiscovering();
+        return connectionController.isDiscovering();
     }
 
     /**
      * @return The current discovery status message (e.g., "Searching...").
      */
     public LiveData<String> getDiscoveryStatus() {
-        return weatherRepository.getDiscoveryStatus();
+        return connectionController.getDiscoveryStatus();
     }
 
     /**
      * @return Observable Bluetooth adapter state (ON/OFF).
      */
     public LiveData<Integer> getBluetoothState() {
-        return weatherRepository.getBluetoothState();
+        return connectionController.getBluetoothState();
     }
 
     /**
      * @return Observable currently connected device name.
      */
     public LiveData<String> getConnectedDeviceName() {
-        return weatherRepository.getConnectedDeviceName();
+        return connectionController.getConnectedDeviceName();
     }
 }
