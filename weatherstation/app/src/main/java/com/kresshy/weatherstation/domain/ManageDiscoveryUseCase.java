@@ -5,8 +5,8 @@ import com.kresshy.weatherstation.repository.WeatherRepository;
 import javax.inject.Inject;
 
 /**
- * UseCase for managing the Bluetooth discovery lifecycle.
- * Acts as a clean interface for starting and stopping scans for new weather stations.
+ * UseCase for managing the Bluetooth discovery lifecycle. Acts as a clean interface for starting
+ * and stopping scans for new weather stations.
  */
 public class ManageDiscoveryUseCase {
 

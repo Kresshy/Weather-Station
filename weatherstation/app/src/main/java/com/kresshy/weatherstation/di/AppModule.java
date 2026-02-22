@@ -38,8 +38,7 @@ public class AppModule {
     /** Provides the default BluetoothAdapter. */
     @Provides
     @Singleton
-    @androidx.annotation.Nullable
-    public BluetoothAdapter provideBluetoothAdapter() {
+    @androidx.annotation.Nullable public BluetoothAdapter provideBluetoothAdapter() {
         return BluetoothAdapter.getDefaultAdapter();
     }
 

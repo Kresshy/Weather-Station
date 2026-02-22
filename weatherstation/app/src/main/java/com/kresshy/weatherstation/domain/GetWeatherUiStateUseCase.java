@@ -10,9 +10,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * UseCase that aggregates multiple data streams from the repository into a single unified
- * {@link WeatherUiState}. This centralizes the logic for merging connection status, sensor data,
- * and thermal analysis results.
+ * UseCase that aggregates multiple data streams from the repository into a single unified {@link
+ * WeatherUiState}. This centralizes the logic for merging connection status, sensor data, and
+ * thermal analysis results.
  */
 @Singleton
 public class GetWeatherUiStateUseCase {
@@ -27,15 +27,17 @@ public class GetWeatherUiStateUseCase {
         // Initialize with empty state
         uiState.setValue(WeatherUiState.empty());
 
-        // Performance Optimization: Only trigger updateState when latestWeatherData changes.
-        // Other fields change simultaneously with weather data in the repository,
-        // so we can just pull their latest values once per weather message.
+        // Observe all relevant streams and trigger an update on any change.
+        // While slightly more overhead, this ensures that the unified state
+        // is always in sync regardless of postValue timing.
         uiState.addSource(repository.getLatestWeatherData(), data -> updateState());
-        
-        // Also update when connection state or launcher toggle changes, 
-        // as these might happen independently of sensor data.
         uiState.addSource(repository.getConnectionState(), state -> updateState());
+        uiState.addSource(repository.getLaunchDecision(), decision -> updateState());
+        uiState.addSource(repository.getTempTrend(), trend -> updateState());
+        uiState.addSource(repository.getWindTrend(), trend -> updateState());
+        uiState.addSource(repository.getThermalScore(), score -> updateState());
         uiState.addSource(repository.isLaunchDetectorEnabled(), enabled -> updateState());
+        uiState.addSource(repository.getConnectedDeviceName(), name -> updateState());
     }
 
     /**
@@ -50,15 +52,23 @@ public class GetWeatherUiStateUseCase {
         WeatherUiState currentState = uiState.getValue();
         if (currentState == null) currentState = WeatherUiState.empty();
 
-        uiState.setValue(new WeatherUiState(
-                repository.getLatestWeatherData().getValue(),
-                repository.getLaunchDecision().getValue(),
-                repository.getTempTrend().getValue() != null ? repository.getTempTrend().getValue() : 0.0,
-                repository.getWindTrend().getValue() != null ? repository.getWindTrend().getValue() : 0.0,
-                repository.getThermalScore().getValue() != null ? repository.getThermalScore().getValue() : 0,
-                repository.isLaunchDetectorEnabled().getValue() != null ? repository.isLaunchDetectorEnabled().getValue() : false,
-                repository.getConnectionState().getValue(),
-                repository.getConnectedDeviceName().getValue()
-        ));
+        uiState.setValue(
+                new WeatherUiState(
+                        repository.getLatestWeatherData().getValue(),
+                        repository.getLaunchDecision().getValue(),
+                        repository.getTempTrend().getValue() != null
+                                ? repository.getTempTrend().getValue()
+                                : 0.0,
+                        repository.getWindTrend().getValue() != null
+                                ? repository.getWindTrend().getValue()
+                                : 0.0,
+                        repository.getThermalScore().getValue() != null
+                                ? repository.getThermalScore().getValue()
+                                : 0,
+                        repository.isLaunchDetectorEnabled().getValue() != null
+                                ? repository.isLaunchDetectorEnabled().getValue()
+                                : false,
+                        repository.getConnectionState().getValue(),
+                        repository.getConnectedDeviceName().getValue()));
     }
 }

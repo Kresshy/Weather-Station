@@ -115,8 +115,7 @@ public class WeatherService extends LifecycleService {
 
         Intent notificationIntent = new Intent(this, WSActivity.class);
         PendingIntent pendingIntent =
-                PendingIntent.getActivity(
-                        this, 0, notificationIntent, pendingIntentFlags);
+                PendingIntent.getActivity(this, 0, notificationIntent, pendingIntentFlags);
 
         Intent stopIntent = new Intent(this, WeatherService.class);
         stopIntent.setAction(ACTION_STOP);

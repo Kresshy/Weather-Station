@@ -1,9 +1,7 @@
 package com.kresshy.weatherstation.bluetooth;
 
-import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;

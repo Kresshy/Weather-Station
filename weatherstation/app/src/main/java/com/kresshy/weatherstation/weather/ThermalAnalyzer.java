@@ -2,6 +2,8 @@ package com.kresshy.weatherstation.weather;
 
 import com.kresshy.weatherstation.repository.WeatherRepository;
 
+import timber.log.Timber;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,6 +97,7 @@ public class ThermalAnalyzer {
         double stdDevWind = calculateWindStdDev();
 
         int score = calculateScore(tempDelta, windDelta, stdDevWind, current.getWindSpeed());
+        Timber.d("Analysis: tempDelta=%.4f, windDelta=%.4f, score=%d", tempDelta, windDelta, score);
         WeatherRepository.LaunchDecision decision = determineDecision(score, tempDelta);
 
         return new AnalysisResult(decision, tempDelta, windDelta, score);

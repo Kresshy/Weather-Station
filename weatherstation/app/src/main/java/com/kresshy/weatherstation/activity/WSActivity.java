@@ -99,12 +99,15 @@ public class WSActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            String deviceName = weatherViewModel.getConnectedDeviceName().getValue();
-            if (deviceName != null && (destination.getId() == R.id.dashboardFragment || destination.getId() == R.id.graphViewFragment)) {
-                setToolbarTitle(deviceName);
-            }
-        });
+        navController.addOnDestinationChangedListener(
+                (controller, destination, arguments) -> {
+                    String deviceName = weatherViewModel.getConnectedDeviceName().getValue();
+                    if (deviceName != null
+                            && (destination.getId() == R.id.dashboardFragment
+                                    || destination.getId() == R.id.graphViewFragment)) {
+                        setToolbarTitle(deviceName);
+                    }
+                });
 
         binding.navView.setNavigationItemSelectedListener(
                 item -> {
@@ -220,7 +223,7 @@ public class WSActivity extends AppCompatActivity {
 
     private void handlePermissionResult(Map<String, Boolean> result) {
         Timber.d("handlePermissionResult");
-        
+
         boolean scanGranted = PermissionHelper.hasScanPermission(this);
         boolean connectGranted = PermissionHelper.hasConnectPermission(this);
         boolean mandatoryGranted = scanGranted && connectGranted;
@@ -298,7 +301,8 @@ public class WSActivity extends AppCompatActivity {
             currentState = ConnectionState.disconnected;
         }
 
-        if (currentState == ConnectionState.disconnected || currentState == ConnectionState.stopped) {
+        if (currentState == ConnectionState.disconnected
+                || currentState == ConnectionState.stopped) {
             if (permissionsGranted && weatherBluetoothManager.isBluetoothEnabled()) {
                 startWeatherService();
             }
@@ -425,7 +429,8 @@ public class WSActivity extends AppCompatActivity {
     /** Safely shuts down the app, stopping services and disabling Bluetooth if required. */
     private void quitApp() {
         stopWeatherService();
-        boolean disableBluetoothOnQuit = sharedPreferences.getBoolean("pref_disable_bluetooth_on_quit", true);
+        boolean disableBluetoothOnQuit =
+                sharedPreferences.getBoolean("pref_disable_bluetooth_on_quit", true);
         if (disableBluetoothOnQuit && weatherBluetoothManager.isBluetoothEnabled()) {
             Timber.d("Disabling bluetooth adapter as per user preference");
             weatherBluetoothManager.disableBluetooth();

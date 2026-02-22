@@ -35,8 +35,9 @@ public class WeatherMessageParser {
         }
 
         // 1. Robust Frame Extraction
-        // The protocol uses "WS_{DATA}_end" or "start_{DATA}_end". 
-        // We find the last occurrences to handle cases where multiple frames or junk are in the buffer.
+        // The protocol uses "WS_{DATA}_end" or "start_{DATA}_end".
+        // We find the last occurrences to handle cases where multiple frames or junk are in the
+        // buffer.
         String pdu = "";
         int endIdx = rawData.lastIndexOf("_end");
         if (endIdx != -1) {
@@ -54,11 +55,12 @@ public class WeatherMessageParser {
         pdu = pdu.trim();
         if (pdu.isEmpty()) {
             // Fallback for extremely legacy formats that might lack framing
-            pdu = rawData.trim()
-                    .replace("WS_", "")
-                    .replace("start_", "")
-                    .replace("_end", "")
-                    .trim();
+            pdu =
+                    rawData.trim()
+                            .replace("WS_", "")
+                            .replace("start_", "")
+                            .replace("_end", "")
+                            .trim();
         }
 
         if (pdu.isEmpty()) return null;
@@ -88,28 +90,27 @@ public class WeatherMessageParser {
         return null;
     }
 
-    /**
-     * Parses legacy format: "{windSpeed} {temperature}" or "{windSpeed} {temperature} {nodeId}"
-     */
+    /** Parses legacy format: "{windSpeed} {temperature}" or "{windSpeed} {temperature} {nodeId}" */
     private WeatherData parseLegacy(String pdu) {
         try {
             // Split by any common delimiter: whitespace, comma, or semicolon.
             // Note: If comma is used as a decimal separator in the locale,
-            // this regex will split the number. We rely on the heuristic that 
+            // this regex will split the number. We rely on the heuristic that
             // the firmware sends dot or space-separated values.
             String[] parts = pdu.split("[\\s,;]+");
 
             if (parts.length >= 2) {
                 double windSpeed = parseDoubleSafe(parts[0], 0.0);
                 double temperature = parseDoubleSafe(parts[1], 0.0);
-                
+
                 int nodeId = 0;
                 if (parts.length >= 3) {
                     try {
                         nodeId = Integer.parseInt(parts[2].trim());
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
-                
+
                 return new WeatherData(windSpeed, temperature, nodeId);
             }
         } catch (Exception e) {

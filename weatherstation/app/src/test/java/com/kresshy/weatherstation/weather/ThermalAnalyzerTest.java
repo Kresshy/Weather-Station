@@ -125,7 +125,7 @@ public class ThermalAnalyzerTest {
     @Test
     public void analyze_AppliesSensitivityFactor() {
         analyzer.setEnabled(true);
-        
+
         // 1. Get baseline score with Normal sensitivity (1.0)
         analyzer.analyze(new WeatherData(5.0, 25.0));
         ThermalAnalyzer.AnalysisResult normalResult = analyzer.analyze(new WeatherData(2.0, 27.0));
@@ -137,9 +137,10 @@ public class ThermalAnalyzerTest {
         analyzer.setSensitivity(0.7);
         analyzer.analyze(new WeatherData(5.0, 25.0));
         ThermalAnalyzer.AnalysisResult lowResult = analyzer.analyze(new WeatherData(2.0, 27.0));
-        
-        assertEquals("Low sensitivity score should be 70% of normal", 
-                (int)(normalScore * 0.7), lowResult.score);
+
+        assertEquals(
+                "Low sensitivity score should be 70% of normal",
+                (int) (normalScore * 0.7), lowResult.score);
 
         // 3. Test High sensitivity (1.3)
         analyzer.reset();
@@ -148,7 +149,8 @@ public class ThermalAnalyzerTest {
         analyzer.analyze(new WeatherData(5.0, 25.0));
         ThermalAnalyzer.AnalysisResult highResult = analyzer.analyze(new WeatherData(2.0, 27.0));
 
-        assertEquals("High sensitivity score should be 130% of normal", 
-                Math.min(100, (int)(normalScore * 1.3)), highResult.score);
+        assertEquals(
+                "High sensitivity score should be 130% of normal",
+                Math.min(100, (int) (normalScore * 1.3)), highResult.score);
     }
 }

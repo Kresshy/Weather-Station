@@ -1,16 +1,13 @@
 package com.kresshy.weatherstation.bluetooth;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -38,7 +35,8 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     private final MutableLiveData<List<BluetoothDevice>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
-    private final MutableLiveData<Integer> bluetoothState = new MutableLiveData<>(BluetoothAdapter.STATE_OFF);
+    private final MutableLiveData<Integer> bluetoothState =
+            new MutableLiveData<>(BluetoothAdapter.STATE_OFF);
     private final java.util.Map<String, Integer> deviceRssiMap = new java.util.HashMap<>();
 
     private boolean isRegistered = false;
@@ -67,7 +65,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                     if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                         BluetoothDevice device;
                         int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, (short) 0);
-                        
+
                         if (android.os.Build.VERSION.SDK_INT
                                 >= android.os.Build.VERSION_CODES.TIRAMISU) {
                             device =

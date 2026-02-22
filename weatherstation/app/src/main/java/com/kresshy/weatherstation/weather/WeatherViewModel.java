@@ -20,13 +20,15 @@ import javax.inject.Inject;
 @HiltViewModel
 public class WeatherViewModel extends ViewModel {
     private final WeatherRepository weatherRepository;
-    private final com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
+    private final com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase
+            getWeatherUiStateUseCase;
     private final com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
     private final com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase;
     private final com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
-    private final com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase;
+    private final com.kresshy.weatherstation.domain.UpdateCalibrationUseCase
+            updateCalibrationUseCase;
 
-    private final androidx.lifecycle.MutableLiveData<List<android.os.Parcelable>> pairedDevices = 
+    private final androidx.lifecycle.MutableLiveData<List<android.os.Parcelable>> pairedDevices =
             new androidx.lifecycle.MutableLiveData<>(new java.util.ArrayList<>());
 
     @Inject

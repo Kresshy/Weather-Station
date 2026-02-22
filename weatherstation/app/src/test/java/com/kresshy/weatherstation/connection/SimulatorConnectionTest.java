@@ -1,7 +1,5 @@
 package com.kresshy.weatherstation.connection;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -14,8 +12,8 @@ import org.mockito.ArgumentCaptor;
 import java.util.Random;
 
 /**
- * Unit test for {@link SimulatorConnection}.
- * Demonstrates how DI allows us to mock Random for deterministic testing.
+ * Unit test for {@link SimulatorConnection}. Demonstrates how DI allows us to mock Random for
+ * deterministic testing.
  */
 public class SimulatorConnectionTest {
 
@@ -32,7 +30,8 @@ public class SimulatorConnectionTest {
     }
 
     @Test
-    public void startDataSimulation_TriggerThermal_SendsIncreasedTemperature() throws InterruptedException {
+    public void startDataSimulation_TriggerThermal_SendsIncreasedTemperature()
+            throws InterruptedException {
         // Force Random to trigger a thermal (random.nextInt(100) < 2)
         when(mockRandom.nextInt(100)).thenReturn(1);
         // Force random drifts/increments to be predictable

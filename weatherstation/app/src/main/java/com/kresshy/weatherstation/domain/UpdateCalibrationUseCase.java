@@ -8,9 +8,7 @@ import timber.log.Timber;
 
 import javax.inject.Inject;
 
-/**
- * UseCase for updating and persisting sensor calibration offsets.
- */
+/** UseCase for updating and persisting sensor calibration offsets. */
 public class UpdateCalibrationUseCase {
 
     private final SharedPreferences sharedPreferences;

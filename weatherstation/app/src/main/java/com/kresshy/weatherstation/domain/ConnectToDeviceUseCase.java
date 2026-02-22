@@ -9,14 +9,15 @@ import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 
 import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import timber.log.Timber;
 
 import javax.inject.Inject;
 
 /**
- * UseCase for initiating a connection to a weather station.
- * Handles the logic of saving the device address, selecting between simulator and physical hardware,
- * and triggering the repository's connection sequence.
+ * UseCase for initiating a connection to a weather station. Handles the logic of saving the device
+ * address, selecting between simulator and physical hardware, and triggering the repository's
+ * connection sequence.
  */
 public class ConnectToDeviceUseCase {
 
@@ -56,7 +57,8 @@ public class ConnectToDeviceUseCase {
             repository.connectToDevice(simDevice);
         } else if (bluetoothAdapter != null) {
             try {
-                android.bluetooth.BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+                android.bluetooth.BluetoothDevice device =
+                        bluetoothAdapter.getRemoteDevice(address);
                 repository.connectToDevice(device);
             } catch (IllegalArgumentException e) {
                 Timber.e(e, "Invalid Bluetooth address: %s", address);

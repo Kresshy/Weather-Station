@@ -214,14 +214,19 @@ public class WeatherRepositoryImplTest {
         WeatherData parsedData = new WeatherData(5.0, 25.0);
         when(messageParser.parse(rawData)).thenReturn(parsedData);
         when(thermalAnalyzer.analyze(any()))
-                .thenReturn(new ThermalAnalyzer.AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
+                .thenReturn(
+                        new ThermalAnalyzer.AnalysisResult(
+                                WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
 
         // Add 310 points (max is 300)
         for (int i = 0; i < 310; i++) {
             repository.onRawDataReceived(rawData);
         }
 
-        assertEquals("History size should be capped at 300", 300, repository.getHistoricalWeatherData().size());
+        assertEquals(
+                "History size should be capped at 300",
+                300,
+                repository.getHistoricalWeatherData().size());
     }
 
     /** Verifies that historical data is cleared when the connection is stopped. */
@@ -230,7 +235,9 @@ public class WeatherRepositoryImplTest {
         String rawData = "WS_data_end";
         when(messageParser.parse(rawData)).thenReturn(new WeatherData(5.0, 25.0));
         when(thermalAnalyzer.analyze(any()))
-                .thenReturn(new ThermalAnalyzer.AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
+                .thenReturn(
+                        new ThermalAnalyzer.AnalysisResult(
+                                WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
 
         repository.onRawDataReceived(rawData);
         assertEquals(1, repository.getHistoricalWeatherData().size());

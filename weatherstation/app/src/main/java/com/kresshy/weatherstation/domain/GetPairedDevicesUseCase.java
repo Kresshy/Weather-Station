@@ -9,6 +9,7 @@ import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
 import com.kresshy.weatherstation.util.PermissionHelper;
 
 import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import timber.log.Timber;
 
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ import java.util.Set;
 import javax.inject.Inject;
 
 /**
- * UseCase for retrieving the list of paired weather stations.
- * Handles filtering logic based on simulator mode and permission status.
+ * UseCase for retrieving the list of paired weather stations. Handles filtering logic based on
+ * simulator mode and permission status.
  */
 public class GetPairedDevicesUseCase {
 
@@ -46,13 +47,15 @@ public class GetPairedDevicesUseCase {
 
         // 1. Add Simulator if enabled
         if (useSimulator) {
-            devices.add(new SimulatorDevice("Simulator Station", SimulatorDevice.SIMULATOR_ADDRESS));
+            devices.add(
+                    new SimulatorDevice("Simulator Station", SimulatorDevice.SIMULATOR_ADDRESS));
         }
 
         // 2. Add Physical Paired Devices if Bluetooth is available and enabled
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
             if (PermissionHelper.hasConnectPermission(context)) {
-                Set<android.bluetooth.BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+                Set<android.bluetooth.BluetoothDevice> bondedDevices =
+                        bluetoothAdapter.getBondedDevices();
                 if (bondedDevices != null) {
                     devices.addAll(bondedDevices);
                 }

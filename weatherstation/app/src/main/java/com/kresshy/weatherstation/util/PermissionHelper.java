@@ -25,10 +25,12 @@ public class PermissionHelper {
                     == PackageManager.PERMISSION_GRANTED;
         } else {
             // On older versions, Location permission is required for Bluetooth scanning
-            return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED ||
-                   ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED;
+            return ActivityCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -40,7 +42,8 @@ public class PermissionHelper {
      */
     public static boolean hasConnectPermission(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+            return ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.BLUETOOTH_CONNECT)
                     == PackageManager.PERMISSION_GRANTED;
         } else {
             // On older versions, BLUETOOTH and BLUETOOTH_ADMIN are granted at install time

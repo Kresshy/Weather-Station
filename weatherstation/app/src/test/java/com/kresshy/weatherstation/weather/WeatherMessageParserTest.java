@@ -101,10 +101,10 @@ public class WeatherMessageParserTest {
     public void parse_LegacyFormatTortureTest() {
         // Mixed delimiters and erratic framing
         String[] tortureStrings = {
-            "5.5;22.2",           // Semicolon delimiter, no framing
-            "start_5.5, 22.2",    // Missing suffix, comma+space
-            "5.5 22.2_end",       // Missing prefix
-            "  5.5   22.2  ",     // Purely raw whitespace
+            "5.5;22.2", // Semicolon delimiter, no framing
+            "start_5.5, 22.2", // Missing suffix, comma+space
+            "5.5 22.2_end", // Missing prefix
+            "  5.5   22.2  ", // Purely raw whitespace
             "start_5.5;22.2;0_end" // Node ID with semicolons
         };
 
@@ -128,7 +128,8 @@ public class WeatherMessageParserTest {
     /** Verifies that JSON frames preceded by junk data are parsed correctly. */
     @Test
     public void parse_JsonWithLeadingJunk_ReturnsCorrectData() {
-        String json = "{\"version\":2,\"numberOfNodes\":1,\"measurements\":[{\"windSpeed\":5.5,\"temperature\":22.2,\"nodeId\":0}]}";
+        String json =
+                "{\"version\":2,\"numberOfNodes\":1,\"measurements\":[{\"windSpeed\":5.5,\"temperature\":22.2,\"nodeId\":0}]}";
         String rawData = "31\n30\nWS_" + json + "_end";
         WeatherData result = parser.parse(rawData);
         assertEquals(5.5, result.getWindSpeed(), 0.001);

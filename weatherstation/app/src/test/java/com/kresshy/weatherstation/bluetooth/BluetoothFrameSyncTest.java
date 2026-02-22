@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit test for Bluetooth frame synchronization logic.
- * This tests the logic extracted from BluetoothConnection.ConnectedRunnable.
+ * Unit test for Bluetooth frame synchronization logic. This tests the logic extracted from
+ * BluetoothConnection.ConnectedRunnable.
  */
 public class BluetoothFrameSyncTest {
 
@@ -52,9 +52,7 @@ public class BluetoothFrameSyncTest {
         assertEquals("", curMsg.toString());
     }
 
-    /**
-     * Logic extracted from BluetoothConnection.ConnectedRunnable.run()
-     */
+    /** Logic extracted from BluetoothConnection.ConnectedRunnable.run() */
     private void processBuffer(StringBuilder curMsg, List<String> output) {
         int endIdx = curMsg.indexOf(endMarker);
         while (endIdx != -1) {

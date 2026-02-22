@@ -1,19 +1,15 @@
 package com.kresshy.weatherstation.repository;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Parcelable;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
 import com.kresshy.weatherstation.bluetooth.WeatherBluetoothManager;
 import com.kresshy.weatherstation.connection.ConnectionManager;
@@ -31,7 +27,6 @@ import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -385,7 +380,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
         if (lastConnectedDevice != null) {
             if (lastConnectedDevice instanceof BluetoothDevice) {
                 if (PermissionHelper.hasConnectPermission(context)) {
-                    connectedDeviceName.postValue(((BluetoothDevice) lastConnectedDevice).getName());
+                    connectedDeviceName.postValue(
+                            ((BluetoothDevice) lastConnectedDevice).getName());
                 } else {
                     connectedDeviceName.postValue("Weather Station");
                 }

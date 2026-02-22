@@ -3,7 +3,6 @@ package com.kresshy.weatherstation.fragment;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +23,7 @@ import com.kresshy.weatherstation.activity.WSActivity;
 import com.kresshy.weatherstation.databinding.FragmentDashboardBinding;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherUiState;
 import com.kresshy.weatherstation.weather.WeatherViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -94,23 +94,22 @@ public class DashboardFragment extends Fragment {
 
                             // 1. Update sensor readings and charts
                             if (state.getLatestData() != null) {
-                                WeatherData weatherData = state.getLatestData();
-                                updateSensorUI(weatherData);
+                                updateSensorUI(state);
                             }
 
                             // 2. Update launch detector status
-                            binding.launchStatusCard.setVisibility(state.isLaunchDetectorEnabled() ? View.VISIBLE : View.GONE);
-                            binding.launchStatusCard.setCardBackgroundColor(getDecisionColor(state.getLaunchDecision()));
-                            binding.launchStatusText.setText(getDecisionText(state.getLaunchDecision()));
+                            binding.launchStatusCard.setVisibility(
+                                    state.isLaunchDetectorEnabled() ? View.VISIBLE : View.GONE);
+                            binding.launchStatusCard.setCardBackgroundColor(
+                                    getDecisionColor(state.getLaunchDecision()));
+                            binding.launchStatusText.setText(
+                                    getDecisionText(state.getLaunchDecision()));
                             binding.thermalScoreProgress.setProgress(state.getThermalScore());
 
-                            // 3. Update trends
-                            binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
-                            binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
-
-                            // 4. Update device name in toolbar
+                            // 3. Update device name in toolbar
                             if (getActivity() instanceof WSActivity) {
-                                ((WSActivity) getActivity()).setToolbarTitle(state.getConnectedDeviceName());
+                                ((WSActivity) getActivity())
+                                        .setToolbarTitle(state.getConnectedDeviceName());
                             }
                         });
 
@@ -128,16 +127,25 @@ public class DashboardFragment extends Fragment {
                                                 com.google.android.material.snackbar.Snackbar.make(
                                                         binding.getRoot(),
                                                         R.string.connecting_message,
-                                                        com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE);
+                                                        com.google.android.material.snackbar
+                                                                .Snackbar.LENGTH_INDEFINITE);
                                     }
                                     loadingSnackbar.show();
                                     break;
                                 case SUCCESS:
                                     if (loadingSnackbar != null) loadingSnackbar.dismiss();
-                                    if (androidx.navigation.fragment.NavHostFragment.findNavController(this).getCurrentDestination() != null
-                                            && androidx.navigation.fragment.NavHostFragment.findNavController(this).getCurrentDestination().getId()
+                                    if (androidx.navigation.fragment.NavHostFragment
+                                                            .findNavController(this)
+                                                            .getCurrentDestination()
+                                                    != null
+                                            && androidx.navigation.fragment.NavHostFragment
+                                                            .findNavController(this)
+                                                            .getCurrentDestination()
+                                                            .getId()
                                                     == R.id.bluetoothDeviceListFragment) {
-                                        androidx.navigation.fragment.NavHostFragment.findNavController(this).navigate(R.id.dashboardFragment);
+                                        androidx.navigation.fragment.NavHostFragment
+                                                .findNavController(this)
+                                                .navigate(R.id.dashboardFragment);
                                     }
                                     break;
                                 case ERROR:
@@ -147,10 +155,12 @@ public class DashboardFragment extends Fragment {
                                                     getString(
                                                             R.string.error_prefix,
                                                             resource.message),
-                                                    com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                                                    com.google.android.material.snackbar.Snackbar
+                                                            .LENGTH_LONG)
                                             .setAction(
                                                     R.string.retry_action,
-                                                    v -> weatherViewModel.startDiscovery()) // Use appropriate retry
+                                                    v -> weatherViewModel.startDiscovery()) // Use
+                                            // appropriate retry
                                             .show();
                                     break;
                             }
@@ -197,8 +207,10 @@ public class DashboardFragment extends Fragment {
         List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
         if (history != null && !history.isEmpty()) {
             for (WeatherData data : history) {
-                windSpeedSet.addEntry(new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
-                temperatureSet.addEntry(new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
+                windSpeedSet.addEntry(
+                        new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
+                temperatureSet.addEntry(
+                        new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
             }
             binding.windSpeedChart.getData().notifyDataChanged();
             binding.windSpeedChart.notifyDataSetChanged();
@@ -207,24 +219,32 @@ public class DashboardFragment extends Fragment {
             binding.temperatureChart.getData().notifyDataChanged();
             binding.temperatureChart.notifyDataSetChanged();
             binding.temperatureChart.invalidate();
-            
+
             // Correctly set initial visible window
             binding.windSpeedChart.setVisibleXRangeMaximum(numSamples);
             binding.windSpeedChart.moveViewToX(windSpeedSet.getEntryCount());
             binding.temperatureChart.setVisibleXRangeMaximum(numSamples);
             binding.temperatureChart.moveViewToX(temperatureSet.getEntryCount());
-            
+
             // Set current values to latest in history
             WeatherData latest = history.get(history.size() - 1);
             binding.currentWindText.setText(
                     String.format(Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
             binding.currentTempText.setText(
                     String.format(Locale.getDefault(), "%.1f°C", latest.getTemperature()));
-            
-            binding.windTrendText.setText(getString(R.string.wind_trend_format, 
-                    weatherViewModel.getWindTrend().getValue() != null ? weatherViewModel.getWindTrend().getValue() : 0.0));
-            binding.tempTrendText.setText(getString(R.string.temp_trend_format, 
-                    weatherViewModel.getTempTrend().getValue() != null ? weatherViewModel.getTempTrend().getValue() : 0.0));
+
+            binding.windTrendText.setText(
+                    getString(
+                            R.string.wind_trend_format,
+                            weatherViewModel.getWindTrend().getValue() != null
+                                    ? weatherViewModel.getWindTrend().getValue()
+                                    : 0.0));
+            binding.tempTrendText.setText(
+                    getString(
+                            R.string.temp_trend_format,
+                            weatherViewModel.getTempTrend().getValue() != null
+                                    ? weatherViewModel.getTempTrend().getValue()
+                                    : 0.0));
         }
     }
 
@@ -263,20 +283,22 @@ public class DashboardFragment extends Fragment {
         set.setCircleRadius(3.5f);
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
-        
-        // Performance Optimization: HORIZONTAL_BEZIER is slightly less CPU intensive 
+
+        // Performance Optimization: HORIZONTAL_BEZIER is slightly less CPU intensive
         // than CUBIC_BEZIER while still providing high-quality smoothing.
         set.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
         return set;
     }
 
     /** Updates text views and appends data points to the charts. */
-    private void updateSensorUI(WeatherData data) {
+    private void updateSensorUI(WeatherUiState state) {
+        WeatherData data = state.getLatestData();
         binding.lastUpdatedText.setText(
                 getString(R.string.last_updated_format, timeFormat.format(data.getTimestamp())));
         if (data.getRssi() != 0) {
             String label = getSignalStrengthLabel(data.getRssi());
-            binding.rssiText.setText(getString(R.string.rssi_format_with_label, data.getRssi(), label));
+            binding.rssiText.setText(
+                    getString(R.string.rssi_format_with_label, data.getRssi(), label));
         } else {
             binding.rssiText.setText(getString(R.string.rssi_connected_only));
         }
@@ -285,6 +307,10 @@ public class DashboardFragment extends Fragment {
                 String.format(Locale.getDefault(), "%.1f m/s", data.getWindSpeed()));
         binding.currentTempText.setText(
                 String.format(Locale.getDefault(), "%.1f°C", data.getTemperature()));
+
+        // Sync trends from the same state snapshot
+        binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
+        binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
 
         addEntryToChart(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
         addEntryToChart(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
@@ -300,11 +326,11 @@ public class DashboardFragment extends Fragment {
 
     /** Appends a new value to a chart and shifts the window if capacity is reached. */
     private void addEntryToChart(LineChart chart, LineDataSet set, float value) {
-        // Efficiency Optimization: Instead of shifting O(N) entries, 
+        // Efficiency Optimization: Instead of shifting O(N) entries,
         // we use increasing X coordinates and just set the visible window.
         set.addEntry(new Entry(set.getEntryCount(), value));
-        
-        // Prune data to keep memory usage low (though not O(N) shift, 
+
+        // Prune data to keep memory usage low (though not O(N) shift,
         // we remove the oldest entry which is faster).
         if (set.getEntryCount() > numSamples * 2) {
             set.removeEntry(0);
@@ -312,11 +338,11 @@ public class DashboardFragment extends Fragment {
 
         chart.getData().notifyDataChanged();
         chart.notifyDataSetChanged();
-        
+
         // Ensure the chart "scrolls" to the right.
         chart.setVisibleXRangeMaximum(numSamples);
         chart.moveViewToX(set.getEntryCount());
-        
+
         // Avoid excessive redraws by only invalidating if it's on screen.
         chart.invalidate();
     }

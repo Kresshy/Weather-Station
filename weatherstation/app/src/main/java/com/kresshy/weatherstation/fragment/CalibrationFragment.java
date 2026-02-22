@@ -19,8 +19,6 @@ import com.kresshy.weatherstation.weather.WeatherViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-import timber.log.Timber;
-
 import javax.inject.Inject;
 
 /**

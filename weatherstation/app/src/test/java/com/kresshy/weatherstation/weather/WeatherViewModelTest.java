@@ -24,25 +24,30 @@ public class WeatherViewModelTest {
     @Rule public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
     @Mock private WeatherRepository weatherRepository;
-    @Mock private com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
+
+    @Mock
+    private com.kresshy.weatherstation.domain.GetWeatherUiStateUseCase getWeatherUiStateUseCase;
+
     @Mock private com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
     @Mock private com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase;
     @Mock private com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
-    @Mock private com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase;
+
+    @Mock
+    private com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase;
 
     private WeatherViewModel weatherViewModel;
 
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        weatherViewModel = new WeatherViewModel(
-                weatherRepository,
-                getWeatherUiStateUseCase,
-                connectToDeviceUseCase,
-                getPairedDevicesUseCase,
-                manageDiscoveryUseCase,
-                updateCalibrationUseCase
-        );
+        weatherViewModel =
+                new WeatherViewModel(
+                        weatherRepository,
+                        getWeatherUiStateUseCase,
+                        connectToDeviceUseCase,
+                        getPairedDevicesUseCase,
+                        manageDiscoveryUseCase,
+                        updateCalibrationUseCase);
     }
 
     /**

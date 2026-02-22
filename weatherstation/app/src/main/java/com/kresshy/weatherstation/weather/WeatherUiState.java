@@ -4,8 +4,8 @@ import com.kresshy.weatherstation.connection.ConnectionState;
 import com.kresshy.weatherstation.repository.WeatherRepository;
 
 /**
- * Immutable data class representing the complete state of the weather dashboard.
- * Supports Uni-directional Data Flow (UDF) by providing a single source of truth for the UI.
+ * Immutable data class representing the complete state of the weather dashboard. Supports
+ * Uni-directional Data Flow (UDF) by providing a single source of truth for the UI.
  */
 public class WeatherUiState {
     private final WeatherData latestData;
@@ -37,14 +37,37 @@ public class WeatherUiState {
     }
 
     // Getters
-    public WeatherData getLatestData() { return latestData; }
-    public WeatherRepository.LaunchDecision getLaunchDecision() { return launchDecision; }
-    public double getTempTrend() { return tempTrend; }
-    public double getWindTrend() { return windTrend; }
-    public int getThermalScore() { return thermalScore; }
-    public boolean isLaunchDetectorEnabled() { return launchDetectorEnabled; }
-    public ConnectionState getConnectionState() { return connectionState; }
-    public String getConnectedDeviceName() { return connectedDeviceName; }
+    public WeatherData getLatestData() {
+        return latestData;
+    }
+
+    public WeatherRepository.LaunchDecision getLaunchDecision() {
+        return launchDecision;
+    }
+
+    public double getTempTrend() {
+        return tempTrend;
+    }
+
+    public double getWindTrend() {
+        return windTrend;
+    }
+
+    public int getThermalScore() {
+        return thermalScore;
+    }
+
+    public boolean isLaunchDetectorEnabled() {
+        return launchDetectorEnabled;
+    }
+
+    public ConnectionState getConnectionState() {
+        return connectionState;
+    }
+
+    public String getConnectedDeviceName() {
+        return connectedDeviceName;
+    }
 
     /** Creates an initial empty state. */
     public static WeatherUiState empty() {
@@ -56,7 +79,6 @@ public class WeatherUiState {
                 0,
                 false,
                 ConnectionState.stopped,
-                null
-        );
+                null);
     }
 }

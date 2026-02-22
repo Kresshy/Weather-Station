@@ -3,7 +3,6 @@ package com.kresshy.weatherstation.fragment;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +22,7 @@ import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.activity.WSActivity;
 import com.kresshy.weatherstation.databinding.FragmentDashboardBinding;
 import com.kresshy.weatherstation.weather.WeatherData;
+import com.kresshy.weatherstation.weather.WeatherUiState;
 import com.kresshy.weatherstation.weather.WeatherViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -86,11 +86,12 @@ public class GraphViewFragment extends Fragment {
                             if (state == null) return;
 
                             if (getActivity() instanceof WSActivity) {
-                                ((WSActivity) getActivity()).setToolbarTitle(state.getConnectedDeviceName());
+                                ((WSActivity) getActivity())
+                                        .setToolbarTitle(state.getConnectedDeviceName());
                             }
 
                             if (state.getLatestData() != null) {
-                                addEntry(state.getLatestData());
+                                updateUI(state);
                             }
                         });
     }
@@ -107,8 +108,10 @@ public class GraphViewFragment extends Fragment {
         List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
         if (history != null && !history.isEmpty()) {
             for (WeatherData data : history) {
-                windSpeedSet.addEntry(new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
-                temperatureSet.addEntry(new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
+                windSpeedSet.addEntry(
+                        new Entry(windSpeedSet.getEntryCount(), (float) data.getWindSpeed()));
+                temperatureSet.addEntry(
+                        new Entry(temperatureSet.getEntryCount(), (float) data.getTemperature()));
             }
             binding.windSpeedChart.getData().notifyDataChanged();
             binding.windSpeedChart.notifyDataSetChanged();
@@ -123,13 +126,29 @@ public class GraphViewFragment extends Fragment {
             binding.windSpeedChart.moveViewToX(windSpeedSet.getEntryCount());
             binding.temperatureChart.setVisibleXRangeMaximum(numberOfSamples);
             binding.temperatureChart.moveViewToX(temperatureSet.getEntryCount());
-            
+
             // Initialize overlay text from history
             WeatherData latest = history.get(history.size() - 1);
             binding.currentWindText.setText(
-                    String.format(java.util.Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
+                    String.format(
+                            java.util.Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
             binding.currentTempText.setText(
-                    String.format(java.util.Locale.getDefault(), "%.1f°C", latest.getTemperature()));
+                    String.format(
+                            java.util.Locale.getDefault(), "%.1f°C", latest.getTemperature()));
+
+            // Initialize trends from history/viewmodel
+            binding.windTrendText.setText(
+                    getString(
+                            R.string.wind_trend_format,
+                            weatherViewModel.getWindTrend().getValue() != null
+                                    ? weatherViewModel.getWindTrend().getValue()
+                                    : 0.0));
+            binding.tempTrendText.setText(
+                    getString(
+                            R.string.temp_trend_format,
+                            weatherViewModel.getTempTrend().getValue() != null
+                                    ? weatherViewModel.getTempTrend().getValue()
+                                    : 0.0));
         }
     }
 
@@ -166,17 +185,16 @@ public class GraphViewFragment extends Fragment {
         chart.getAxisRight().setEnabled(false);
     }
 
-    private void addEntry(WeatherData data) {
+    private void updateUI(WeatherUiState state) {
+        WeatherData data = state.getLatestData();
         binding.currentWindText.setText(
                 String.format(java.util.Locale.getDefault(), "%.1f m/s", data.getWindSpeed()));
         binding.currentTempText.setText(
                 String.format(java.util.Locale.getDefault(), "%.1f°C", data.getTemperature()));
-        
-        // Update trends as well for consistency
-        binding.windTrendText.setText(getString(R.string.wind_trend_format, 
-                weatherViewModel.getWindTrend().getValue() != null ? weatherViewModel.getWindTrend().getValue() : 0.0));
-        binding.tempTrendText.setText(getString(R.string.temp_trend_format, 
-                weatherViewModel.getTempTrend().getValue() != null ? weatherViewModel.getTempTrend().getValue() : 0.0));
+
+        // Use trends directly from the snapshot
+        binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
+        binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
 
         addValueToSet(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
         addValueToSet(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
@@ -185,7 +203,7 @@ public class GraphViewFragment extends Fragment {
     private void addValueToSet(LineChart chart, LineDataSet set, float value) {
         // Efficiency Optimization: Use increasing X coordinates and set the visible window.
         set.addEntry(new Entry(set.getEntryCount(), value));
-        
+
         // Prune data if it becomes too large to keep memory usage low.
         if (set.getEntryCount() > numberOfSamples * 2) {
             set.removeEntry(0);
@@ -193,11 +211,11 @@ public class GraphViewFragment extends Fragment {
 
         chart.getData().notifyDataChanged();
         chart.notifyDataSetChanged();
-        
+
         // Ensure the chart "scrolls" to the right and maintains fixed visible window.
         chart.setVisibleXRangeMaximum(numberOfSamples);
         chart.moveViewToX(set.getEntryCount());
-        
+
         chart.invalidate();
     }
 
