@@ -27,15 +27,15 @@ public class GetWeatherUiStateUseCase {
         // Initialize with empty state
         uiState.setValue(WeatherUiState.empty());
 
-        // Observe all relevant streams and trigger an update on any change
+        // Performance Optimization: Only trigger updateState when latestWeatherData changes.
+        // Other fields change simultaneously with weather data in the repository,
+        // so we can just pull their latest values once per weather message.
         uiState.addSource(repository.getLatestWeatherData(), data -> updateState());
+        
+        // Also update when connection state or launcher toggle changes, 
+        // as these might happen independently of sensor data.
         uiState.addSource(repository.getConnectionState(), state -> updateState());
-        uiState.addSource(repository.getLaunchDecision(), decision -> updateState());
-        uiState.addSource(repository.getTempTrend(), trend -> updateState());
-        uiState.addSource(repository.getWindTrend(), trend -> updateState());
-        uiState.addSource(repository.getThermalScore(), score -> updateState());
         uiState.addSource(repository.isLaunchDetectorEnabled(), enabled -> updateState());
-        uiState.addSource(repository.getConnectedDeviceName(), name -> updateState());
     }
 
     /**

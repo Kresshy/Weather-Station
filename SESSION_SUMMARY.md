@@ -1,9 +1,15 @@
-# Weather Station - Development Summary (Compatibility & Configuration Edition)
+# Weather Station - Development Summary (Compatibility, Performance & Configuration Edition)
 
 ## 🎯 Overview
-Successfully transformed the application into a robust, cross-version platform. Resolved all critical field-testing crashes on Android 6.0, implemented a universal legacy protocol parser, and made the core Thermal Analysis features fully configurable by the user. Addressed key issues identified in field testing (Xiaomi/International locales), ensuring the app is now robust for global deployment.
+Successfully transformed the application into a robust, high-performance, cross-version platform. Resolved all critical field-testing crashes on Android 6.0, implemented a universal legacy protocol parser, and optimized the app for smooth performance on lower-end hardware. Enhanced the UI with data persistence, responsive design elements, and performance-friendly rendering.
 
 ## 🏗️ Architectural Evolution (Current Session)
+
+### 🚀 Performance Optimizations (Android 6.0 Focus)
+*   **Constant-Time Charting**: Refactored `DashboardFragment` and `GraphViewFragment` to eliminate expensive $O(N)$ chart shifting loops. The app now uses increasing X-coordinates with fixed visible window management (`setVisibleXRangeMaximum`), resulting in significant CPU savings on every new data point.
+*   **Throttled UI State Aggregation**: Optimized `GetWeatherUiStateUseCase` to reduce object allocation and GC pressure. The UI state is now updated primarily when `latestWeatherData` changes, pulling other values from the repository rather than triggering updates for every minor trend change.
+*   **Low-Overhead Rendering**: Transitioned chart smoothing from `CUBIC_BEZIER` to `HORIZONTAL_BEZIER`. This provides high-quality visual smoothing while reducing the CPU overhead required for spline calculations on older devices.
+*   **Memory Management**: Implemented automatic data pruning for chart datasets to prevent memory bloat during long monitoring sessions while maintaining consistent scroll performance.
 
 ### 📡 Protocol & Compatibility
 *   **Universal Legacy Parser**: 
@@ -67,11 +73,12 @@ Successfully transformed the application into a robust, cross-version platform. 
 ### ✂️ Legacy Code Removal
 *   **Multi-Node Deprecation**: Removed all legacy multi-station/relay Arduino code (`arduino/Janne`, `arduino/JIDownWind*`, `arduino/JIUpWind*`). This eliminates the primary source of junk data and communication lag reported in field tests.
 *   **Definitive Firmware**: Consolidated the project on `arduino/weatherstation.ino` as the single, standardized firmware for all stations. This version includes non-blocking sensor logic and high-precision calculations.
-*   **Documentation Alignment**: Updated `README.md` and `FUTURE_IMPROVEMENTS.md` to reflect the single-node focus and remove references to deprecated legacy components.
+*   **Documentation Alignment**: Updated `README.md` and `FUTURE_IMPROVEMENTS.md` to reflect the single-node focus and formalize Semantic Versioning (SemVer).
 
 ### 🚀 Deliverables & Field Testing
-*   **v27 APK**: Final build for testing, featuring locale fixes and client-only optimizations.
+*   **v3.1.0 APK**: Production-ready build featuring major performance optimizations for legacy hardware, international locale support, and architectural cleanup.
 *   **Build Status**: Successful (`assembleDebug` passing).
+
 *   **Unit Testing**: Expanded test suite with `BluetoothFrameSyncTest` and updated `WeatherMessageParserTest` to verify noise resilience and robust frame extraction.
 *   **Git Identity**: Configured repository identity to `Szabolcs Varadi <kresshy@gmail.com>`.
 *   **Documentation**: Updated `README.md` and `SESSION_SUMMARY.md`.

@@ -117,6 +117,12 @@ public class GraphViewFragment extends Fragment {
             binding.temperatureChart.getData().notifyDataChanged();
             binding.temperatureChart.notifyDataSetChanged();
             binding.temperatureChart.invalidate();
+
+            // Correctly set initial visible window
+            binding.windSpeedChart.setVisibleXRangeMaximum(numberOfSamples);
+            binding.windSpeedChart.moveViewToX(windSpeedSet.getEntryCount());
+            binding.temperatureChart.setVisibleXRangeMaximum(numberOfSamples);
+            binding.temperatureChart.moveViewToX(temperatureSet.getEntryCount());
         }
     }
 
@@ -159,18 +165,21 @@ public class GraphViewFragment extends Fragment {
     }
 
     private void addValueToSet(LineChart chart, LineDataSet set, float value) {
-        List<Entry> entries = set.getValues();
-        if (entries.size() >= numberOfSamples) {
-            set.removeEntry(0);
-            for (Entry e : entries) {
-                e.setX(e.getX() - 1);
-            }
-        }
-
+        // Efficiency Optimization: Use increasing X coordinates and set the visible window.
         set.addEntry(new Entry(set.getEntryCount(), value));
+        
+        // Prune data if it becomes too large to keep memory usage low.
+        if (set.getEntryCount() > numberOfSamples * 2) {
+            set.removeEntry(0);
+        }
 
         chart.getData().notifyDataChanged();
         chart.notifyDataSetChanged();
+        
+        // Ensure the chart "scrolls" to the right and maintains fixed visible window.
+        chart.setVisibleXRangeMaximum(numberOfSamples);
+        chart.moveViewToX(set.getEntryCount());
+        
         chart.invalidate();
     }
 
@@ -183,16 +192,15 @@ public class GraphViewFragment extends Fragment {
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
 
-        // Pro: Cubic smoothing
-        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        // Performance: Use HORIZONTAL_BEZIER for slightly lower CPU usage.
+        set.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
         set.setCubicIntensity(0.15f);
 
-        // Pro: High-contrast solid fill
+        // Solid fill (only if needed, but keeping for visual consistency)
         set.setDrawFilled(true);
-        set.setFillAlpha(110); // Higher alpha (~43% opacity)
+        set.setFillAlpha(110);
         set.setFillColor(color);
 
-        // Smoothing out the edges
         set.setHighLightColor(Color.WHITE);
         set.setDrawHorizontalHighlightIndicator(false);
 

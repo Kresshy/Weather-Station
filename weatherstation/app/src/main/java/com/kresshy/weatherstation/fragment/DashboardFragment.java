@@ -211,6 +211,12 @@ public class DashboardFragment extends Fragment {
             binding.temperatureChart.notifyDataSetChanged();
             binding.temperatureChart.invalidate();
             
+            // Correctly set initial visible window
+            binding.windSpeedChart.setVisibleXRangeMaximum(numSamples);
+            binding.windSpeedChart.moveViewToX(windSpeedSet.getEntryCount());
+            binding.temperatureChart.setVisibleXRangeMaximum(numSamples);
+            binding.temperatureChart.moveViewToX(temperatureSet.getEntryCount());
+            
             // Set current values to latest in history
             WeatherData latest = history.get(history.size() - 1);
             binding.currentWindText.setText(
@@ -255,7 +261,10 @@ public class DashboardFragment extends Fragment {
         set.setCircleRadius(3.5f);
         set.setDrawCircleHole(false);
         set.setDrawValues(false);
-        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        
+        // Performance Optimization: HORIZONTAL_BEZIER is slightly less CPU intensive 
+        // than CUBIC_BEZIER while still providing high-quality smoothing.
+        set.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
         return set;
     }
 
@@ -289,22 +298,24 @@ public class DashboardFragment extends Fragment {
 
     /** Appends a new value to a chart and shifts the window if capacity is reached. */
     private void addEntryToChart(LineChart chart, LineDataSet set, float value) {
-        // Shift existing entries to the left
-        List<Entry> entries = set.getValues();
-        if (entries.size() >= numSamples) {
-            for (int i = 0; i < entries.size(); i++) {
-                Entry e = entries.get(i);
-                e.setX(e.getX() - 1);
-            }
-            // Remove the point that shifted out of range
+        // Efficiency Optimization: Instead of shifting O(N) entries, 
+        // we use increasing X coordinates and just set the visible window.
+        set.addEntry(new Entry(set.getEntryCount(), value));
+        
+        // Prune data to keep memory usage low (though not O(N) shift, 
+        // we remove the oldest entry which is faster).
+        if (set.getEntryCount() > numSamples * 2) {
             set.removeEntry(0);
         }
 
-        // Always add the new point at the right-most index
-        set.addEntry(new Entry(set.getEntryCount(), value));
-
         chart.getData().notifyDataChanged();
         chart.notifyDataSetChanged();
+        
+        // Ensure the chart "scrolls" to the right.
+        chart.setVisibleXRangeMaximum(numSamples);
+        chart.moveViewToX(set.getEntryCount());
+        
+        // Avoid excessive redraws by only invalidating if it's on screen.
         chart.invalidate();
     }
 

@@ -121,6 +121,13 @@ The system uses a custom PDU (Protocol Data Unit) format for Bluetooth communica
   }
   ```
 
+## 🔢 Versioning
+
+This project follows [Semantic Versioning (SemVer)](https://semver.org/):
+- **MAJOR**: Significant architectural shifts or breaking hardware protocol changes.
+- **MINOR**: New features (e.g., sensor support), performance optimizations, or major refactorings.
+- **PATCH**: Backward-compatible bug fixes and minor UI tweaks.
+
 ## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
