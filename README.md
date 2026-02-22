@@ -128,6 +128,8 @@ This project follows [Semantic Versioning (SemVer)](https://semver.org/):
 - **MINOR**: New features (e.g., sensor support), performance optimizations, or major refactorings.
 - **PATCH**: Backward-compatible bug fixes and minor UI tweaks.
 
+Detailed version changes can be found in the [changelogs/](changelogs/) directory.
+
 ## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
