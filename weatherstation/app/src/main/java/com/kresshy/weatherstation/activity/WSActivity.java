@@ -239,6 +239,9 @@ public class WSActivity extends AppCompatActivity {
             weatherViewModel.refreshPairedDevices();
             if (!weatherBluetoothManager.isBluetoothEnabled()) {
                 weatherBluetoothManager.enableBluetooth();
+            } else {
+                // If bluetooth is already on, offer to reconnect now that permissions are granted
+                reconnectPreviousWeatherStation();
             }
             requestedEnableBluetooth = true;
         } else {

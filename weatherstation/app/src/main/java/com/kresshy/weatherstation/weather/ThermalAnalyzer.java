@@ -81,10 +81,6 @@ public class ThermalAnalyzer {
     public AnalysisResult analyze(WeatherData current) {
         updateHistory(current);
 
-        if (!isEnabled) {
-            return new AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0);
-        }
-
         if (fastEmaTemp == -1) {
             initializeEma(current);
             return new AnalysisResult(WeatherRepository.LaunchDecision.WAITING, 0, 0, 0);
@@ -96,9 +92,17 @@ public class ThermalAnalyzer {
         double windDelta = fastEmaWind - slowEmaWind;
         double stdDevWind = calculateWindStdDev();
 
+        // Calculate score and decision
         int score = calculateScore(tempDelta, windDelta, stdDevWind, current.getWindSpeed());
         Timber.d("Analysis: tempDelta=%.4f, windDelta=%.4f, score=%d", tempDelta, windDelta, score);
+
         WeatherRepository.LaunchDecision decision = determineDecision(score, tempDelta);
+
+        // If disabled, we still return the trends but suppress the "actionable" results
+        if (!isEnabled) {
+            return new AnalysisResult(
+                    WeatherRepository.LaunchDecision.WAITING, tempDelta, windDelta, 0);
+        }
 
         return new AnalysisResult(decision, tempDelta, windDelta, score);
     }

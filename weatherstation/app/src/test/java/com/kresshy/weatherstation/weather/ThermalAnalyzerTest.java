@@ -109,16 +109,23 @@ public class ThermalAnalyzerTest {
         assertEquals(0.0, result.tempTrend, 0.001);
     }
 
-    /** Verifies that the analyzer can be disabled. */
+    /** Verifies that the analyzer can be disabled, but still calculates trends. */
     @Test
-    public void analyze_RespectsDisabledState() {
+    public void analyze_RespectsDisabledStateButReturnsTrends() {
         analyzer.setEnabled(false);
-        // Even with "perfect" conditions
+        // Initialize
         analyzer.analyze(new WeatherData(5.0, 25.0));
+
+        // Simulate changing conditions
         ThermalAnalyzer.AnalysisResult result = analyzer.analyze(new WeatherData(1.0, 30.0));
 
+        // Decision and Score should be suppressed
         assertEquals(WeatherRepository.LaunchDecision.WAITING, result.decision);
         assertEquals(0, result.score);
+
+        // Trends should still be calculated
+        assertTrue("Temperature trend should still be calculated", result.tempTrend > 0);
+        assertTrue("Wind trend should still be calculated", result.windTrend < 0);
     }
 
     /** Verifies that sensitivity factor correctly scales the score. */
