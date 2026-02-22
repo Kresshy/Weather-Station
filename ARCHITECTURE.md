@@ -18,62 +18,82 @@ To prevent `WSActivity` from becoming a "God Object", its responsibilities are d
 
 ```mermaid
 graph TD
-    subgraph UI_Layer [UI Layer - Activity & Fragments]
+    %% 1. UI LAYER (Top)
+    subgraph UI_Layer [UI: Activity & Fragments]
         WSA[WSActivity]
-        PD[PermissionDelegate]
-        ND[NavigationDelegate]
-        UED[UIEventDelegate]
-        DF[DashboardFragment]
-        GVF[GraphViewFragment]
-        BDLF[BluetoothDeviceListFragment]
+        
+        subgraph Activity_Delegates [Activity Helpers]
+            PD[PermissionDelegate]
+            ND[NavigationDelegate]
+            UED[UIEventDelegate]
+        end
+        
+        subgraph Fragments [Views]
+            DF[Dashboard]
+            GVF[Graphs]
+            BDLF[BT List]
+        end
     end
 
-    subgraph ViewModel_Layer [ViewModel Layer]
+    %% 2. VIEWMODEL LAYER
+    subgraph VM_Layer [ViewModel: Single Source of Truth]
         WVM[WeatherViewModel]
-        WUS[WeatherUiState]
+        WUS[WeatherUiState Snapshot]
     end
 
-    subgraph Domain_Layer [Domain Layer - UseCases]
-        GWUS[GetWeatherUiStateUseCase]
-        CTD[ConnectToDeviceUseCase]
-        GPD[GetPairedDevicesUseCase]
-        MD[ManageDiscoveryUseCase]
-        UC[UpdateCalibrationUseCase]
+    %% 3. DOMAIN LAYER (Business Logic)
+    subgraph Domain_Layer [Domain: UseCases]
+        direction TB
+        GWUS[GetWeatherUiState]
+        CTD[ConnectToDevice]
+        GPD[GetPairedDevices]
+        MD[ManageDiscovery]
+        UC[UpdateCalibration]
     end
 
-    subgraph Control_Plane [Control Plane]
-        WCC[WeatherConnectionController]
-        CM[ConnectionManager]
-        WBM[WeatherBluetoothManager]
-        BC[BluetoothConnection]
-        SC[SimulatorConnection]
+    %% 4. PLANES (Implementation)
+    subgraph Planes [Core Logic]
+        direction LR
+        
+        subgraph Control_Plane [Control Plane: How]
+            WCC[WeatherConnectionController]
+            CM[ConnectionManager]
+            BC[BT Conn]
+            SC[Sim Conn]
+        end
+
+        subgraph Data_Plane [Data Plane: What]
+            WRI[WeatherRepository]
+            TA[ThermalAnalyzer]
+            WMP[Parser]
+        end
     end
 
-    subgraph Data_Plane [Data Plane]
-        WRI[WeatherRepositoryImpl]
-        TA[ThermalAnalyzer]
-        WMP[WeatherMessageParser]
-    end
+    %% FLOW CONNECTIONS
+    WSA -- Delegating --> Activity_Delegates
+    Fragments & WSA -- Observe --> WVM
+    WVM -- State --> WUS
+    WVM -- Execute --> Domain_Layer
 
-    %% UI Internal delegation
-    WSA --> PD
-    WSA --> ND
-    WSA --> UED
+    %% UseCase to Plane Mapping
+    GWUS -- Pulls --> WRI & WCC
+    CTD & GPD & MD -- Triggers --> WCC
+    UC -- Updates --> WRI
 
-    %% UI to ViewModel
-    DF & GVF & BDLF --> WVM
-    WSA --> WVM
-    WVM --> WUS
+    %% Internal Plane Flow
+    WCC -- "Raw Data" --> WRI
+    WRI -- "Single Heartbeat" --> GWUS
+    
+    %% Hardware linkage
+    WCC --> CM
+    CM --> BC & SC
+    WRI --> TA & WMP
 
-    %% UseCase interactions
-    WVM --> GWUS & CTD & GPD & MD & UC
-    GWUS --> WRI & WCC
-    CTD & GPD & MD --> WCC
-    UC --> WRI
-
-    %% Data Flow
-    WCC -- "Raw String" --> WRI
-    WRI -- "Processed Heartbeat" --> GWUS
+    %% Styling
+    classDef control fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef data fill:#bbf,stroke:#333,stroke-width:2px;
+    class WCC,CM,BC,SC control;
+    class WRI,TA,WMP data;
 ```
 
 ## 🧩 Key Components
