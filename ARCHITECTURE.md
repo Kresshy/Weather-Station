@@ -88,12 +88,6 @@ graph TD
     WCC --> CM
     CM --> BC & SC
     WRI --> TA & WMP
-
-    %% Styling
-    classDef control fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef data fill:#bbf,stroke:#333,stroke-width:2px;
-    class WCC,CM,BC,SC control;
-    class WRI,TA,WMP data;
 ```
 
 ## 🧩 Key Components
