@@ -27,17 +27,13 @@ public class GetWeatherUiStateUseCase {
         // Initialize with empty state
         uiState.setValue(WeatherUiState.empty());
 
-        // Observe all relevant streams and trigger an update on any change.
-        // While slightly more overhead, this ensures that the unified state
-        // is always in sync regardless of postValue timing.
-        uiState.addSource(repository.getLatestWeatherData(), data -> updateState());
-        uiState.addSource(repository.getConnectionState(), state -> updateState());
-        uiState.addSource(repository.getLaunchDecision(), decision -> updateState());
-        uiState.addSource(repository.getTempTrend(), trend -> updateState());
-        uiState.addSource(repository.getWindTrend(), trend -> updateState());
-        uiState.addSource(repository.getThermalScore(), score -> updateState());
-        uiState.addSource(repository.isLaunchDetectorEnabled(), enabled -> updateState());
-        uiState.addSource(repository.getConnectedDeviceName(), name -> updateState());
+        // Single Source of Truth: Only update state when a fully processed heartbeat arrives.
+        uiState.addSource(repository.getProcessedWeatherData(), data -> updateState(data));
+
+        // Also update for independent state changes
+        uiState.addSource(repository.getConnectionState(), state -> updateState(null));
+        uiState.addSource(repository.isLaunchDetectorEnabled(), enabled -> updateState(null));
+        uiState.addSource(repository.getConnectedDeviceName(), name -> updateState(null));
     }
 
     /**
@@ -47,28 +43,50 @@ public class GetWeatherUiStateUseCase {
         return uiState;
     }
 
-    /** Merges all current values from the repository into a new immutable state object. */
-    private void updateState() {
+    /**
+     * Merges current values into a new immutable state object.
+     *
+     * @param heartbeat Optional fresh data from repository.
+     */
+    private void updateState(
+            @androidx.annotation.Nullable com.kresshy.weatherstation.weather.ProcessedWeatherData heartbeat) {
         WeatherUiState currentState = uiState.getValue();
         if (currentState == null) currentState = WeatherUiState.empty();
 
-        uiState.setValue(
-                new WeatherUiState(
-                        repository.getLatestWeatherData().getValue(),
-                        repository.getLaunchDecision().getValue(),
-                        repository.getTempTrend().getValue() != null
-                                ? repository.getTempTrend().getValue()
-                                : 0.0,
-                        repository.getWindTrend().getValue() != null
-                                ? repository.getWindTrend().getValue()
-                                : 0.0,
-                        repository.getThermalScore().getValue() != null
-                                ? repository.getThermalScore().getValue()
-                                : 0,
-                        repository.isLaunchDetectorEnabled().getValue() != null
-                                ? repository.isLaunchDetectorEnabled().getValue()
-                                : false,
-                        repository.getConnectionState().getValue(),
-                        repository.getConnectedDeviceName().getValue()));
+        if (heartbeat != null) {
+            // Atomic update from heartbeat
+            uiState.setValue(
+                    new WeatherUiState(
+                            heartbeat.getWeatherData(),
+                            heartbeat.getLaunchDecision(),
+                            heartbeat.getTempTrend(),
+                            heartbeat.getWindTrend(),
+                            heartbeat.getThermalScore(),
+                            repository.isLaunchDetectorEnabled().getValue() != null
+                                    ? repository.isLaunchDetectorEnabled().getValue()
+                                    : false,
+                            repository.getConnectionState().getValue(),
+                            repository.getConnectedDeviceName().getValue()));
+        } else {
+            // Refresh from repository for other state changes (connection, enabled toggle)
+            uiState.setValue(
+                    new WeatherUiState(
+                            repository.getLatestWeatherData().getValue(),
+                            repository.getLaunchDecision().getValue(),
+                            repository.getTempTrend().getValue() != null
+                                    ? repository.getTempTrend().getValue()
+                                    : 0.0,
+                            repository.getWindTrend().getValue() != null
+                                    ? repository.getWindTrend().getValue()
+                                    : 0.0,
+                            repository.getThermalScore().getValue() != null
+                                    ? repository.getThermalScore().getValue()
+                                    : 0,
+                            repository.isLaunchDetectorEnabled().getValue() != null
+                                    ? repository.isLaunchDetectorEnabled().getValue()
+                                    : false,
+                            repository.getConnectionState().getValue(),
+                            repository.getConnectedDeviceName().getValue()));
+        }
     }
 }

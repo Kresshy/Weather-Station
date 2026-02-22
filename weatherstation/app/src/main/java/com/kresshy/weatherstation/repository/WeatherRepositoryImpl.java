@@ -51,6 +51,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
     private final SharedPreferences sharedPreferences;
 
     private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
+    private final MutableLiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
+            processedWeatherData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> uiState = new MutableLiveData<>();
     private final MutableLiveData<ConnectionState> connectionState = new MutableLiveData<>();
     private final MutableLiveData<String> toastMessage = new MutableLiveData<>();
@@ -162,6 +164,12 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             Timber.w("Failed to parse double: %s, using default: %f", value, defaultValue);
             return defaultValue;
         }
+    }
+
+    @Override
+    public LiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
+            getProcessedWeatherData() {
+        return processedWeatherData;
     }
 
     @Override
@@ -302,11 +310,21 @@ public class WeatherRepositoryImpl implements WeatherRepository, RawDataCallback
             }
 
             ThermalAnalyzer.AnalysisResult result = thermalAnalyzer.analyze(weatherData);
+
+            // Atomic Heartbeat Update
+            processedWeatherData.postValue(
+                    new com.kresshy.weatherstation.weather.ProcessedWeatherData(
+                            weatherData,
+                            result.decision,
+                            result.tempTrend,
+                            result.windTrend,
+                            result.score));
+
+            // Keep legacy individual posts for now to prevent breaking other observers
             launchDecision.postValue(result.decision);
             tempTrend.postValue(result.tempTrend);
             windTrend.postValue(result.windTrend);
             thermalScore.postValue(result.score);
-
             latestWeatherData.postValue(weatherData);
         }
     }

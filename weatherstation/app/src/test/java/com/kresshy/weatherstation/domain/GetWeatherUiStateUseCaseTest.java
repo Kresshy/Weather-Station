@@ -7,6 +7,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
 import com.kresshy.weatherstation.repository.WeatherRepository;
+import com.kresshy.weatherstation.weather.ProcessedWeatherData;
 import com.kresshy.weatherstation.weather.WeatherData;
 import com.kresshy.weatherstation.weather.WeatherUiState;
 
@@ -25,6 +26,8 @@ public class GetWeatherUiStateUseCaseTest {
     private GetWeatherUiStateUseCase useCase;
 
     private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
+    private final MutableLiveData<ProcessedWeatherData> processedWeatherData =
+            new MutableLiveData<>();
     private final MutableLiveData<WeatherRepository.LaunchDecision> launchDecision =
             new MutableLiveData<>();
     private final MutableLiveData<Double> tempTrend = new MutableLiveData<>();
@@ -41,6 +44,7 @@ public class GetWeatherUiStateUseCaseTest {
 
         // Setup mock returns for all repository LiveData streams
         when(repository.getLatestWeatherData()).thenReturn(latestWeatherData);
+        when(repository.getProcessedWeatherData()).thenReturn(processedWeatherData);
         when(repository.getLaunchDecision()).thenReturn(launchDecision);
         when(repository.getTempTrend()).thenReturn(tempTrend);
         when(repository.getWindTrend()).thenReturn(windTrend);
@@ -53,24 +57,20 @@ public class GetWeatherUiStateUseCaseTest {
     }
 
     @Test
-    public void execute_synchronizesAllValuesWhenWeatherDataChanges() {
+    public void execute_synchronizesAllValuesFromHeartbeat() {
         // Must observe MediatorLiveData for it to trigger updates
         useCase.execute().observeForever(state -> {});
 
-        // 1. Prepare new data in the repository
+        // 1. Prepare heartbeat
         WeatherData mockData = new WeatherData(5.0, 25.0);
-        launchDecision.setValue(WeatherRepository.LaunchDecision.LAUNCH);
-        tempTrend.setValue(0.5);
-        windTrend.setValue(-0.2);
-        thermalScore.setValue(85);
-        launchDetectorEnabled.setValue(true);
-        connectionState.setValue(com.kresshy.weatherstation.connection.ConnectionState.connected);
-        connectedDeviceName.setValue("Test Station");
+        ProcessedWeatherData heartbeat =
+                new ProcessedWeatherData(
+                        mockData, WeatherRepository.LaunchDecision.LAUNCH, 0.5, -0.2, 85);
 
-        // 2. Trigger the "heartbeat" (weather data)
-        latestWeatherData.setValue(mockData);
+        // 2. Trigger the heartbeat
+        processedWeatherData.setValue(heartbeat);
 
-        // 3. Verify the unified UI state has pulled everything correctly
+        // 3. Verify the unified UI state has everything from the heartbeat
         WeatherUiState uiState = useCase.execute().getValue();
 
         assertEquals(mockData, uiState.getLatestData());
@@ -78,31 +78,21 @@ public class GetWeatherUiStateUseCaseTest {
         assertEquals(0.5, uiState.getTempTrend(), 0.001);
         assertEquals(-0.2, uiState.getWindTrend(), 0.001);
         assertEquals(85, uiState.getThermalScore());
-        assertEquals(true, uiState.isLaunchDetectorEnabled());
-        assertEquals("Test Station", uiState.getConnectedDeviceName());
     }
 
     @Test
-    public void execute_eventuallySynchronizesWhenValuesArriveAsynchronously() {
-        // 1. Setup observer
-        java.util.concurrent.atomic.AtomicReference<WeatherUiState> capturedState =
-                new java.util.concurrent.atomic.AtomicReference<>();
-        useCase.execute().observeForever(capturedState::set);
+    public void execute_synchronizesIndependentStateChanges() {
+        useCase.execute().observeForever(state -> {});
 
-        // 2. Prepare mock data
-        WeatherData mockData = new WeatherData(5.0, 25.0);
+        // 1. Change connection state
+        connectionState.setValue(com.kresshy.weatherstation.connection.ConnectionState.connected);
+        connectedDeviceName.setValue("Test Station");
 
-        // 3. Post latestWeatherData FIRST (the heartbeat)
-        latestWeatherData.setValue(mockData);
-        // trends are still null/0.0 in mediator at this point
-        assertEquals(0.0, capturedState.get().getTempTrend(), 0.001);
-
-        // 4. Post trends LATER
-        tempTrend.setValue(1.23);
-        windTrend.setValue(-0.45);
-
-        // 5. Verify the UI state is now updated with the new trends
-        assertEquals(1.23, capturedState.get().getTempTrend(), 0.001);
-        assertEquals(-0.45, capturedState.get().getWindTrend(), 0.001);
+        // 2. Verify UI state updated even without a weather heartbeat
+        WeatherUiState uiState = useCase.execute().getValue();
+        assertEquals(
+                com.kresshy.weatherstation.connection.ConnectionState.connected,
+                uiState.getConnectionState());
+        assertEquals("Test Station", uiState.getConnectedDeviceName());
     }
 }

@@ -35,6 +35,11 @@ public interface WeatherRepository {
     }
 
     /**
+     * @return Observable atomic update containing both raw data and calculated trends.
+     */
+    LiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData> getProcessedWeatherData();
+
+    /**
      * @return Observable launch decision.
      */
     LiveData<LaunchDecision> getLaunchDecision();

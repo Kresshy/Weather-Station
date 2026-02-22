@@ -20,6 +20,8 @@ import java.util.List;
 public class FakeWeatherRepository implements WeatherRepository {
 
     private final MutableLiveData<WeatherData> latestWeatherData = new MutableLiveData<>();
+    private final MutableLiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
+            processedWeatherData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> uiState = new MutableLiveData<>();
     private final MutableLiveData<ConnectionState> connectionState =
             new MutableLiveData<>(ConnectionState.stopped);
@@ -44,6 +46,12 @@ public class FakeWeatherRepository implements WeatherRepository {
     /** Manually updates the latest weather data. */
     public void setWeatherData(WeatherData data) {
         latestWeatherData.postValue(data);
+    }
+
+    /** Manually updates the atomic heartbeat. */
+    public void setProcessedWeatherData(
+            com.kresshy.weatherstation.weather.ProcessedWeatherData data) {
+        processedWeatherData.postValue(data);
     }
 
     /** Manually updates the UI state. */
@@ -72,6 +80,12 @@ public class FakeWeatherRepository implements WeatherRepository {
     }
 
     // --- WeatherRepository Interface Implementation ---
+
+    @Override
+    public LiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
+            getProcessedWeatherData() {
+        return processedWeatherData;
+    }
 
     @Override
     public LiveData<LaunchDecision> getLaunchDecision() {
