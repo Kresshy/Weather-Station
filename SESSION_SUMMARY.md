@@ -76,7 +76,7 @@ Successfully transformed the application into a robust, high-performance, cross-
 *   **Documentation Alignment**: Updated `README.md` and `FUTURE_IMPROVEMENTS.md` to reflect the single-node focus and formalize Semantic Versioning (SemVer).
 
 ### 🚀 Deliverables & Field Testing
-*   **v3.1.0 APK**: Production-ready build featuring major performance optimizations for legacy hardware, international locale support, and architectural cleanup.
+*   **v3.1.1 APK**: Patch release fixing static UI overlay text and improving fragment initialization from history.
 *   **Build Status**: Successful (`assembleDebug` passing).
 
 *   **Unit Testing**: Expanded test suite with `BluetoothFrameSyncTest` and updated `WeatherMessageParserTest` to verify noise resilience and robust frame extraction.

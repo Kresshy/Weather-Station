@@ -123,6 +123,13 @@ public class GraphViewFragment extends Fragment {
             binding.windSpeedChart.moveViewToX(windSpeedSet.getEntryCount());
             binding.temperatureChart.setVisibleXRangeMaximum(numberOfSamples);
             binding.temperatureChart.moveViewToX(temperatureSet.getEntryCount());
+            
+            // Initialize overlay text from history
+            WeatherData latest = history.get(history.size() - 1);
+            binding.currentWindText.setText(
+                    String.format(java.util.Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
+            binding.currentTempText.setText(
+                    String.format(java.util.Locale.getDefault(), "%.1f°C", latest.getTemperature()));
         }
     }
 
@@ -160,6 +167,17 @@ public class GraphViewFragment extends Fragment {
     }
 
     private void addEntry(WeatherData data) {
+        binding.currentWindText.setText(
+                String.format(java.util.Locale.getDefault(), "%.1f m/s", data.getWindSpeed()));
+        binding.currentTempText.setText(
+                String.format(java.util.Locale.getDefault(), "%.1f°C", data.getTemperature()));
+        
+        // Update trends as well for consistency
+        binding.windTrendText.setText(getString(R.string.wind_trend_format, 
+                weatherViewModel.getWindTrend().getValue() != null ? weatherViewModel.getWindTrend().getValue() : 0.0));
+        binding.tempTrendText.setText(getString(R.string.temp_trend_format, 
+                weatherViewModel.getTempTrend().getValue() != null ? weatherViewModel.getTempTrend().getValue() : 0.0));
+
         addValueToSet(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
         addValueToSet(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
     }

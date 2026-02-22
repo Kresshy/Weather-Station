@@ -95,10 +95,7 @@ public class DashboardFragment extends Fragment {
                             // 1. Update sensor readings and charts
                             if (state.getLatestData() != null) {
                                 WeatherData weatherData = state.getLatestData();
-                                if (previousData == null || Math.abs(previousData.getTemperature() - weatherData.getTemperature()) <= 10) {
-                                    previousData = weatherData;
-                                    updateSensorUI(weatherData);
-                                }
+                                updateSensorUI(weatherData);
                             }
 
                             // 2. Update launch detector status
@@ -223,6 +220,11 @@ public class DashboardFragment extends Fragment {
                     String.format(Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
             binding.currentTempText.setText(
                     String.format(Locale.getDefault(), "%.1f°C", latest.getTemperature()));
+            
+            binding.windTrendText.setText(getString(R.string.wind_trend_format, 
+                    weatherViewModel.getWindTrend().getValue() != null ? weatherViewModel.getWindTrend().getValue() : 0.0));
+            binding.tempTrendText.setText(getString(R.string.temp_trend_format, 
+                    weatherViewModel.getTempTrend().getValue() != null ? weatherViewModel.getTempTrend().getValue() : 0.0));
         }
     }
 
