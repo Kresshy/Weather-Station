@@ -17,12 +17,12 @@
         android:textColor="@color/accent_material_light"
         android:textStyle="italic|bold" />
 
-    <ListView
-        android:id="@+id/listview_bluetooth_devices"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerview_bluetooth_devices"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="10.0sp"
-        android:layout_below="@id/text_select_timer" />
+        android:layout_below="@id/text_select_timer"
+        android:clipToPadding="false"
+        android:padding="8dp" />
 
 </RelativeLayout>

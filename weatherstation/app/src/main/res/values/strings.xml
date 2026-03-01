@@ -46,6 +46,9 @@
     <string name="device_status_unpaired">unpaired</string>
     <string name="device_status_pairing">pairing…</string>
 
+    <string name="header_paired_devices">Paired Devices</string>
+    <string name="header_available_devices">Available Devices</string>
+
     <string name="action_pair">PAIR</string>
     <string name="pairing_pin_title">Enter PIN</string>
     <string name="pairing_pin_message">Enter the PIN for %s</string>
