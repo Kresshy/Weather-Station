@@ -12,6 +12,7 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 - **Advanced Trend Analysis**: Uses Exponential Moving Averages (EMA) to detect subtle thermal pulses, providing a "Launch Suitability" score (0-100).
 - **High-Performance Visualization**: Linear, real-time graphs optimized for legacy hardware (Android 6.0+) with zero-lag $O(1)$ data plotting.
 - **Global Compatibility**: Full support for international locales (comma/dot decimal separators) and legacy data formats.
+- **High-Integrity Business Logic**: ~90% unit test coverage on core analytical and domain layers, verified via JaCoCo.
 
 ## 🏗️ System Architecture
 

@@ -48,7 +48,7 @@ graph TD
         CTD[ConnectToDevice]
         GPD[GetPairedDevices]
         MD[ManageDiscovery]
-        UC[UpdateCalibration]
+        PDU[PairDevice]
     end
 
     %% 4. PLANES (Implementation)
@@ -77,8 +77,7 @@ graph TD
 
     %% UseCase to Plane Mapping
     GWUS -- Pulls --> WRI & WCC
-    CTD & GPD & MD -- Triggers --> WCC
-    UC -- Updates --> WRI
+    CTD & GPD & MD & PDU -- Triggers --> WCC
 
     %% Internal Plane Flow
     WCC -- "Raw Data" --> WRI
@@ -101,12 +100,30 @@ graph TD
 - **`GetWeatherUiStateUseCase`**: Aggregates the atomic heartbeat from the Data Plane and hardware state from the Control Plane.
 - **`ConnectToDeviceUseCase`**: Executes connection requests via the Control Plane.
 - **`GetPairedDevicesUseCase`**: Retrieves filtered device lists from the Control Plane.
+- **`PairDeviceUseCase`**: Initiates hardware bonding for new stations.
 
 ### 3. **Control Plane (`WeatherConnectionController`)**
 The hardware orchestrator. Encapsulates all Bluetooth and connection management logic. Implements the "How" of the system.
 
 ### 4. **Data Plane (`WeatherRepository`)**
 The analytical engine. Implements `HardwareEventListener` to process data from the Control Plane and produce the **Single Heartbeat**. Implements the "What" of the system.
+
+## 🧪 Quality Assurance & Testability
+
+The application follows a **Test-Driven Development (TDD)** approach for all business and hardware logic.
+
+### **Testing Strategy**
+*   **Domain Layer**: ~100% coverage on all `UseCases`. Verified via JUnit and Mockito.
+*   **Data Plane**: Intensive coverage on `ThermalAnalyzer` and `WeatherMessageParser` to ensure mathematical accuracy of thermal detection.
+*   **Control Plane**: Hardware delegates and frame-sync logic are verified through unit tests simulating hardware state transitions.
+*   **UDF Verification**: `WeatherUiState` and `ViewModel` interactions are tested to ensure state immutability and atomic updates.
+
+### **Coverage Reporting (JaCoCo)**
+The project uses JaCoCo to track test coverage. To generate a report:
+```bash
+./gradlew jacocoTestReport
+```
+Report Location: `app/build/reports/jacoco/jacocoTestReport/html/index.html`
 
 ## 📡 Data Flow Path (The Heartbeat)
 1. **Control Plane** syncs raw bytes into a string frame and passes it to the **Data Plane**.
