@@ -1,8 +1,5 @@
 package com.kresshy.weatherstation.repository;
 
-import static com.kresshy.weatherstation.repository.WeatherRepository.KEY_TEMP_DIFF;
-import static com.kresshy.weatherstation.repository.WeatherRepository.KEY_WIND_DIFF;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -25,8 +22,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /**
- * Unit tests for {@link WeatherRepositoryImpl}. Verifies data flow, calibration logic, outlier
- * rejection, and connection lifecycle management.
+ * Unit tests for {@link WeatherRepositoryImpl}. Verifies data flow, outlier rejection, and
+ * connection lifecycle management.
  */
 public class WeatherRepositoryImplTest {
 
@@ -85,39 +82,6 @@ public class WeatherRepositoryImplTest {
         assertEquals(0.5, heartbeat.getTempTrend(), 0.001);
         assertEquals(-0.2, heartbeat.getWindTrend(), 0.001);
         assertEquals(80, heartbeat.getThermalScore());
-    }
-
-    /** Verifies that user-defined calibration offsets are applied before data is broadcast. */
-    @Test
-    public void onRawDataReceived_AppliesCorrections() {
-        // Set corrections via shared preferences
-        when(sharedPreferences.getString(KEY_WIND_DIFF, "0.0")).thenReturn("1.0");
-        when(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0")).thenReturn("-2.0");
-
-        // Re-initialize repository to pick up corrections from injected sharedPreferences
-        repository =
-                new WeatherRepositoryImpl(
-                        context,
-                        thermalAnalyzer,
-                        messageParser,
-                        sharedPreferences,
-                        connectionController);
-
-        String rawData = "WS_data_end";
-        WeatherData parsedData = new WeatherData(5.0, 25.0);
-        when(messageParser.parse(rawData)).thenReturn(parsedData);
-        when(thermalAnalyzer.analyze(any()))
-                .thenReturn(
-                        new ThermalAnalyzer.AnalysisResult(
-                                WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
-
-        repository.onRawDataReceived(rawData);
-
-        // Verify corrections applied: 5.0 + 1.0 = 6.0, 25.0 - 2.0 = 23.0
-        com.kresshy.weatherstation.weather.ProcessedWeatherData heartbeat =
-                repository.getProcessedWeatherData().getValue();
-        assertEquals(6.0, heartbeat.getWeatherData().getWindSpeed(), 0.001);
-        assertEquals(23.0, heartbeat.getWeatherData().getTemperature(), 0.001);
     }
 
     /** Verifies that physically impossible temperature jumps (Layer 2 filter) are discarded. */

@@ -12,12 +12,6 @@ import java.util.List;
  */
 public interface WeatherRepository {
 
-    /** SharedPreferences key for wind speed calibration offset. */
-    String KEY_WIND_DIFF = "KEY_WIND_DIFF";
-
-    /** SharedPreferences key for temperature calibration offset. */
-    String KEY_TEMP_DIFF = "KEY_TEMP_DIFF";
-
     /** SharedPreferences key for enabling/disabling the launch detector. */
     String PREF_LAUNCH_DETECTOR_ENABLED = "pref_launch_detector_enabled";
 

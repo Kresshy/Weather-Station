@@ -5,7 +5,6 @@
     <string name="dashboard_view">Dashboard View</string>
     <string name="bluetooth_weather_station_connect_view">Bluetooth Stations</string>
     <string name="settings_view">Settings</string>
-    <string name="calibration_view">Calibration</string>
     <string name="quit_view">Quit</string>
 
     <string name="action_settings">Settings</string>
@@ -56,12 +55,6 @@
     <string name="error_prefix">Error: %s</string>
     <string name="retry_action">RETRY</string>
     <string name="permissions_required">Permissions required for Bluetooth functionality</string>
-
-    <string name="calibrate_title">Manual Calibration</string>
-    <string name="calibrate_desc">Enter offsets to be applied to the live data.</string>
-    <string name="wind_offset_hint">Wind Speed Offset (m/s)</string>
-    <string name="temp_offset_hint">Temperature Offset (°C)</string>
-    <string name="save_calibration">Save Calibration</string>
 
     <string name="select_station_desc">Please select your weather station</string>
 

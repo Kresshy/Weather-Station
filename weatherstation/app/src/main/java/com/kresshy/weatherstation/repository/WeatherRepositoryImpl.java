@@ -50,8 +50,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
     private final List<WeatherData> historicalData = new ArrayList<>();
     private static final int MAX_HISTORY_SIZE = 300;
 
-    private double correctionWind = 0.0;
-    private double correctionTemp = 0.0;
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     private static final double MAX_TEMP_JUMP = 10.0; // Max physically possible jump in deg/sec
@@ -78,25 +76,16 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
                     .setHardwareEventListener(this);
         }
 
-        loadCorrections(sharedPreferences);
         loadLaunchDetectorSettings(sharedPreferences);
 
         this.preferenceChangeListener =
                 (prefs, key) -> {
-                    if (KEY_WIND_DIFF.equals(key) || KEY_TEMP_DIFF.equals(key)) {
-                        loadCorrections(prefs);
-                    } else if (PREF_LAUNCH_DETECTOR_ENABLED.equals(key)
+                    if (PREF_LAUNCH_DETECTOR_ENABLED.equals(key)
                             || PREF_LAUNCH_DETECTOR_SENSITIVITY.equals(key)) {
                         loadLaunchDetectorSettings(prefs);
                     }
                 };
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
-    }
-
-    private void loadCorrections(SharedPreferences sharedPreferences) {
-        correctionWind = parseDoubleSafe(sharedPreferences.getString(KEY_WIND_DIFF, "0.0"), 0.0);
-        correctionTemp = parseDoubleSafe(sharedPreferences.getString(KEY_TEMP_DIFF, "0.0"), 0.0);
-        Timber.d("Loaded corrections - wind: %f, temp: %f", correctionWind, correctionTemp);
     }
 
     private void loadLaunchDetectorSettings(SharedPreferences sharedPreferences) {
@@ -206,8 +195,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
             }
             lastSaneData = weatherData;
 
-            applyCorrections(weatherData);
-
             // Track historical data for chart persistence
             synchronized (historicalData) {
                 historicalData.add(weatherData);
@@ -234,11 +221,6 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
             thermalScore.postValue(result.score);
             latestWeatherData.postValue(weatherData);
         }
-    }
-
-    private void applyCorrections(WeatherData data) {
-        data.setWindSpeed(data.getWindSpeed() + correctionWind);
-        data.setTemperature(data.getTemperature() + correctionTemp);
     }
 
     @Override

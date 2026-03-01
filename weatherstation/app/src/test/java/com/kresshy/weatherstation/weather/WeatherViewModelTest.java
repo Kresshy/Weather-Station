@@ -33,9 +33,6 @@ public class WeatherViewModelTest {
     @Mock private com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
     @Mock private com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase;
 
-    @Mock
-    private com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase;
-
     private WeatherViewModel weatherViewModel;
 
     @Before
@@ -49,8 +46,7 @@ public class WeatherViewModelTest {
                         connectToDeviceUseCase,
                         getPairedDevicesUseCase,
                         manageDiscoveryUseCase,
-                        pairDeviceUseCase,
-                        updateCalibrationUseCase);
+                        pairDeviceUseCase);
     }
 
     /** Verifies that the ViewModel correctly delegates the refresh paired devices request. */

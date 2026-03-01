@@ -49,8 +49,7 @@ public class NavigationDelegate {
                                 R.id.dashboardFragment,
                                 R.id.graphViewFragment,
                                 R.id.bluetoothDeviceListFragment,
-                                R.id.settingsFragment,
-                                R.id.calibrationFragment)
+                                R.id.settingsFragment)
                         .setOpenableLayout(binding.drawerLayout)
                         .build();
 

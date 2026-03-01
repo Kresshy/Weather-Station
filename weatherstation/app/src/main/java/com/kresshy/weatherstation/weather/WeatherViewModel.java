@@ -28,8 +28,6 @@ public class WeatherViewModel extends ViewModel {
     private final com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase;
     private final com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
     private final com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase;
-    private final com.kresshy.weatherstation.domain.UpdateCalibrationUseCase
-            updateCalibrationUseCase;
 
     private final androidx.lifecycle.MutableLiveData<List<android.os.Parcelable>> pairedDevices =
             new androidx.lifecycle.MutableLiveData<>(new java.util.ArrayList<>());
@@ -42,8 +40,7 @@ public class WeatherViewModel extends ViewModel {
             com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase,
             com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase,
             com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase,
-            com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase,
-            com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase) {
+            com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase) {
         this.weatherRepository = weatherRepository;
         this.connectionController = connectionController;
         this.getWeatherUiStateUseCase = getWeatherUiStateUseCase;
@@ -51,7 +48,6 @@ public class WeatherViewModel extends ViewModel {
         this.getPairedDevicesUseCase = getPairedDevicesUseCase;
         this.manageDiscoveryUseCase = manageDiscoveryUseCase;
         this.pairDeviceUseCase = pairDeviceUseCase;
-        this.updateCalibrationUseCase = updateCalibrationUseCase;
     }
 
     /**
@@ -102,16 +98,6 @@ public class WeatherViewModel extends ViewModel {
      */
     public void connectToDeviceAddress(String address) {
         connectToDeviceUseCase.execute(address);
-    }
-
-    /**
-     * Persists new calibration offsets for wind and temperature.
-     *
-     * @param windOffset The wind speed offset (m/s).
-     * @param tempOffset The temperature offset (°C).
-     */
-    public void updateCalibration(String windOffset, String tempOffset) {
-        updateCalibrationUseCase.execute(windOffset, tempOffset);
     }
 
     /**

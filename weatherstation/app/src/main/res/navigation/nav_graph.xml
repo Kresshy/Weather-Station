@@ -28,10 +28,4 @@
         android:name="com.kresshy.weatherstation.fragment.SettingsFragment"
         android:label="@string/settings_view" />
 
-    <fragment
-        android:id="@+id/calibrationFragment"
-        android:name="com.kresshy.weatherstation.fragment.CalibrationFragment"
-        android:label="@string/calibration_view"
-        tools:layout="@layout/fragment_calibration" />
-
 </navigation>

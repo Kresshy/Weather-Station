@@ -13,10 +13,6 @@
             android:id="@+id/settingsFragment"
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="@string/settings_view" />
-        <item
-            android:id="@+id/calibrationFragment"
-            android:icon="@android:drawable/ic_menu_edit"
-            android:title="@string/calibration_view" />
     </group>
     <item android:title="System">
         <menu>
