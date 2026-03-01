@@ -31,6 +31,7 @@ public class WeatherViewModelTest {
     @Mock private com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
     @Mock private com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase;
     @Mock private com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
+    @Mock private com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase;
 
     @Mock
     private com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase;
@@ -48,6 +49,7 @@ public class WeatherViewModelTest {
                         connectToDeviceUseCase,
                         getPairedDevicesUseCase,
                         manageDiscoveryUseCase,
+                        pairDeviceUseCase,
                         updateCalibrationUseCase);
     }
 

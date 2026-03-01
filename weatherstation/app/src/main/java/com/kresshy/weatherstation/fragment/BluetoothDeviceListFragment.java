@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.bluetooth.BluetoothDeviceItemAdapter;
 import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
 import com.kresshy.weatherstation.databinding.FragmentBluetoothdeviceBinding;
@@ -66,6 +67,7 @@ public class BluetoothDeviceListFragment extends Fragment
 
         // Set the adapter for the list view
         adapter = new BluetoothDeviceItemAdapter(requireContext(), deviceList);
+        adapter.setOnPairClickListener(device -> weatherViewModel.pairDevice(device));
         binding.listviewBluetoothDevices.setAdapter(adapter);
 
         binding.listviewBluetoothDevices.setOnItemClickListener(this);
@@ -78,8 +80,33 @@ public class BluetoothDeviceListFragment extends Fragment
                 .getDiscoveredDevices()
                 .observe(getViewLifecycleOwner(), this::updateDeviceList);
 
+        weatherViewModel
+                .getPairingRequest()
+                .observe(getViewLifecycleOwner(), this::showPinEntryDialog);
+
         // Auto-start discovery when screen is opened
         weatherViewModel.startDiscovery();
+    }
+
+    private void showPinEntryDialog(BluetoothDevice device) {
+        if (device == null) return;
+
+        android.widget.EditText input = new android.widget.EditText(requireContext());
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint(R.string.pairing_pin_hint);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.pairing_pin_title)
+                .setMessage(getString(R.string.pairing_pin_message, device.getName()))
+                .setView(input)
+                .setPositiveButton(
+                        R.string.ok,
+                        (dialog, which) -> {
+                            String pin = input.getText().toString();
+                            weatherViewModel.setPin(device, pin);
+                        })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
 
     @Override

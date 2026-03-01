@@ -104,6 +104,17 @@ public class FakeWeatherConnectionController implements WeatherConnectionControl
     @Override
     public void connectToDeviceAddress(String address) {}
 
+    @Override
+    public void pairDevice(android.bluetooth.BluetoothDevice device) {}
+
+    @Override
+    public void setPin(android.bluetooth.BluetoothDevice device, String pin) {}
+
+    @Override
+    public LiveData<android.bluetooth.BluetoothDevice> getPairingRequest() {
+        return new MutableLiveData<>();
+    }
+
     public void setUiState(Resource<Void> state) {
         uiState.postValue(state);
     }

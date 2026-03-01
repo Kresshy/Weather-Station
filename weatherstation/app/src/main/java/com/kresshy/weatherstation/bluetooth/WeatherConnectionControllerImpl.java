@@ -305,4 +305,19 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
             }
         }
     }
+
+    @Override
+    public void pairDevice(BluetoothDevice device) {
+        bluetoothManager.pairDevice(device);
+    }
+
+    @Override
+    public void setPin(BluetoothDevice device, String pin) {
+        bluetoothManager.setPin(device, pin);
+    }
+
+    @Override
+    public LiveData<BluetoothDevice> getPairingRequest() {
+        return bluetoothManager.getPairingRequest();
+    }
 }

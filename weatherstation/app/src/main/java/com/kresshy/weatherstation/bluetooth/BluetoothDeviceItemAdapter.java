@@ -26,6 +26,12 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<Parcelable> {
     List<Parcelable> devices;
     Context context;
 
+    public interface OnPairClickListener {
+        void onPairClick(BluetoothDevice device);
+    }
+
+    private OnPairClickListener pairClickListener;
+
     /**
      * @param context Application context.
      * @param devices List of {@link BluetoothDevice} or {@link SimulatorDevice}.
@@ -34,6 +40,10 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<Parcelable> {
         super(context, 0, devices);
         this.context = context;
         this.devices = devices;
+    }
+
+    public void setOnPairClickListener(OnPairClickListener listener) {
+        this.pairClickListener = listener;
     }
 
     @NonNull @Override
@@ -54,7 +64,7 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<Parcelable> {
         if (device != null) {
             String name = "";
             String address = "";
-            boolean isPaired = false;
+            int bondState = BluetoothDevice.BOND_NONE;
 
             if (device instanceof BluetoothDevice) {
                 BluetoothDevice btDevice = (BluetoothDevice) device;
@@ -62,12 +72,12 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<Parcelable> {
                     name = btDevice.getName();
                 }
                 address = btDevice.getAddress();
-                isPaired = btDevice.getBondState() == BluetoothDevice.BOND_BONDED;
+                bondState = btDevice.getBondState();
             } else if (device instanceof SimulatorDevice) {
                 SimulatorDevice simDevice = (SimulatorDevice) device;
                 name = simDevice.getName();
                 address = simDevice.getAddress();
-                isPaired = true; // Simulator is always displayed as paired
+                bondState = BluetoothDevice.BOND_BONDED;
             }
 
             if (name == null || name.isEmpty()) {
@@ -86,12 +96,24 @@ public class BluetoothDeviceItemAdapter extends ArrayAdapter<Parcelable> {
                         ActivityCompat.getDrawable(context, R.drawable.mobile_device));
             }
 
-            if (isPaired) {
+            if (bondState == BluetoothDevice.BOND_BONDED) {
                 binding.bluetoothDeviceStatus.setText(
                         context.getString(R.string.device_status_paired));
+                binding.btnPairDevice.setVisibility(View.GONE);
+            } else if (bondState == BluetoothDevice.BOND_BONDING) {
+                binding.bluetoothDeviceStatus.setText(
+                        context.getString(R.string.device_status_pairing));
+                binding.btnPairDevice.setVisibility(View.GONE);
             } else {
                 binding.bluetoothDeviceStatus.setText(
                         context.getString(R.string.device_status_unpaired));
+                binding.btnPairDevice.setVisibility(View.VISIBLE);
+                binding.btnPairDevice.setOnClickListener(
+                        v -> {
+                            if (pairClickListener != null && device instanceof BluetoothDevice) {
+                                pairClickListener.onPairClick((BluetoothDevice) device);
+                            }
+                        });
             }
         }
         return convertView;

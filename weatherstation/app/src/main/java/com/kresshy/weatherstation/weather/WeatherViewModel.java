@@ -27,6 +27,7 @@ public class WeatherViewModel extends ViewModel {
     private final com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase;
     private final com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase;
     private final com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase;
+    private final com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase;
     private final com.kresshy.weatherstation.domain.UpdateCalibrationUseCase
             updateCalibrationUseCase;
 
@@ -41,6 +42,7 @@ public class WeatherViewModel extends ViewModel {
             com.kresshy.weatherstation.domain.ConnectToDeviceUseCase connectToDeviceUseCase,
             com.kresshy.weatherstation.domain.GetPairedDevicesUseCase getPairedDevicesUseCase,
             com.kresshy.weatherstation.domain.ManageDiscoveryUseCase manageDiscoveryUseCase,
+            com.kresshy.weatherstation.domain.PairDeviceUseCase pairDeviceUseCase,
             com.kresshy.weatherstation.domain.UpdateCalibrationUseCase updateCalibrationUseCase) {
         this.weatherRepository = weatherRepository;
         this.connectionController = connectionController;
@@ -48,6 +50,7 @@ public class WeatherViewModel extends ViewModel {
         this.connectToDeviceUseCase = connectToDeviceUseCase;
         this.getPairedDevicesUseCase = getPairedDevicesUseCase;
         this.manageDiscoveryUseCase = manageDiscoveryUseCase;
+        this.pairDeviceUseCase = pairDeviceUseCase;
         this.updateCalibrationUseCase = updateCalibrationUseCase;
     }
 
@@ -207,5 +210,31 @@ public class WeatherViewModel extends ViewModel {
      */
     public LiveData<String> getConnectedDeviceName() {
         return connectionController.getConnectedDeviceName();
+    }
+
+    /**
+     * Initiates pairing with a Bluetooth device.
+     *
+     * @param device The device to pair with.
+     */
+    public void pairDevice(android.bluetooth.BluetoothDevice device) {
+        pairDeviceUseCase.execute(device);
+    }
+
+    /**
+     * Sets the PIN for a pairing request.
+     *
+     * @param device The device requesting the PIN.
+     * @param pin The PIN code.
+     */
+    public void setPin(android.bluetooth.BluetoothDevice device, String pin) {
+        connectionController.setPin(device, pin);
+    }
+
+    /**
+     * @return Observable event when a pairing request is received.
+     */
+    public LiveData<android.bluetooth.BluetoothDevice> getPairingRequest() {
+        return connectionController.getPairingRequest();
     }
 }

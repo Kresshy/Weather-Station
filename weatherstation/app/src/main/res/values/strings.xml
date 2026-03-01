@@ -45,6 +45,12 @@
     <string name="device_unknown">Unknown device</string>
     <string name="device_status_paired">paired</string>
     <string name="device_status_unpaired">unpaired</string>
+    <string name="device_status_pairing">pairing…</string>
+
+    <string name="action_pair">PAIR</string>
+    <string name="pairing_pin_title">Enter PIN</string>
+    <string name="pairing_pin_message">Enter the PIN for %s</string>
+    <string name="pairing_pin_hint">PIN</string>
 
     <string name="connecting_message">Connecting to Weather Station…</string>
     <string name="error_prefix">Error: %s</string>

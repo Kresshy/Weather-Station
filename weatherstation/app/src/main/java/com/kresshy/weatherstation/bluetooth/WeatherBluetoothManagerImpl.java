@@ -37,6 +37,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
     private final MutableLiveData<Integer> bluetoothState =
             new MutableLiveData<>(BluetoothAdapter.STATE_OFF);
+    private final MutableLiveData<BluetoothDevice> pairingRequest = new MutableLiveData<>();
     private final java.util.Map<String, Integer> deviceRssiMap = new java.util.HashMap<>();
 
     private boolean isRegistered = false;
@@ -56,7 +57,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                 }
             };
 
-    /** Receiver for handling discovered devices and end-of-scan events. */
+    /** Receiver for handling discovered devices, bond state changes and pairing requests. */
     private final BroadcastReceiver discoveryReceiver =
             new BroadcastReceiver() {
                 @Override
@@ -77,18 +78,47 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
 
                         if (device != null) {
                             deviceRssiMap.put(device.getAddress(), rssi);
-                            List<BluetoothDevice> current = discoveredDevices.getValue();
-                            if (current == null) current = new ArrayList<>();
-                            if (!current.contains(device)) {
-                                current.add(device);
-                                discoveredDevices.postValue(current);
-                            }
+                            updateDeviceList(device);
                         }
                     } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                         discoveryStatus.postValue("Discovery Finished");
+                    } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                        BluetoothDevice device =
+                                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        if (device != null) {
+                            Timber.d(
+                                    "Bond state changed for %s: %d",
+                                    device.getAddress(), device.getBondState());
+                            updateDeviceList(device);
+                        }
+                    } else if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
+                        BluetoothDevice device =
+                                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        if (device != null) {
+                            Timber.d("Pairing request received for %s", device.getAddress());
+                            pairingRequest.postValue(device);
+                        }
                     }
                 }
             };
+
+    private void updateDeviceList(BluetoothDevice device) {
+        List<BluetoothDevice> current = discoveredDevices.getValue();
+        if (current == null) current = new ArrayList<>();
+        int index = -1;
+        for (int i = 0; i < current.size(); i++) {
+            if (current.get(i).getAddress().equals(device.getAddress())) {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1) {
+            current.set(index, device);
+        } else {
+            current.add(device);
+        }
+        discoveredDevices.postValue(current);
+    }
 
     @Inject
     public WeatherBluetoothManagerImpl(
@@ -151,6 +181,8 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
             IntentFilter discoveryFilter = new IntentFilter();
             discoveryFilter.addAction(BluetoothDevice.ACTION_FOUND);
             discoveryFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            discoveryFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+            discoveryFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
             context.registerReceiver(discoveryReceiver, discoveryFilter);
             isRegistered = true;
         }
@@ -188,5 +220,24 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     public int getDeviceRssi(String address) {
         Integer rssi = deviceRssiMap.get(address);
         return rssi != null ? rssi : 0;
+    }
+
+    @Override
+    public void pairDevice(BluetoothDevice device) {
+        if (PermissionHelper.hasConnectPermission(context)) {
+            device.createBond();
+        }
+    }
+
+    @Override
+    public void setPin(BluetoothDevice device, String pin) {
+        if (PermissionHelper.hasConnectPermission(context)) {
+            device.setPin(pin.getBytes());
+        }
+    }
+
+    @Override
+    public LiveData<BluetoothDevice> getPairingRequest() {
+        return pairingRequest;
     }
 }

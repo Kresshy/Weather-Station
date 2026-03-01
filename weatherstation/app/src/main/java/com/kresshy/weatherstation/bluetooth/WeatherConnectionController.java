@@ -94,4 +94,24 @@ public interface WeatherConnectionController {
      * @param address MAC address to connect to.
      */
     void connectToDeviceAddress(String address);
+
+    /**
+     * Initiates pairing with a Bluetooth device.
+     *
+     * @param device The device to pair with.
+     */
+    void pairDevice(android.bluetooth.BluetoothDevice device);
+
+    /**
+     * Sets the PIN for a pairing request.
+     *
+     * @param device The device requesting the PIN.
+     * @param pin The PIN code.
+     */
+    void setPin(android.bluetooth.BluetoothDevice device, String pin);
+
+    /**
+     * @return Observable event when a pairing request is received.
+     */
+    androidx.lifecycle.LiveData<android.bluetooth.BluetoothDevice> getPairingRequest();
 }
