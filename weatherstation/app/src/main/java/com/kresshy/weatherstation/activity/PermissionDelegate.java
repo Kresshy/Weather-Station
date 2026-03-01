@@ -42,13 +42,16 @@ public class PermissionDelegate {
     /** Triggers the permission request flow. */
     public void requestPermissions() {
         ArrayList<String> permissionList = new ArrayList<>();
+
+        // Location is generally required for Bluetooth discovery on all versions
+        permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             permissionList.add(Manifest.permission.BLUETOOTH_CONNECT);
             permissionList.add(Manifest.permission.BLUETOOTH_SCAN);
         } else {
             permissionList.add(Manifest.permission.BLUETOOTH);
             permissionList.add(Manifest.permission.BLUETOOTH_ADMIN);
-            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

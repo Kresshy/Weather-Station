@@ -21,8 +21,16 @@ public class PermissionHelper {
      */
     public static boolean hasScanPermission(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
-                    == PackageManager.PERMISSION_GRANTED;
+            boolean scanGranted =
+                    ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
+                            == PackageManager.PERMISSION_GRANTED;
+            // Note: If the manifest does not use 'neverForLocation', we also need location.
+            // For simplicity and safety, we check both.
+            boolean locationGranted =
+                    ActivityCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED;
+            return scanGranted && locationGranted;
         } else {
             // On older versions, Location permission is required for Bluetooth scanning
             return ActivityCompat.checkSelfPermission(

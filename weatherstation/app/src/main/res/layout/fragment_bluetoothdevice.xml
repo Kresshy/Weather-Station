@@ -21,8 +21,35 @@
         android:id="@+id/recyclerview_bluetooth_devices"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/discovery_status_container"
         android:layout_below="@id/text_select_timer"
         android:clipToPadding="false"
         android:padding="8dp" />
+
+    <LinearLayout
+        android:id="@+id/discovery_status_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#11000000"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/text_discovery_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Searching..."
+            android:textSize="14sp" />
+    </LinearLayout>
 
 </RelativeLayout>

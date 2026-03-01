@@ -35,6 +35,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     private final MutableLiveData<List<BluetoothDevice>> discoveredDevices =
             new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> discoveryStatus = new MutableLiveData<>("");
+    private final MutableLiveData<Boolean> isDiscovering = new MutableLiveData<>(false);
     private final MutableLiveData<Integer> bluetoothState =
             new MutableLiveData<>(BluetoothAdapter.STATE_OFF);
     private final MutableLiveData<BluetoothDevice> pairingRequest = new MutableLiveData<>();
@@ -49,9 +50,13 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                 public void onReceive(Context context, Intent intent) {
                     if (bluetoothAdapter != null) {
                         int state = bluetoothAdapter.getState();
-                        bluetoothState.postValue(state);
+                        bluetoothState.setValue(state);
                         if (state == BluetoothAdapter.STATE_ON) {
                             Timber.d("Bluetooth turned ON");
+                        } else if (state == BluetoothAdapter.STATE_OFF) {
+                            Timber.d("Bluetooth turned OFF");
+                            isDiscovering.setValue(false);
+                            discoveryStatus.setValue("Bluetooth Off");
                         }
                     }
                 }
@@ -78,10 +83,23 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
 
                         if (device != null) {
                             deviceRssiMap.put(device.getAddress(), rssi);
+                            if (PermissionHelper.hasConnectPermission(context)) {
+                                Timber.d(
+                                        "Device found: %s (%s) [RSSI: %d]",
+                                        device.getName(), device.getAddress(), rssi);
+                            } else {
+                                Timber.d("Device found: %s [RSSI: %d]", device.getAddress(), rssi);
+                            }
                             updateDeviceList(device);
                         }
+                    } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                        Timber.d("Discovery Started");
+                        isDiscovering.setValue(true);
+                        discoveryStatus.setValue("Discovering...");
                     } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                        discoveryStatus.postValue("Discovery Finished");
+                        Timber.d("Discovery Finished");
+                        isDiscovering.setValue(false);
+                        discoveryStatus.setValue("Discovery Finished");
                     } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                         BluetoothDevice device =
                                 intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -96,7 +114,7 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                                 intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         if (device != null) {
                             Timber.d("Pairing request received for %s", device.getAddress());
-                            pairingRequest.postValue(device);
+                            pairingRequest.setValue(device);
                         }
                     }
                 }
@@ -104,20 +122,24 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
 
     private void updateDeviceList(BluetoothDevice device) {
         List<BluetoothDevice> current = discoveredDevices.getValue();
-        if (current == null) current = new ArrayList<>();
+        List<BluetoothDevice> newList = new ArrayList<>();
+        if (current != null) {
+            newList.addAll(current);
+        }
+
         int index = -1;
-        for (int i = 0; i < current.size(); i++) {
-            if (current.get(i).getAddress().equals(device.getAddress())) {
+        for (int i = 0; i < newList.size(); i++) {
+            if (newList.get(i).getAddress().equals(device.getAddress())) {
                 index = i;
                 break;
             }
         }
         if (index != -1) {
-            current.set(index, device);
+            newList.set(index, device);
         } else {
-            current.add(device);
+            newList.add(device);
         }
-        discoveredDevices.postValue(current);
+        discoveredDevices.setValue(newList);
     }
 
     @Inject
@@ -137,6 +159,9 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                 discoveredDevices.postValue(new ArrayList<>());
                 discoveryStatus.postValue("Discovering...");
                 bluetoothAdapter.startDiscovery();
+            } else {
+                Timber.e("Missing scan permission for discovery");
+                discoveryStatus.postValue("Missing Permissions");
             }
         }
     }
@@ -174,16 +199,29 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     }
 
     @Override
+    public LiveData<Boolean> isDiscovering() {
+        return isDiscovering;
+    }
+
+    @Override
     public void registerReceivers() {
         if (!isRegistered) {
-            context.registerReceiver(
-                    stateReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+            IntentFilter stateFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
             IntentFilter discoveryFilter = new IntentFilter();
             discoveryFilter.addAction(BluetoothDevice.ACTION_FOUND);
+            discoveryFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
             discoveryFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             discoveryFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
             discoveryFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
-            context.registerReceiver(discoveryReceiver, discoveryFilter);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(stateReceiver, stateFilter, Context.RECEIVER_NOT_EXPORTED);
+                context.registerReceiver(
+                        discoveryReceiver, discoveryFilter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                context.registerReceiver(stateReceiver, stateFilter);
+                context.registerReceiver(discoveryReceiver, discoveryFilter);
+            }
             isRegistered = true;
         }
     }

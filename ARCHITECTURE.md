@@ -58,7 +58,9 @@ graph TD
         subgraph Control_Plane [Control Plane: How]
             WCC[WeatherConnectionController]
             CM[ConnectionManager]
-            BC[BT Conn]
+            CC[Composite Connection]
+            BC[Classic BT Conn]
+            BLE[BLE Conn]
             SC[Sim Conn]
         end
 
@@ -85,7 +87,8 @@ graph TD
     
     %% Hardware linkage
     WCC --> CM
-    CM --> BC & SC
+    CM --> CC
+    CC --> BC & BLE & SC
     WRI --> TA & WMP
 ```
 
@@ -102,8 +105,8 @@ graph TD
 - **`GetPairedDevicesUseCase`**: Retrieves filtered device lists from the Control Plane.
 - **`PairDeviceUseCase`**: Initiates hardware bonding for new stations.
 
-### 3. **Control Plane (`WeatherConnectionController`)**
-The hardware orchestrator. Encapsulates all Bluetooth and connection management logic. Implements the "How" of the system.
+### 3. Control Plane (`WeatherConnectionController`)
+The hardware orchestrator. Encapsulates all Bluetooth management and connection lifecycle logic. Uses a **CompositeConnection** pattern to automatically route to the appropriate driver (`BluetoothConnection`, `BleConnection`, or `SimulatorConnection`) based on the device's hardware profile.
 
 ### 4. **Data Plane (`WeatherRepository`)**
 The analytical engine. Implements `HardwareEventListener` to process data from the Control Plane and produce the **Single Heartbeat**. Implements the "What" of the system.

@@ -15,17 +15,17 @@ public class WeatherUiStateTest {
     @Test
     public void weatherUiState_constructor_initializesFields() {
         WeatherData latest = new WeatherData(5.0, 25.0);
-        
-        WeatherUiState state = new WeatherUiState(
-                latest,
-                WeatherRepository.LaunchDecision.LAUNCH,
-                0.5,
-                -0.2,
-                85,
-                true,
-                ConnectionState.connected,
-                "Test Device"
-        );
+
+        WeatherUiState state =
+                new WeatherUiState(
+                        latest,
+                        WeatherRepository.LaunchDecision.LAUNCH,
+                        0.5,
+                        -0.2,
+                        85,
+                        true,
+                        ConnectionState.connected,
+                        "Test Device");
 
         assertEquals(latest, state.getLatestData());
         assertEquals(WeatherRepository.LaunchDecision.LAUNCH, state.getLaunchDecision());
@@ -40,7 +40,7 @@ public class WeatherUiStateTest {
     @Test
     public void empty_returnsEmptyState() {
         WeatherUiState state = WeatherUiState.empty();
-        
+
         assertNull(state.getLatestData());
         assertEquals(WeatherRepository.LaunchDecision.WAITING, state.getLaunchDecision());
         assertEquals(0.0, state.getTempTrend(), 0.001);

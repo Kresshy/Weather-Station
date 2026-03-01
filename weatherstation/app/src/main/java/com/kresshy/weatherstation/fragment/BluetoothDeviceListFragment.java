@@ -80,6 +80,20 @@ public class BluetoothDeviceListFragment extends Fragment {
                 .observe(getViewLifecycleOwner(), devices -> updateDeviceList());
 
         weatherViewModel
+                .isDiscovering()
+                .observe(
+                        getViewLifecycleOwner(),
+                        isDiscovering ->
+                                binding.discoveryStatusContainer.setVisibility(
+                                        isDiscovering ? View.VISIBLE : View.GONE));
+
+        weatherViewModel
+                .getDiscoveryStatus()
+                .observe(
+                        getViewLifecycleOwner(),
+                        status -> binding.textDiscoveryStatus.setText(status));
+
+        weatherViewModel
                 .getPairingRequest()
                 .observe(getViewLifecycleOwner(), this::showPinEntryDialog);
 

@@ -4,10 +4,12 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 
 ## 🚀 Key Features
 
+- **Dual-Mode Bluetooth (Classic + BLE)**: Full support for both legacy HC-05 (Classic) and modern Nordic/HM-10 (BLE) weather station hardware.
+- **Real-time Discovery Status**: Visual feedback (progress spinner and "Searching..." status) during active device scans.
 - **Thermal Detection**: Purpose-built algorithm to identify rising air currents (thermals) suitable for aeromodel launches.
 - **Real-time Airfield Monitoring**: Track precise wind speed and temperature readings via Bluetooth at the launch site.
 - **In-App Pairing & Security**: Seamlessly bond with stations and handle PIN security codes without leaving the application.
-- **Sectioned UI**: Grouped device list for quick access to paired stations versus available airfield hardware.
+- **Sectioned UI**: Grouped device list with visual "BLE" badges to distinguish modern Low Energy hardware.
 - **Single Heartbeat Architecture**: Guaranteed synchronization between raw sensor readings and analytical trends.
 - **Advanced Trend Analysis**: Uses Exponential Moving Averages (EMA) to detect subtle thermal pulses, providing a "Launch Suitability" score (0-100).
 - **High-Performance Visualization**: Linear, real-time graphs optimized for legacy hardware (Android 6.0+) with zero-lag $O(1)$ data plotting.
@@ -21,7 +23,7 @@ The application follows **Clean Architecture** principles with a decoupled **Con
 1.  **UI Layer (MVVM)**: Fragments observe a unified `WeatherUiState` from the `WeatherViewModel`.
 2.  **Domain Layer (UseCases)**: The bridge that aggregates data from both planes.
 3.  **Data Plane (`WeatherRepository`)**: Exclusively handles sensor data processing, parsing, and analytical trends using the **Single Heartbeat** pattern.
-4.  **Control Plane (`WeatherConnectionController`)**: Exclusively handles hardware lifecycles, Bluetooth adapter management, and connection orchestration.
+4.  **Control Plane (`WeatherConnectionController`)**: Manages hardware lifecycles and Bluetooth discovery. Uses a **Composite Connection** router to automatically select between Classic BT, BLE, or Simulator drivers based on hardware type.
 Detailed hardware documentation can be found here:
 - **[Standard Wiring Diagram](WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
 - **[Future Hardware Roadmap](FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades.

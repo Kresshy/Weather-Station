@@ -79,6 +79,7 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
                 .getDiscoveredDevices()
                 .observeForever(devices -> discoveredDevices.postValue(new ArrayList<>(devices)));
         bluetoothManager.getDiscoveryStatus().observeForever(discoveryStatus::postValue);
+        bluetoothManager.isDiscovering().observeForever(isDiscovering::postValue);
     }
 
     public void setHardwareEventListener(HardwareEventListener listener) {

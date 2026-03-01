@@ -22,6 +22,11 @@ public interface WeatherBluetoothManager {
      */
     boolean isBluetoothEnabled();
 
+    /**
+     * @return Observable boolean for discovery status.
+     */
+    androidx.lifecycle.LiveData<Boolean> isDiscovering();
+
     /** Registers Intent Filters for Bluetooth discovery and state changes. */
     void registerReceivers();
 

@@ -2,6 +2,15 @@
 
 This document outlines potential hardware and software enhancements to evolve the current Weather Station into a high-precision Thermal Hunting system for free-flight aeromodelling.
 
+## ✅ Completed Enhancements
+
+### 1. Dual-Mode Bluetooth (Classic + BLE)
+*   **The Upgrade:** Implemented a unified `CompositeConnection` that routes between Classic Bluetooth and Bluetooth Low Energy (GATT).
+*   **The Benefit:** Full compatibility with modern low-power hardware (HM-10, Nordic NUS) alongside legacy HC-05 modules.
+*   **Status:** **Released in v3.6.0**.
+
+---
+
 ## 📡 Hardware Sensor Enhancements
 
 ### 1. High-Precision Barometric Pressure (BMP280 / BME280)

@@ -139,11 +139,18 @@ public class BluetoothDeviceRecyclerAdapter extends RecyclerView.Adapter<Recycle
                     }
                     address = btDevice.getAddress();
                     bondState = btDevice.getBondState();
+
+                    int type = btDevice.getType();
+                    boolean isBle =
+                            type == BluetoothDevice.DEVICE_TYPE_LE
+                                    || type == BluetoothDevice.DEVICE_TYPE_DUAL;
+                    binding.badgeBle.setVisibility(isBle ? View.VISIBLE : View.GONE);
                 } else if (device instanceof SimulatorDevice) {
                     SimulatorDevice simDevice = (SimulatorDevice) device;
                     name = simDevice.getName();
                     address = simDevice.getAddress();
                     bondState = BluetoothDevice.BOND_BONDED;
+                    binding.badgeBle.setVisibility(View.GONE);
                 }
 
                 if (name == null || name.isEmpty()) {
