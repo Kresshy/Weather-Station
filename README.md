@@ -6,6 +6,8 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 
 - **Thermal Detection**: Purpose-built algorithm to identify rising air currents (thermals) suitable for aeromodel launches.
 - **Real-time Airfield Monitoring**: Track precise wind speed and temperature readings via Bluetooth at the launch site.
+- **In-App Pairing & Security**: Seamlessly bond with stations and handle PIN security codes without leaving the application.
+- **Sectioned UI**: Grouped device list for quick access to paired stations versus available airfield hardware.
 - **Single Heartbeat Architecture**: Guaranteed synchronization between raw sensor readings and analytical trends.
 - **Advanced Trend Analysis**: Uses Exponential Moving Averages (EMA) to detect subtle thermal pulses, providing a "Launch Suitability" score (0-100).
 - **High-Performance Visualization**: Linear, real-time graphs optimized for legacy hardware (Android 6.0+) with zero-lag $O(1)$ data plotting.

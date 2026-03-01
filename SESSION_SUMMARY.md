@@ -3,46 +3,33 @@
 ## 🎯 Overview
 Successfully transformed the application into a robust, high-performance platform capable of running smoothly on legacy hardware (Android 6.0+) while supporting global deployment through international locale handling. The architecture has been refined into an **Event-Driven "Single Heartbeat"** model, ensuring absolute data synchronization and minimal CPU overhead.
 
-## 🏗️ Architectural Evolution (Current Session)
+## 🏗️ Architectural Evolution (Current Session - March 1, 2026)
 
-### 🚀 Performance Milestone (Legacy Hardware Optimization)
-*   **Constant-Time Charting ($O(1)$)**: Refactored chart plotting to eliminate expensive loops that shifted entire datasets every second. The app now uses monotonic X-coordinates and dynamic viewport management, reducing CPU load by ~90% during monitoring.
-*   **Linear Visualization**: Replaced Bezier curves with linear charting. This provides a technical, accurate view of sensor data while drastically reducing GPU draw calls on older devices.
-*   **Initial Full-View Grid**: Charts now initialize with a pre-set 300-sample range, providing a consistent monitoring interface immediately upon opening.
+### 📡 Bluetooth Connectivity & UX (v3.5.0)
+*   **In-App Pairing & Security**: Implemented full `createBond()` support with automated PIN entry via a Material PIN Dialog. Users no longer need to use system settings to pair with stations.
+*   **Sectioned Device Management**: Refactored the device list to a `RecyclerView` that automatically groups "Paired" and "Available" devices. Pairing a device now triggers an automatic visual move to the top section.
+*   **Domain Expansion**: Added `PairDeviceUseCase` to further decouple hardware pairing logic from the UI layer.
 
-### 💓 The Single Heartbeat Architecture (v3.2.0)
-*   **Atomic Data Pipeline**: Introduced `ProcessedWeatherData` to bundle raw sensor readings and calculated analytical trends into a single event.
-*   **Guaranteed Synchronization**: Eliminated UI jitter and stale "delta" values. Every UI refresh now uses a mathematically consistent snapshot of the entire analysis engine.
-*   **UI Thread Relief**: Reduced UI update frequency from ~5 refreshes per second to exactly one, significantly improving responsiveness on low-end devices.
+### ⚙️ Calibration Logic Centralization
+*   **Source of Truth Strategy**: Purged the redundant app-side calibration offsets. Calibration for wind speed scaling is now fully centralized in the Arduino firmware (`WIND_CALIBRATION`), ensuring that absolute safety thresholds (e.g., the 5.0 m/s launch penalty) are calculated using hardware-verified baselines.
+*   **Cleanup**: Removed all calibration fragments, layouts, UseCases, and constants to lean out the application.
+
+### 🚀 Performance & Architecture Refinements
+*   **Constant-Time Charting ($O(1)$)**: Refactored chart plotting to eliminate expensive loops that shifted entire datasets every second.
+*   **The Single Heartbeat Architecture**: Atomic `ProcessedWeatherData` pipeline ensures that UI, charts, and thermal analysis are always in mathematical sync.
+*   **Activity Delegation**: Refactored `WSActivity` by extracting core responsibilities into specialized delegates: `PermissionDelegate`, `NavigationDelegate`, and `UIEventDelegate`.
 
 ### 🌍 Global Deployment & Compatibility
-*   **International Locale Support**: Implemented `parseDoubleSafe` logic to handle both dot (`.`) and comma (`,`) decimal separators. This prevents crashes and logic errors on devices set to European or South American locales.
-*   **Mandatory Validation Workflow**: Established a strict validation mandate in `GEMINI.md`: `./gradlew spotlessApply test build`. No change is considered verified until this sequence passes.
+*   **International Locale Support**: Handles both dot (`.`) and comma (`,`) decimal separators.
+*   **Mandatory Validation Workflow**: Established strict validation mandate: `./gradlew spotlessApply test build`.
 
 ## 🛠️ Bug Fixes & Refinements
-
-### 📡 Connection & Persistence
-*   **Reconnect Dialog Fix**: Resolved a lifecycle issue where the reconnection prompt failed to appear on startup. It now triggers immediately after permissions are granted.
-*   **Client-Only Optimization**: Removed server-socket logic and the `BLUETOOTH_ADVERTISE` permission request, as the app functions strictly as a client.
-*   **Data Deduplication**: Fixed a regression where multiple redundant points were plotted for a single data packet.
-
-### ⚙️ User Experience
-*   **Trend Visibility**: Trends (delta values) are now always calculated and displayed, even when the Launch Detector is toggled OFF, providing continuous diagnostics.
-*   **Non-Intrusive Bluetooth**: Changed the default setting to keep system Bluetooth active when exiting the app.
-
-### 🏛️ Activity Delegation (The Slim Activity)
-*   **Delegated Architecture (v3.4.0)**: Refactored the monolith `WSActivity` by extracting core responsibilities into specialized delegates: `PermissionDelegate`, `NavigationDelegate`, and `UIEventDelegate`.
-*   **Maintainability**: The activity is now 60% smaller, acting solely as a coordinator. This makes the UI logic much easier to test and extend without breaking unrelated features.
-
-## 🧪 Testing & Quality Control
-*   **Expanded Coverage**: Added `GetWeatherUiStateUseCaseTest` and updated `ThermalAnalyzerTest` to verify the heartbeat architecture.
-*   **Fake Objects**: Introduced `FakeWeatherConnectionController` and `FakeWeatherConnectionController` to maintain test integrity.
-*   **Test Status**: All 50+ unit tests passing.
-*   **Versioning**: Formally adopted **Semantic Versioning (SemVer)** with detailed [changelogs/](changelogs/).
+*   **OS Cleanup**: Purged all `.DS_Store` files and updated global gitignore to prevent repo clutter.
+*   **Test Status**: All 50+ unit tests passing, including new Bluetooth pairing tests.
 
 ### 🚀 Latest Deliverable
-*   **v3.4.0 APK**: Architectural release implementing Activity Delegation for improved maintainability and cleaner UI logic.
+*   **v3.5.0 APK**: Connectivity & UX release with in-app pairing support and a modernized, sectioned device list.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---
-*Generated by Gemini CLI - February 21, 2026*
+*Generated by Gemini CLI - March 1, 2026*
