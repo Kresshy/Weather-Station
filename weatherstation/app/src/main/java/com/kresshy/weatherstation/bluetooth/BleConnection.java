@@ -215,6 +215,12 @@ public class BleConnection implements Connection {
                 }
             };
 
+    // Well-known System Service UUIDs to ignore during dynamic discovery
+    private static final UUID SERVICE_GENERIC_ACCESS =
+            UUID.fromString("00001800-0000-1000-8000-00805f9b34fb");
+    private static final UUID SERVICE_GENERIC_ATTRIBUTE =
+            UUID.fromString("00001801-0000-1000-8000-00805f9b34fb");
+
     private boolean setupUartCharacteristic(BluetoothGatt gatt) {
         if (!PermissionHelper.hasConnectPermission(context)) return false;
 
@@ -236,37 +242,57 @@ public class BleConnection implements Connection {
             BluetoothGattService hm10 = gatt.getService(HM10_SERVICE_UUID);
             if (hm10 != null) {
                 rxCandidate = hm10.getCharacteristic(HM10_CHAR_UUID);
-                txCandidate = rxCandidate;
+                txCandidate = rxCandidate; // HM-10 uses same char for RX/TX
                 if (rxCandidate != null) {
                     Timber.d("Latching onto HM-10 UART profile");
                 }
             }
         }
 
-        // 3. Dynamic Fallback: Search by properties
+        // 3. Dynamic Fallback: Search by properties, excluding system services
         if (rxCandidate == null) {
             for (BluetoothGattService service : gatt.getServices()) {
+                UUID serviceUuid = service.getUuid();
+
+                // Skip well-known system services that might have Notify/Write (like Service
+                // Changed)
+                if (serviceUuid.equals(SERVICE_GENERIC_ACCESS)
+                        || serviceUuid.equals(SERVICE_GENERIC_ATTRIBUTE)) {
+                    continue;
+                }
+
+                BluetoothGattCharacteristic currentRx = null;
+                BluetoothGattCharacteristic currentTx = null;
+
                 for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
                     int props = characteristic.getProperties();
-                    if (rxCandidate == null
+
+                    // Look for Notify/Indicate (App RX)
+                    if (currentRx == null
                             && ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0
                                     || (props & BluetoothGattCharacteristic.PROPERTY_INDICATE)
                                             != 0)) {
-                        rxCandidate = characteristic;
+                        currentRx = characteristic;
                     }
-                    if (txCandidate == null
+
+                    // Look for Write (App TX)
+                    if (currentTx == null
                             && ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0
                                     || (props
                                                     & BluetoothGattCharacteristic
                                                             .PROPERTY_WRITE_NO_RESPONSE)
                                             != 0)) {
-                        txCandidate = characteristic;
+                        currentTx = characteristic;
                     }
                 }
-                if (rxCandidate != null && txCandidate != null) break;
-            }
-            if (rxCandidate != null) {
-                Timber.d("Latching onto Dynamic UART profile via %s", rxCandidate.getUuid());
+
+                // If we found a pair in this non-system service, use it
+                if (currentRx != null) {
+                    rxCandidate = currentRx;
+                    txCandidate = currentTx;
+                    Timber.i("Found potential Dynamic UART service: %s", serviceUuid);
+                    break;
+                }
             }
         }
 

@@ -21,7 +21,8 @@ Successfully expanded the application's connectivity layer to support modern Blu
 *   **Dynamic Discovery Status**: The discovery state is now bridged all the way from the hardware manager to the fragment UI, ensuring the scan spinner is always accurate.
 
 ## Bug Fixes & Refinements
-*   **Prioritized Dynamic BLE Discovery**: Refactored BleConnection to use a tiered discovery strategy. It now prioritizes well-known UART UUIDs (Nordic NUS, HM-10) while maintaining a dynamic property-based fallback for unknown modules.
+*   **System-Filtered Dynamic BLE Discovery**: Hardened the dynamic discovery logic to explicitly ignore Bluetooth system services (Generic Access, Generic Attribute). This prevents the app from accidentally latching onto management characteristics (like Service Changed) and ensures it finds the actual data UART service.
+*   **Prioritized Discovery Strategy**: Refactored BleConnection to use a tiered strategy: 1. Known Profiles (NUS, HM-10), 2. Non-System Dynamic Fallback.
 *   **BLE Notification Handshake**: Improved connection stability by moving the "connected" state transition to the onDescriptorWrite callback. This ensures that Client Characteristic Configuration Descriptor (CCCD) writes are confirmed by the hardware before data transmission begins, preventing GATT_BUSY race conditions.
 *   **BLE Reconnection Loop**: Fixed a critical bug in CompositeConnection where redundant connection requests triggered by discovery updates caused a continuous stop/start loop. Added checks for implementation type and MAC address to prevent this.
 *   **Installation Fix**: Built and signed a Debug APK to resolve "Problem parsing the package" issues encountered with unsigned releases on tester devices.
@@ -31,7 +32,7 @@ Successfully expanded the application's connectivity layer to support modern Blu
 *   **Emoji Ban**: Enforced a strict ban on emojis across the entire project codebase and documentation for professional consistency.
 
 ### Latest Deliverable
-*   **WeatherStation_v3.6.4_debug.apk**: Connectivity release with prioritized dynamic BLE discovery and robust notification handshaking.
+*   **WeatherStation_v3.6.5_debug.apk**: Connectivity release with system-filtered dynamic BLE discovery and improved handshake stability.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---
