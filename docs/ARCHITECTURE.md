@@ -2,15 +2,15 @@
 
 This document describes the high-level architecture of the Weather Station Android application, illustrating how components interact to provide real-time data monitoring and thermal analysis.
 
-## 🏗️ Architectural Overview
+##  Architectural Overview
 
 The application follows a modern **MVVM (Model-View-ViewModel)** pattern with a strict separation between the **Control Plane** and the **Data Plane**, and a **Delegated Activity** structure in the UI layer.
 
-### 🛂 Plane Separation
+###  Plane Separation
 1.  **Data Plane (`WeatherRepository`)**: Handles sensor data processing, protocol parsing, and analytical trend calculation using the **Single Heartbeat** pattern.
 2.  **Control Plane (`WeatherConnectionController`)**: Manages hardware lifecycles, Bluetooth adapter state, device discovery, and connection orchestration.
 
-### 🏛️ Delegated Activity Architecture
+###  Delegated Activity Architecture
 To prevent `WSActivity` from becoming a "God Object", its responsibilities are delegated to specialized components:
 - **`PermissionDelegate`**: Manages runtime permission requests and results.
 - **`NavigationDelegate`**: Orchestrates Toolbar, Drawer, and Jetpack Navigation.
@@ -92,7 +92,7 @@ graph TD
     WRI --> TA & WMP
 ```
 
-## 🧩 Key Components
+##  Key Components
 
 ### 1. **UI Layer (Delegates)**
 - **`PermissionDelegate`**: Centralizes the logic for Location, Bluetooth, and Notification permissions required across different Android versions.
@@ -111,7 +111,7 @@ The hardware orchestrator. Encapsulates all Bluetooth management and connection 
 ### 4. **Data Plane (`WeatherRepository`)**
 The analytical engine. Implements `HardwareEventListener` to process data from the Control Plane and produce the **Single Heartbeat**. Implements the "What" of the system.
 
-## 🧪 Quality Assurance & Testability
+##  Quality Assurance & Testability
 
 The application follows a **Test-Driven Development (TDD)** approach for all business and hardware logic.
 
@@ -128,7 +128,7 @@ The project uses JaCoCo to track test coverage. To generate a report:
 ```
 Report Location: `app/build/reports/jacoco/jacocoTestReport/html/index.html`
 
-## 📡 Data Flow Path (The Heartbeat)
+##  Data Flow Path (The Heartbeat)
 1. **Control Plane** syncs raw bytes into a string frame and passes it to the **Data Plane**.
 2. **Data Plane** parsed and calculates trends synchronously.
 3. **Data Plane** bundles everything into **`ProcessedWeatherData`** and posts it.

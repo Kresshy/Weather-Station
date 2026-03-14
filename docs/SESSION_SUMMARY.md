@@ -1,30 +1,30 @@
 # Weather Station - Development Summary (The BLE & Connectivity Update)
 
-## 🎯 Overview
+##  Overview
 Successfully expanded the application's connectivity layer to support modern Bluetooth Low Energy (BLE) hardware while resolving critical device discovery issues on Android 12+. The architecture has evolved into a **Unified Connection Plane**, seamlessly routing between Classic BT, BLE, and Simulated environments.
 
-## 🏗️ Architectural Evolution (Current Session - March 14, 2026)
+##  Architectural Evolution (Current Session - March 14, 2026)
 
-### 📡 The Unified Connection Plane (v3.6.1)
+###  The Unified Connection Plane (v3.6.1)
 *   **Unified Discovery**: Refactored `WeatherBluetoothManagerImpl` to scan for both Classic Bluetooth and BLE devices simultaneously. This ensures modern BLE-only hardware is detected alongside legacy HC-05 modules.
 *   **BLE Scanning Logic**: Integrated `BluetoothLeScanner` and `ScanCallback` into the discovery lifecycle. BLE scans are triggered in parallel with classic `startDiscovery()`.
 *   **Atomic PDU Parsing**: Both BLE and Classic Bluetooth use a unified buffer-based parsing strategy to ensure weather packets are never fragmented or lost during transmission.
 
-### 🧪 Discovery & Permission Resilience
+###  Discovery & Permission Resilience
 *   **BLE Scan Verification**: Added `bleScanResult_AddsToDiscoveredDevices` test case to `BluetoothDiscoveryTest.java` to verify the new LE scanner integration.
 *   **Android 12+ Discovery Fix**: Resolved a critical bug where unpaired devices were blocked by missing `ACCESS_FINE_LOCATION` checks on newer Android versions.
 *   **Receiver Security**: Hardened the application for Android 14+ by implementing `RECEIVER_NOT_EXPORTED` for all Bluetooth-related `BroadcastReceivers`.
 
-### 🎨 UI & UX Modernization
+###  UI & UX Modernization
 *   **Visual Scan Progress**: Introduced a bottom-docked discovery status bar with a progress spinner and "Searching..." text to provide clear scan feedback.
 *   **BLE Branding**: Added a visual "BLE" badge to the device list to help users identify modern Low Energy hardware.
 *   **Dynamic Discovery Status**: The discovery state is now bridged all the way from the hardware manager to the fragment UI, ensuring the scan spinner is always accurate.
 
-## 🛠️ Bug Fixes & Refinements
+##  Bug Fixes & Refinements
 *   **Missing BLE Discovery**: Fixed a major regression where BLE devices were not appearing in the scan list because the system only used Classic Bluetooth discovery.
 *   **LiveData Race Condition**: Fixed a bug where in-place list modifications were not triggering UI updates by ensuring new list instances are posted.
 
-### 🚀 Latest Deliverable
+###  Latest Deliverable
 *   **WeatherStation_v3.6.1.apk**: Connectivity release with unified Classic + BLE discovery, discovery fixes, and enhanced scan feedback.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 

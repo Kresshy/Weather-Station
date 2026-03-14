@@ -27,7 +27,7 @@ The dashboard uses a vertical stack of rows. Each row contains a primary **Line 
 +---------------------------------------+---------------+
 ```
 
-## 🧩 Component Details
+##  Component Details
 
 ### 1. Wind Compass (Top Right Sidebar)
 *   **Purpose:** Instant visualization of wind vector shifts.
@@ -48,7 +48,7 @@ The dashboard uses a vertical stack of rows. Each row contains a primary **Line 
 *   **X-Axis:** Rolling window of samples (e.g., 300 samples).
 *   **Interaction:** Full-width width allows for detailed analysis of air cycles.
 
-## 🛠️ Technical Implementation Strategy
+##  Technical Implementation Strategy
 
 1.  **Layout:** Use a `LinearLayout` (Vertical) for the main container.
 2.  **Rows:** Each row is a `LinearLayout` (Horizontal) or `GridLayout` with a weight-based split (e.g., 75% Chart / 25% Sidebar).

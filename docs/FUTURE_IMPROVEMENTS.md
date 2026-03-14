@@ -11,7 +11,7 @@ This document outlines potential hardware and software enhancements to evolve th
 
 ---
 
-## 📡 Hardware Sensor Enhancements
+##  Hardware Sensor Enhancements
 
 ### 1. High-Precision Barometric Pressure (BMP280 / BME280)
 *   **The Upgrade:** Integrate a sensor capable of measuring micro-changes in atmospheric pressure.
@@ -47,7 +47,7 @@ This document outlines potential hardware and software enhancements to evolve th
 
 ---
 
-## 🚀 Pro-Level Features (Airfield Experience)
+##  Pro-Level Features (Airfield Experience)
 
 ### 1. "Announcer" Mode (Text-to-Speech)
 *   **The Upgrade:** A background service using Android's Text-to-Speech (TTS) engine.
@@ -67,7 +67,7 @@ This document outlines potential hardware and software enhancements to evolve th
 
 ---
 
-## 🛠️ Required Technical Updates
+##  Required Technical Updates
 1.  **Protocol:** Update `WeatherMessageParser` to handle new JSON fields (`pressure`, `direction`).
 2.  **Analysis Logic:** Update `ThermalAnalyzer` to incorporate pressure-drop rates into the `LaunchDecision` algorithm.
 3.  **UI:** Add a Compass View and Variometer Audio Service to the Android application.

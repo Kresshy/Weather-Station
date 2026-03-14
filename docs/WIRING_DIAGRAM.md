@@ -2,7 +2,7 @@
 
 This diagram is based on the `arduino/weatherstation.ino` firmware. It is optimized for a single-sensor thermal detection setup.
 
-## 🧩 Components Needed
+##  Components Needed
 *   **Arduino Nano** (Atmega328P)
 *   **DS18B20** (High-precision Temperature Sensor)
 *   **HC-05 or HC-06** (Bluetooth Serial Module)

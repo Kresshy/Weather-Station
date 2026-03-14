@@ -5,7 +5,7 @@
 A comprehensive weather monitoring and thermal analysis system specifically designed for **free-flight aeromodelling**.
  By deploying static weather stations on an airfield, this system monitors critical changes in wind speed and temperature to detect thermal activity in real-time. Launching a model into a thermal detected by this system significantly increases elevation and extends flight times.
 
-## 🚀 Key Features
+##  Key Features
 
 - **Dual-Mode Bluetooth (Classic + BLE)**: Full support for both legacy HC-05 (Classic) and modern Nordic/HM-10 (BLE) weather station hardware.
 - **Real-time Discovery Status**: Visual feedback (progress spinner and "Searching..." status) during active device scans.
@@ -19,7 +19,7 @@ A comprehensive weather monitoring and thermal analysis system specifically desi
 - **Global Compatibility**: Full support for international locales (comma/dot decimal separators) and legacy data formats.
 - **High-Integrity Business Logic**: ~90% unit test coverage on core analytical and domain layers, verified via JaCoCo.
 
-## 🏗️ System Architecture
+##  System Architecture
 
 The application follows **Clean Architecture** principles with a decoupled **Control vs. Data Plane** design:
 
@@ -31,7 +31,7 @@ Detailed hardware documentation can be found here:
 - **[Standard Wiring Diagram](docs/WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
 - **[Future Hardware Roadmap](docs/FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades.
 
-## 🛡️ Data Integrity & Performance
+##  Data Integrity & Performance
 
 To ensure stable charts and reliable thermal analysis across various hardware generations (API 23-35), the system implements a multi-layer strategy:
 
@@ -62,7 +62,7 @@ Open the `/weatherstation` folder in Android Studio.
 - **Minimum SDK**: 23 (Android 6.0).
 - **Target SDK**: 35 (Android 15).
 
-## 🧪 Testing & Quality Control
+##  Testing & Quality Control
 
 The project uses a mandatory validation sequence for every change:
 ```bash
