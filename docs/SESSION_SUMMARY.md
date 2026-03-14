@@ -21,9 +21,9 @@ Successfully expanded the application's connectivity layer to support modern Blu
 *   **Dynamic Discovery Status**: The discovery state is now bridged all the way from the hardware manager to the fragment UI, ensuring the scan spinner is always accurate.
 
 ## Bug Fixes & Refinements
-*   **Dynamic BLE UART Discovery**: Refactored BleConnection to use property-based characteristic discovery instead of hardcoded vendor UUIDs. The application now automatically identifies and connects to any BLE-to-Serial module (Nordic NUS, HM-10, etc.) by searching for characteristics with Notify and Write properties.
+*   **Prioritized Dynamic BLE Discovery**: Refactored BleConnection to use a tiered discovery strategy. It now prioritizes well-known UART UUIDs (Nordic NUS, HM-10) while maintaining a dynamic property-based fallback for unknown modules.
+*   **BLE Notification Handshake**: Improved connection stability by moving the "connected" state transition to the onDescriptorWrite callback. This ensures that Client Characteristic Configuration Descriptor (CCCD) writes are confirmed by the hardware before data transmission begins, preventing GATT_BUSY race conditions.
 *   **BLE Reconnection Loop**: Fixed a critical bug in CompositeConnection where redundant connection requests triggered by discovery updates caused a continuous stop/start loop. Added checks for implementation type and MAC address to prevent this.
-*   **BLE Data Flow**: Resolved an issue where BLE devices connected but did not transmit data. Implemented Client Characteristic Configuration Descriptor (CCCD) writes to explicitly enable notifications for discovered characteristics.
 *   **Installation Fix**: Built and signed a Debug APK to resolve "Problem parsing the package" issues encountered with unsigned releases on tester devices.
 *   **Comprehensive Code Documentation**: Added JavaDoc to all 46 files in the codebase, ensuring every class and public method is documented following the "Why and How" standard.
 *   **Enhanced Test Coverage**: Backfilled unit tests for WeatherRepositoryImpl, BleConnection, BluetoothConnection, and ConnectToDeviceUseCase, bringing the total to 100 passing tests.
@@ -31,7 +31,7 @@ Successfully expanded the application's connectivity layer to support modern Blu
 *   **Emoji Ban**: Enforced a strict ban on emojis across the entire project codebase and documentation for professional consistency.
 
 ### Latest Deliverable
-*   **WeatherStation_v3.6.3_debug.apk**: Connectivity release with dynamic BLE UART discovery and connection loop fixes.
+*   **WeatherStation_v3.6.4_debug.apk**: Connectivity release with prioritized dynamic BLE discovery and robust notification handshaking.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---

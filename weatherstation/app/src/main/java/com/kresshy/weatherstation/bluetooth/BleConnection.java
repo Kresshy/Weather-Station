@@ -27,7 +27,7 @@ import javax.inject.Inject;
 
 /**
  * Manages Bluetooth Low Energy (BLE) connections to the Weather Station. Supports standard Nordic
- * UART service (NUS) commonly used in weather station modules.
+ * UART service (NUS) and other common BLE-to-Serial modules via dynamic property-based discovery.
  */
 public class BleConnection implements Connection {
 
@@ -36,6 +36,17 @@ public class BleConnection implements Connection {
     private ConnectionState state = ConnectionState.stopped;
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattCharacteristic uartWriteCharacteristic;
+
+    // Well-known UART Service UUIDs for prioritization
+    private static final UUID NUS_SERVICE_UUID =
+            UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    private static final UUID NUS_RX_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+    private static final UUID NUS_TX_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+
+    private static final UUID HM10_SERVICE_UUID =
+            UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
+    private static final UUID HM10_CHAR_UUID =
+            UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
 
     // CCCD UUID for enabling notifications
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID =
@@ -56,11 +67,6 @@ public class BleConnection implements Connection {
         this.context = context;
     }
 
-    /**
-     * Prepares the BLE service and initializes it to a disconnected state.
-     *
-     * @param listener The listener to receive hardware events.
-     */
     @Override
     public void start(HardwareEventListener listener) {
         this.listener = listener;
@@ -68,13 +74,6 @@ public class BleConnection implements Connection {
         listener.onConnectionStateChange(ConnectionState.disconnected);
     }
 
-    /**
-     * Establishes a GATT connection to the specified BLE hardware device. This starts service
-     * discovery upon success.
-     *
-     * @param device The target BluetoothDevice.
-     * @param listener The listener to receive hardware events.
-     */
     @Override
     public void connect(Parcelable device, HardwareEventListener listener) {
         if (!(device instanceof BluetoothDevice)) return;
@@ -92,7 +91,6 @@ public class BleConnection implements Connection {
         }
     }
 
-    /** Gracefully terminates the GATT connection and releases the Bluetooth resources. */
     @Override
     public void stop() {
         if (bluetoothGatt != null) {
@@ -108,11 +106,6 @@ public class BleConnection implements Connection {
         }
     }
 
-    /**
-     * Transmits raw bytes to the connected weather station via the discovered UART service.
-     *
-     * @param out The data payload to transmit.
-     */
     @Override
     public void write(byte[] out) {
         if (uartWriteCharacteristic != null
@@ -132,21 +125,11 @@ public class BleConnection implements Connection {
         }
     }
 
-    /**
-     * Provides the current status of the BLE connection.
-     *
-     * @return The current ConnectionState.
-     */
     @Override
     public ConnectionState getState() {
         return state;
     }
 
-    /**
-     * Updates the active event listener for this connection.
-     *
-     * @param listener The new listener.
-     */
     @Override
     public void setCallback(HardwareEventListener listener) {
         this.listener = listener;
@@ -182,18 +165,7 @@ public class BleConnection implements Connection {
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         Timber.d("BLE Services discovered for %s", gatt.getDevice().getAddress());
                         boolean found = setupUartCharacteristic(gatt);
-                        if (found) {
-                            Timber.d("BLE UART Service and Characteristics found.");
-                            state = ConnectionState.connected;
-                            mainHandler.post(
-                                    () -> {
-                                        if (listener != null) {
-                                            listener.onConnected();
-                                            listener.onConnectionStateChange(
-                                                    ConnectionState.connected);
-                                        }
-                                    });
-                        } else {
+                        if (!found) {
                             Timber.e(
                                     "No UART service found on BLE device: %s",
                                     gatt.getDevice().getAddress());
@@ -210,16 +182,28 @@ public class BleConnection implements Connection {
                 }
 
                 @Override
+                public void onDescriptorWrite(
+                        BluetoothGatt gatt,
+                        android.bluetooth.BluetoothGattDescriptor descriptor,
+                        int status) {
+                    if (CLIENT_CHARACTERISTIC_CONFIG_UUID.equals(descriptor.getUuid())
+                            && status == BluetoothGatt.GATT_SUCCESS) {
+                        Timber.i("BLE Notification channel confirmed ready.");
+                        state = ConnectionState.connected;
+                        mainHandler.post(
+                                () -> {
+                                    if (listener != null) {
+                                        listener.onConnected();
+                                        listener.onConnectionStateChange(ConnectionState.connected);
+                                    }
+                                });
+                    }
+                }
+
+                @Override
                 public void onCharacteristicChanged(
                         BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                    byte[] data;
-                    if (android.os.Build.VERSION.SDK_INT
-                            >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                        data = characteristic.getValue();
-                    } else {
-                        data = characteristic.getValue();
-                    }
-                    processRawData(data);
+                    processRawData(characteristic.getValue());
                 }
 
                 @Override
@@ -237,45 +221,58 @@ public class BleConnection implements Connection {
         BluetoothGattCharacteristic rxCandidate = null;
         BluetoothGattCharacteristic txCandidate = null;
 
-        // Dynamic Discovery: Iterate through all services and characteristics
-        // to find a functional UART-like pair (Notify + Write)
-        for (BluetoothGattService service : gatt.getServices()) {
-            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                int properties = characteristic.getProperties();
+        // 1. Try Known Profiles First (Nordic NUS)
+        BluetoothGattService nus = gatt.getService(NUS_SERVICE_UUID);
+        if (nus != null) {
+            rxCandidate = nus.getCharacteristic(NUS_RX_UUID);
+            txCandidate = nus.getCharacteristic(NUS_TX_UUID);
+            if (rxCandidate != null) {
+                Timber.d("Latching onto Nordic NUS profile");
+            }
+        }
 
-                // Look for a Notify/Indicate characteristic (Device -> App RX)
-                if (rxCandidate == null
-                        && ((properties & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0
-                                || (properties & BluetoothGattCharacteristic.PROPERTY_INDICATE)
-                                        != 0)) {
-                    rxCandidate = characteristic;
-                    Timber.d("Identified dynamic RX characteristic: %s", characteristic.getUuid());
-                }
-
-                // Look for a Write characteristic (App -> Device TX)
-                if (txCandidate == null
-                        && ((properties & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0
-                                || (properties
-                                                & BluetoothGattCharacteristic
-                                                        .PROPERTY_WRITE_NO_RESPONSE)
-                                        != 0)) {
-                    txCandidate = characteristic;
-                    Timber.d("Identified dynamic TX characteristic: %s", characteristic.getUuid());
+        // 2. Try HM-10
+        if (rxCandidate == null) {
+            BluetoothGattService hm10 = gatt.getService(HM10_SERVICE_UUID);
+            if (hm10 != null) {
+                rxCandidate = hm10.getCharacteristic(HM10_CHAR_UUID);
+                txCandidate = rxCandidate;
+                if (rxCandidate != null) {
+                    Timber.d("Latching onto HM-10 UART profile");
                 }
             }
+        }
 
-            // If we found a pair within the same service, we're likely good
-            if (rxCandidate != null && txCandidate != null) {
-                break;
+        // 3. Dynamic Fallback: Search by properties
+        if (rxCandidate == null) {
+            for (BluetoothGattService service : gatt.getServices()) {
+                for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                    int props = characteristic.getProperties();
+                    if (rxCandidate == null
+                            && ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0
+                                    || (props & BluetoothGattCharacteristic.PROPERTY_INDICATE)
+                                            != 0)) {
+                        rxCandidate = characteristic;
+                    }
+                    if (txCandidate == null
+                            && ((props & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0
+                                    || (props
+                                                    & BluetoothGattCharacteristic
+                                                            .PROPERTY_WRITE_NO_RESPONSE)
+                                            != 0)) {
+                        txCandidate = characteristic;
+                    }
+                }
+                if (rxCandidate != null && txCandidate != null) break;
+            }
+            if (rxCandidate != null) {
+                Timber.d("Latching onto Dynamic UART profile via %s", rxCandidate.getUuid());
             }
         }
 
         if (rxCandidate != null) {
-            uartWriteCharacteristic = txCandidate; // May be null if device is read-only
+            uartWriteCharacteristic = txCandidate;
             enableNotifications(gatt, rxCandidate);
-            Timber.i(
-                    "Dynamic UART profile established via Service: %s",
-                    rxCandidate.getService().getUuid());
             return true;
         }
 
