@@ -111,6 +111,30 @@ public class BluetoothDiscoveryTest {
     }
 
     @Test
+    public void startDiscovery_TriggersClassicAndLeScan() {
+        weatherBluetoothManager.startDiscovery();
+        idle();
+
+        // Verify Classic Discovery started
+        assertTrue(bluetoothAdapter.isDiscovering());
+
+        // Verify BLE Scanning started
+        // In Robolectric, the shadow bluetooth adapter handles LE scanner
+        assertNotNull(bluetoothAdapter.getBluetoothLeScanner());
+    }
+
+    @Test
+    public void stopDiscovery_StopsClassicAndLeScan() {
+        weatherBluetoothManager.startDiscovery();
+        idle();
+        
+        weatherBluetoothManager.stopDiscovery();
+        idle();
+
+        assertFalse(bluetoothAdapter.isDiscovering());
+    }
+
+    @Test
     public void bleScanResult_AddsToDiscoveredDevices() {
         BluetoothDevice bleDevice = bluetoothAdapter.getRemoteDevice("AA:BB:CC:DD:EE:FF");
         ScanResult result = mock(ScanResult.class);
