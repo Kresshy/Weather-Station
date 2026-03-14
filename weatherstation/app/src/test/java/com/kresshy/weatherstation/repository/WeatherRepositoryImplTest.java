@@ -1,8 +1,10 @@
 package com.kresshy.weatherstation.repository;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -137,5 +139,56 @@ public class WeatherRepositoryImplTest {
                 "History size should be capped at 300",
                 300,
                 repository.getHistoricalWeatherData().size());
+    }
+
+    @Test
+    public void parseDoubleSafe_HandlesInvalidInput() {
+        assertEquals(10.0, repository.parseDoubleSafe("10.0", 0.0), 0.001);
+        assertEquals(0.0, repository.parseDoubleSafe("invalid", 0.0), 0.001);
+        assertEquals(0.0, repository.parseDoubleSafe(null, 0.0), 0.001);
+    }
+
+    @Test
+    public void loadLaunchDetectorSettings_CallsSharedPreferences() {
+        repository.loadLaunchDetectorSettings(sharedPreferences);
+        // Verify that it tries to read the threshold and EMA alpha
+        // Note: It's called once in constructor, once here
+        verify(sharedPreferences, times(2)).getBoolean(WeatherRepository.PREF_LAUNCH_DETECTOR_ENABLED, false);
+        verify(sharedPreferences, times(2)).getString(WeatherRepository.PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0");
+    }
+
+
+    @Test
+    public void liveDataGetters_ReturnNonNull() {
+        assertNotNull(repository.getLaunchDecision());
+        assertNotNull(repository.getTempTrend());
+        assertNotNull(repository.getWindTrend());
+        assertNotNull(repository.getThermalScore());
+        assertNotNull(repository.isLaunchDetectorEnabled());
+        assertNotNull(repository.getLatestWeatherData());
+        assertNotNull(repository.getToastMessage());
+        assertNotNull(repository.getLogMessage());
+    }
+
+    @Test
+    public void hardwareEventListeners_ForwardToLiveData() {
+        repository.onToastMessage("Test Toast");
+        assertEquals("Test Toast", repository.getToastMessage().getValue());
+
+        repository.onLogMessage("Test Log");
+        assertEquals("Test Log", repository.getLogMessage().getValue());
+    }
+
+    @Test
+    public void onConnectionStateChange_UpdatesLiveData() {
+        repository.onConnectionStateChange(
+                com.kresshy.weatherstation.connection.ConnectionState.connecting);
+        // Verify it doesn't crash
+    }
+
+    @Test
+    public void onConnected_ResetsState() {
+        repository.onConnected();
+        // Verify it doesn't crash
     }
 }

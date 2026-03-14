@@ -100,4 +100,100 @@ public class WeatherViewModelTest {
         weatherViewModel.setPin(device, pin);
         verify(connectionController).setPin(device, pin);
     }
+
+    @Test
+    public void getDiscoveredDevices_delegatesToController() {
+        weatherViewModel.getDiscoveredDevices();
+        verify(connectionController).getDiscoveredDevices();
+    }
+
+    @Test
+    public void getUiState_delegatesToController() {
+        weatherViewModel.getUiState();
+        verify(connectionController).getUiState();
+    }
+
+    @Test
+    public void getLaunchDecision_delegatesToRepository() {
+        weatherViewModel.getLaunchDecision();
+        verify(weatherRepository).getLaunchDecision();
+    }
+
+    @Test
+    public void getTempTrend_delegatesToRepository() {
+        weatherViewModel.getTempTrend();
+        verify(weatherRepository).getTempTrend();
+    }
+
+    @Test
+    public void getWindTrend_delegatesToRepository() {
+        weatherViewModel.getWindTrend();
+        verify(weatherRepository).getWindTrend();
+    }
+
+    @Test
+    public void getThermalScore_delegatesToRepository() {
+        weatherViewModel.getThermalScore();
+        verify(weatherRepository).getThermalScore();
+    }
+
+    @Test
+    public void isLaunchDetectorEnabled_delegatesToRepository() {
+        weatherViewModel.isLaunchDetectorEnabled();
+        verify(weatherRepository).isLaunchDetectorEnabled();
+    }
+
+    @Test
+    public void getConnectionState_delegatesToController() {
+        weatherViewModel.getConnectionState();
+        verify(connectionController).getConnectionState();
+    }
+
+    @Test
+    public void getHistoricalWeatherData_delegatesToRepository() {
+        weatherViewModel.getHistoricalWeatherData();
+        verify(weatherRepository).getHistoricalWeatherData();
+    }
+
+    @Test
+    public void getToastMessage_delegatesToRepository() {
+        weatherViewModel.getToastMessage();
+        verify(weatherRepository).getToastMessage();
+    }
+
+    @Test
+    public void getLogMessage_delegatesToRepository() {
+        weatherViewModel.getLogMessage();
+        verify(weatherRepository).getLogMessage();
+    }
+
+    @Test
+    public void isDiscovering_delegatesToController() {
+        weatherViewModel.isDiscovering();
+        verify(connectionController).isDiscovering();
+    }
+
+    @Test
+    public void getDiscoveryStatus_delegatesToController() {
+        weatherViewModel.getDiscoveryStatus();
+        verify(connectionController).getDiscoveryStatus();
+    }
+
+    @Test
+    public void getBluetoothState_delegatesToController() {
+        weatherViewModel.getBluetoothState();
+        verify(connectionController).getBluetoothState();
+    }
+
+    @Test
+    public void getConnectedDeviceName_delegatesToController() {
+        weatherViewModel.getConnectedDeviceName();
+        verify(connectionController).getConnectedDeviceName();
+    }
+
+    @Test
+    public void getPairingRequest_delegatesToController() {
+        weatherViewModel.getPairingRequest();
+        verify(connectionController).getPairingRequest();
+    }
 }

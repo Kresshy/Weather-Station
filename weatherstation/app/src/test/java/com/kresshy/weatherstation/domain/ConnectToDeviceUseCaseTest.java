@@ -49,4 +49,15 @@ public class ConnectToDeviceUseCaseTest {
         verify(editor).apply();
         verify(connectionController).connectToDeviceAddress(address);
     }
+
+    @Test
+    public void execute_withSimulatorDevice_callsControllerWithAddress() {
+        com.kresshy.weatherstation.bluetooth.SimulatorDevice device =
+                new com.kresshy.weatherstation.bluetooth.SimulatorDevice("Sim", "SIMULATOR");
+        useCase.execute(device.getAddress());
+
+        verify(editor).putString("PREFERENCE_DEVICE_ADDRESS", "SIMULATOR");
+        verify(editor).apply();
+        verify(connectionController).connectToDeviceAddress("SIMULATOR");
+    }
 }

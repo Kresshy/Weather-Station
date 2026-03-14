@@ -3,6 +3,7 @@ package com.kresshy.weatherstation.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -97,7 +98,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
     }
 
-    private void loadLaunchDetectorSettings(SharedPreferences sharedPreferences) {
+    @VisibleForTesting
+    void loadLaunchDetectorSettings(SharedPreferences sharedPreferences) {
         boolean enabled = sharedPreferences.getBoolean(PREF_LAUNCH_DETECTOR_ENABLED, false);
         double sensitivity =
                 parseDoubleSafe(
@@ -117,7 +119,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
                 enabled, sensitivity);
     }
 
-    private double parseDoubleSafe(String value, double defaultValue) {
+    @VisibleForTesting
+    double parseDoubleSafe(String value, double defaultValue) {
         if (value == null) return defaultValue;
         try {
             // Replace comma with dot to handle European locales correctly

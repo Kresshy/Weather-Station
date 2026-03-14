@@ -12,6 +12,42 @@ import java.util.List;
 public class MeasurementTest {
 
     @Test
+    public void defaultConstructor_initializesCorrectly() {
+        Measurement m = new Measurement();
+        assertEquals(1, m.getVersion());
+        assertEquals(0, m.getNumberOfNodes());
+        assertNotNull(m.getMeasurements());
+        assertEquals(0, m.getMeasurements().size());
+    }
+
+    @Test
+    public void parameterizedConstructor_initializesCorrectly() {
+        Measurement m = new Measurement(2, 5);
+        assertEquals(2, m.getVersion());
+        assertEquals(5, m.getNumberOfNodes());
+        assertNotNull(m.getMeasurements());
+    }
+
+    @Test
+    public void addWeatherDataToMeasurement_addsSuccessfully() {
+        Measurement m = new Measurement();
+        WeatherData data = new WeatherData(1.0, 20.0, 0);
+        m.addWeatherDataToMeasurement(data);
+
+        assertEquals(1, m.getMeasurements().size());
+        assertEquals(data, m.getMeasurements().get(0));
+    }
+
+    @Test
+    public void hasNodeId_returnsCorrectResult() {
+        Measurement m = new Measurement();
+        m.addWeatherDataToMeasurement(new WeatherData(1.0, 20.0, 0));
+
+        assertEquals(true, m.hasNodeId(0));
+        assertEquals(false, m.hasNodeId(1));
+    }
+
+    @Test
     public void getWeatherDataForNode_returnsCorrectNode() {
         List<WeatherData> measurements = new ArrayList<>();
         measurements.add(new WeatherData(1.0, 20.0, 0));
@@ -37,5 +73,18 @@ public class MeasurementTest {
         Measurement m = new Measurement(1, 1, measurements);
 
         assertNull(m.getWeatherDataForNode(99));
+    }
+
+    @Test
+    public void setters_updateCorrectly() {
+        Measurement m = new Measurement();
+        m.setVersion(2);
+        m.setNumberOfNodes(5);
+        List<WeatherData> measurements = new ArrayList<>();
+        m.setMeasurements(measurements);
+
+        assertEquals(2, m.getVersion());
+        assertEquals(5, m.getNumberOfNodes());
+        assertEquals(measurements, m.getMeasurements());
     }
 }
