@@ -23,6 +23,7 @@ public class CompositeConnection implements Connection {
 
     private Connection activeConnection;
     private HardwareEventListener listener;
+    private Parcelable currentDevice;
 
     /**
      * Constructs a new CompositeConnection.
@@ -56,7 +57,9 @@ public class CompositeConnection implements Connection {
 
     /**
      * Routes a connection request to the appropriate implementation based on the provided device
-     * type (Classic, BLE, or Simulator). Stops any currently active connection before switching.
+     * type (Classic, BLE, or Simulator). Stops any currently active connection only if a switch in
+     * the underlying implementation is required (e.g., from Classic to BLE). This prevents
+     * reconnection loops when device metadata is updated during discovery.
      *
      * @param device The target device.
      * @param listener The listener to receive hardware events.
@@ -64,20 +67,25 @@ public class CompositeConnection implements Connection {
     @Override
     public void connect(Parcelable device, HardwareEventListener listener) {
         this.listener = listener;
-        Timber.d("connect() called with device: %s", device);
 
-        // 1. Stop any existing connection
-        if (activeConnection != null) {
-            Timber.d(
-                    "Stopping existing connection before switching: %s",
-                    activeConnection.getClass().getSimpleName());
-            activeConnection.stop();
+        // 1. Check if we are already trying to connect to this EXACT device address
+        if (currentDevice != null && isSameDevice(currentDevice, device)) {
+            if (activeConnection != null
+                    && activeConnection.getState() != ConnectionState.stopped) {
+                Timber.d("Already connecting/connected to this device: %s. Ignoring.", device);
+                return;
+            }
         }
 
-        // 2. Identify and delegate to the correct implementation
+        Timber.d("connect() called with device: %s", device);
+        currentDevice = device;
+
+        Connection targetConnection = null;
+
+        // 2. Identify the correct implementation
         if (device instanceof SimulatorDevice) {
             Timber.i("Routing to SimulatorConnection");
-            activeConnection = simulatorConnection;
+            targetConnection = simulatorConnection;
         } else if (device instanceof BluetoothDevice) {
             BluetoothDevice btDevice = (BluetoothDevice) device;
             int type = btDevice.getType();
@@ -87,16 +95,25 @@ public class CompositeConnection implements Connection {
                 Timber.i(
                         "Routing to BleConnection (Type: %d, Address: %s)",
                         type, btDevice.getAddress());
-                activeConnection = bleConnection;
+                targetConnection = bleConnection;
             } else {
                 Timber.i(
                         "Routing to BluetoothConnection (Classic) (Type: %d, Address: %s)",
                         type, btDevice.getAddress());
-                activeConnection = classicConnection;
+                targetConnection = classicConnection;
             }
         }
 
-        if (activeConnection != null) {
+        // 3. Only switch if the implementation changed
+        if (targetConnection != null) {
+            if (activeConnection != null && activeConnection != targetConnection) {
+                Timber.d(
+                        "Stopping existing connection before switching: %s -> %s",
+                        activeConnection.getClass().getSimpleName(),
+                        targetConnection.getClass().getSimpleName());
+                activeConnection.stop();
+            }
+            activeConnection = targetConnection;
             activeConnection.connect(device, listener);
         } else {
             Timber.e("Unknown device type: %s", device.getClass().getName());
@@ -110,7 +127,20 @@ public class CompositeConnection implements Connection {
             Timber.d("Stopping active connection: %s", activeConnection.getClass().getSimpleName());
             activeConnection.stop();
             activeConnection = null;
+            currentDevice = null;
         }
+    }
+
+    private boolean isSameDevice(Parcelable d1, Parcelable d2) {
+        if (d1 == null || d2 == null) return false;
+        if (d1.getClass() != d2.getClass()) return false;
+
+        if (d1 instanceof BluetoothDevice) {
+            return ((BluetoothDevice) d1).getAddress().equals(((BluetoothDevice) d2).getAddress());
+        } else if (d1 instanceof SimulatorDevice) {
+            return ((SimulatorDevice) d1).getAddress().equals(((SimulatorDevice) d2).getAddress());
+        }
+        return false;
     }
 
     /**

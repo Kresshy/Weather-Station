@@ -25,6 +25,7 @@
 - **Visualization**: Use **MPAndroidChart**. Maintain the $O(1)$ linear plotting optimization for legacy hardware stability.
 - **Persistence**: Use **SharedPreferences** for user settings and hardware preferences. Maintain key consistency across versions.
 - **Versioning**: Follow SemVer. Update the relevant markdown file in the `changelogs/` directory for every release.
+- **Build & Packaging**: When an APK is requested for testers, ALWAYS provide a **signed Debug APK** (e.g., `./gradlew assembleDebug`). Unsigned release APKs must never be provided as they cause "Problem parsing the package" errors on Android devices.
 
 ##  Mandatory Validation Workflow
 Every code change MUST be validated using this sequence:

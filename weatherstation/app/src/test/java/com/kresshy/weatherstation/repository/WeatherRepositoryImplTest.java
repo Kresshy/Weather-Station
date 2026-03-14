@@ -153,10 +153,11 @@ public class WeatherRepositoryImplTest {
         repository.loadLaunchDetectorSettings(sharedPreferences);
         // Verify that it tries to read the threshold and EMA alpha
         // Note: It's called once in constructor, once here
-        verify(sharedPreferences, times(2)).getBoolean(WeatherRepository.PREF_LAUNCH_DETECTOR_ENABLED, false);
-        verify(sharedPreferences, times(2)).getString(WeatherRepository.PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0");
+        verify(sharedPreferences, times(2))
+                .getBoolean(WeatherRepository.PREF_LAUNCH_DETECTOR_ENABLED, false);
+        verify(sharedPreferences, times(2))
+                .getString(WeatherRepository.PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0");
     }
-
 
     @Test
     public void liveDataGetters_ReturnNonNull() {

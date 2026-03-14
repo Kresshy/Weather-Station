@@ -127,7 +127,7 @@ public class BluetoothDiscoveryTest {
     public void stopDiscovery_StopsClassicAndLeScan() {
         weatherBluetoothManager.startDiscovery();
         idle();
-        
+
         weatherBluetoothManager.stopDiscovery();
         idle();
 

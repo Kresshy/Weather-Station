@@ -37,19 +37,9 @@ public class BleConnection implements Connection {
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattCharacteristic uartWriteCharacteristic;
 
-    // Standard Nordic UART Service (NUS) UUIDs
-    private static final UUID UART_SERVICE_UUID =
-            UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-    private static final UUID UART_RX_CHARACTERISTIC_UUID =
-            UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e"); // Device TX
-    private static final UUID UART_TX_CHARACTERISTIC_UUID =
-            UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e"); // Device RX
-
-    // Alternative common HM-10 UART UUIDs
-    private static final UUID HM10_SERVICE_UUID =
-            UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
-    private static final UUID HM10_CHAR_UUID =
-            UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+    // CCCD UUID for enabling notifications
+    private static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID =
+            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private final StringBuilder messageBuffer = new StringBuilder();
     private static final String END_MARKER = "_end";
@@ -244,32 +234,73 @@ public class BleConnection implements Connection {
     private boolean setupUartCharacteristic(BluetoothGatt gatt) {
         if (!PermissionHelper.hasConnectPermission(context)) return false;
 
-        // Try NUS
-        BluetoothGattService nusService = gatt.getService(UART_SERVICE_UUID);
-        if (nusService != null) {
-            BluetoothGattCharacteristic rxChar =
-                    nusService.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
-            uartWriteCharacteristic = nusService.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
-            if (rxChar != null) {
-                gatt.setCharacteristicNotification(rxChar, true);
-                // Also need to write to CCCD for notifications in a real app,
-                // but many modules enable it by default or use indications.
-                return true;
+        BluetoothGattCharacteristic rxCandidate = null;
+        BluetoothGattCharacteristic txCandidate = null;
+
+        // Dynamic Discovery: Iterate through all services and characteristics
+        // to find a functional UART-like pair (Notify + Write)
+        for (BluetoothGattService service : gatt.getServices()) {
+            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                int properties = characteristic.getProperties();
+
+                // Look for a Notify/Indicate characteristic (Device -> App RX)
+                if (rxCandidate == null
+                        && ((properties & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0
+                                || (properties & BluetoothGattCharacteristic.PROPERTY_INDICATE)
+                                        != 0)) {
+                    rxCandidate = characteristic;
+                    Timber.d("Identified dynamic RX characteristic: %s", characteristic.getUuid());
+                }
+
+                // Look for a Write characteristic (App -> Device TX)
+                if (txCandidate == null
+                        && ((properties & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0
+                                || (properties
+                                                & BluetoothGattCharacteristic
+                                                        .PROPERTY_WRITE_NO_RESPONSE)
+                                        != 0)) {
+                    txCandidate = characteristic;
+                    Timber.d("Identified dynamic TX characteristic: %s", characteristic.getUuid());
+                }
+            }
+
+            // If we found a pair within the same service, we're likely good
+            if (rxCandidate != null && txCandidate != null) {
+                break;
             }
         }
 
-        // Try HM-10
-        BluetoothGattService hm10Service = gatt.getService(HM10_SERVICE_UUID);
-        if (hm10Service != null) {
-            BluetoothGattCharacteristic hmChar = hm10Service.getCharacteristic(HM10_CHAR_UUID);
-            uartWriteCharacteristic = hmChar;
-            if (hmChar != null) {
-                gatt.setCharacteristicNotification(hmChar, true);
-                return true;
-            }
+        if (rxCandidate != null) {
+            uartWriteCharacteristic = txCandidate; // May be null if device is read-only
+            enableNotifications(gatt, rxCandidate);
+            Timber.i(
+                    "Dynamic UART profile established via Service: %s",
+                    rxCandidate.getService().getUuid());
+            return true;
         }
 
         return false;
+    }
+
+    private void enableNotifications(
+            BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+        if (!PermissionHelper.hasConnectPermission(context)) return;
+
+        gatt.setCharacteristicNotification(characteristic, true);
+        android.bluetooth.BluetoothGattDescriptor descriptor =
+                characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
+        if (descriptor != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                gatt.writeDescriptor(
+                        descriptor,
+                        android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            } else {
+                descriptor.setValue(
+                        android.bluetooth.BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                gatt.writeDescriptor(descriptor);
+            }
+            Timber.d("CCCD notification enabled for %s", characteristic.getUuid());
+        }
     }
 
     private void processRawData(byte[] data) {
