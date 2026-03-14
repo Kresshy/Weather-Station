@@ -24,6 +24,14 @@ public class UIEventDelegate {
     private boolean isReconnectDialogShowing = false;
     private Snackbar loadingSnackbar;
 
+    /**
+     * Constructs a new UIEventDelegate.
+     *
+     * @param activity The host activity.
+     * @param binding The activity's view binding.
+     * @param sharedPreferences Access to application settings.
+     * @param viewModel The view model for processing business logic.
+     */
     public UIEventDelegate(
             AppCompatActivity activity,
             ActivityMainBinding binding,
@@ -35,7 +43,10 @@ public class UIEventDelegate {
         this.viewModel = viewModel;
     }
 
-    /** Shows the reconnection dialog if a previous device is known and preferred. */
+    /**
+     * Evaluates whether a reconnection attempt should be offered to the user based on persistent
+     * settings and previous connection history. Displays a modal dialog if appropriate.
+     */
     public void showReconnectDialogIfNeeded() {
         if (isReconnectDialogShowing) return;
 
@@ -67,6 +78,10 @@ public class UIEventDelegate {
         }
     }
 
+    /**
+     * Displays an indefinite Snackbar to inform the user that a hardware connection is currently
+     * being established.
+     */
     public void showLoadingSnackbar() {
         if (loadingSnackbar == null) {
             loadingSnackbar =
@@ -78,10 +93,17 @@ public class UIEventDelegate {
         loadingSnackbar.show();
     }
 
+    /** Removes the active connection progress indicator from the screen. */
     public void dismissLoadingSnackbar() {
         if (loadingSnackbar != null) loadingSnackbar.dismiss();
     }
 
+    /**
+     * Displays a temporary error message to the user with an option to retry the failed operation.
+     *
+     * @param message The error description to display.
+     * @param retryAction The action to execute if the user taps "Retry".
+     */
     public void showErrorSnackbar(String message, Runnable retryAction) {
         dismissLoadingSnackbar();
         Snackbar.make(

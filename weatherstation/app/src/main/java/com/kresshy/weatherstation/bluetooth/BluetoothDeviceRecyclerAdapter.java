@@ -27,11 +27,23 @@ public class BluetoothDeviceRecyclerAdapter extends RecyclerView.Adapter<Recycle
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ITEM = 1;
 
+    /** Interface for handling click events on a specific Bluetooth device item. */
     public interface OnDeviceClickListener {
+        /**
+         * Called when a device item is clicked.
+         *
+         * @param device The clicked device (BluetoothDevice or SimulatorDevice).
+         */
         void onDeviceClick(Parcelable device);
     }
 
+    /** Interface for handling pair button clicks. */
     public interface OnPairClickListener {
+        /**
+         * Called when the "Pair" button for a device is clicked.
+         *
+         * @param device The device to pair with.
+         */
         void onPairClick(BluetoothDevice device);
     }
 
@@ -40,17 +52,31 @@ public class BluetoothDeviceRecyclerAdapter extends RecyclerView.Adapter<Recycle
     private OnDeviceClickListener deviceClickListener;
     private OnPairClickListener pairClickListener;
 
+    /**
+     * Wrapper class for items displayed in the RecyclerView, allowing for both headers and device
+     * items.
+     */
     public static class DisplayItem {
         public final int type;
         public final String headerTitle;
         public final Parcelable device;
 
+        /**
+         * Constructs a header item.
+         *
+         * @param headerTitle The title of the header.
+         */
         public DisplayItem(String headerTitle) {
             this.type = TYPE_HEADER;
             this.headerTitle = headerTitle;
             this.device = null;
         }
 
+        /**
+         * Constructs a device item.
+         *
+         * @param device The device to display.
+         */
         public DisplayItem(Parcelable device) {
             this.type = TYPE_ITEM;
             this.device = device;
@@ -58,24 +84,53 @@ public class BluetoothDeviceRecyclerAdapter extends RecyclerView.Adapter<Recycle
         }
     }
 
+    /**
+     * Constructs a new BluetoothDeviceRecyclerAdapter.
+     *
+     * @param context The application context.
+     * @param items The list of items to display.
+     */
     public BluetoothDeviceRecyclerAdapter(Context context, List<DisplayItem> items) {
         this.context = context;
         this.items = items;
     }
 
+    /**
+     * Sets the listener for device item click events.
+     *
+     * @param listener The listener instance.
+     */
     public void setOnDeviceClickListener(OnDeviceClickListener listener) {
         this.deviceClickListener = listener;
     }
 
+    /**
+     * Sets the listener for pair button click events.
+     *
+     * @param listener The listener instance.
+     */
     public void setOnPairClickListener(OnPairClickListener listener) {
         this.pairClickListener = listener;
     }
 
+    /**
+     * Determines the view type (header or item) for a given position.
+     *
+     * @param position The position in the list.
+     * @return The integer constant representing the view type.
+     */
     @Override
     public int getItemViewType(int position) {
         return items.get(position).type;
     }
 
+    /**
+     * Creates a new ViewHolder for the specified view type.
+     *
+     * @param parent The parent ViewGroup.
+     * @param viewType The type of view to create.
+     * @return A new ViewHolder instance.
+     */
     @NonNull @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -90,6 +145,12 @@ public class BluetoothDeviceRecyclerAdapter extends RecyclerView.Adapter<Recycle
         }
     }
 
+    /**
+     * Binds data to the specified ViewHolder.
+     *
+     * @param holder The ViewHolder to update.
+     * @param position The position of the item in the list.
+     */
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         DisplayItem item = items.get(position);
@@ -100,6 +161,11 @@ public class BluetoothDeviceRecyclerAdapter extends RecyclerView.Adapter<Recycle
         }
     }
 
+    /**
+     * Returns the total number of items in the list.
+     *
+     * @return The size of the items list.
+     */
     @Override
     public int getItemCount() {
         return items.size();

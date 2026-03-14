@@ -42,6 +42,10 @@ public class WeatherService extends LifecycleService {
     @Inject com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController;
     @Inject NotificationManager notificationManager;
 
+    /**
+     * Called when the service is first created. Initializes the notification channel, starts the
+     * foreground service, and sets up data observers to update the notification text.
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -67,6 +71,16 @@ public class WeatherService extends LifecycleService {
                         });
     }
 
+    /**
+     * Called by the system every time a client explicitly starts the service. Handles reconnection
+     * and stop requests based on the intent's action.
+     *
+     * @param intent The intent supplied to startService.
+     * @param flags Additional data about this start request.
+     * @param startId A unique integer representing this specific request to start.
+     * @return The return value indicates what semantics the system should use for the service's
+     *     current started state.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
@@ -156,6 +170,10 @@ public class WeatherService extends LifecycleService {
         }
     }
 
+    /**
+     * Called by the system to notify a Service that it is no longer used and is being removed.
+     * Ensures the Bluetooth connection is properly closed.
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();

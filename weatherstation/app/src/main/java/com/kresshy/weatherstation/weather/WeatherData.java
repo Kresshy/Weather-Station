@@ -10,7 +10,10 @@ public class WeatherData {
     private Date timestamp;
     private int rssi;
 
-    /** Default constructor initializing values to zero. */
+    /**
+     * Initializes a new WeatherData instance with default values (zeros). This is used for creating
+     * empty placeholders or during deserialization.
+     */
     public WeatherData() {
         this.windSpeed = 0;
         this.temperature = 0;
@@ -19,7 +22,8 @@ public class WeatherData {
     }
 
     /**
-     * Constructor for basic wind speed and temperature data.
+     * Initializes a new WeatherData instance with basic sensor readings. This is the most common
+     * constructor for single-node setups.
      *
      * @param windSpeed The wind speed in m/s.
      * @param temperature The temperature in degrees Celsius.
@@ -32,7 +36,8 @@ public class WeatherData {
     }
 
     /**
-     * Constructor for multi-node setups.
+     * Initializes a new WeatherData instance for a specific sensor node. Used in multi-node
+     * environments to identify the source of the data.
      *
      * @param windSpeed The wind speed in m/s.
      * @param temperature The temperature in degrees Celsius.
@@ -46,6 +51,8 @@ public class WeatherData {
     }
 
     /**
+     * Provides the wind speed measured at the sensor.
+     *
      * @return The wind speed in m/s.
      */
     public double getWindSpeed() {
@@ -53,6 +60,8 @@ public class WeatherData {
     }
 
     /**
+     * Updates the wind speed value.
+     *
      * @param windSpeed The wind speed in m/s to set.
      */
     public void setWindSpeed(double windSpeed) {
@@ -60,6 +69,8 @@ public class WeatherData {
     }
 
     /**
+     * Provides the temperature measured at the sensor.
+     *
      * @return The temperature in degrees Celsius.
      */
     public double getTemperature() {
@@ -67,6 +78,8 @@ public class WeatherData {
     }
 
     /**
+     * Updates the temperature value.
+     *
      * @param temperature The temperature in degrees Celsius to set.
      */
     public void setTemperature(double temperature) {
@@ -74,13 +87,17 @@ public class WeatherData {
     }
 
     /**
-     * @return The ID of the node that sent this data.
+     * Provides the unique ID of the node that sent this data.
+     *
+     * @return The ID of the node.
      */
     public int getNodeId() {
         return nodeId;
     }
 
     /**
+     * Updates the node identifier.
+     *
      * @param nodeId The node ID to set.
      */
     public void setNodeId(int nodeId) {
@@ -88,13 +105,17 @@ public class WeatherData {
     }
 
     /**
-     * @return The timestamp when this data was created/received.
+     * Provides the exact time when this data point was generated or received.
+     *
+     * @return The timestamp.
      */
     public Date getTimestamp() {
         return timestamp;
     }
 
     /**
+     * Updates the timestamp.
+     *
      * @param timestamp The timestamp to set.
      */
     public void setTimestamp(Date timestamp) {
@@ -102,6 +123,8 @@ public class WeatherData {
     }
 
     /**
+     * Provides the signal strength of the wireless connection when this data was received.
+     *
      * @return The Received Signal Strength Indication (RSSI) in dBm.
      */
     public int getRssi() {
@@ -109,6 +132,8 @@ public class WeatherData {
     }
 
     /**
+     * Updates the RSSI value.
+     *
      * @param rssi The RSSI value to set.
      */
     public void setRssi(int rssi) {

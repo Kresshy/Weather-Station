@@ -182,6 +182,12 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         discoveredDevices.setValue(newList);
     }
 
+    /**
+     * Constructs a new WeatherBluetoothManagerImpl.
+     *
+     * @param context The application context.
+     * @param bluetoothAdapter The system Bluetooth adapter.
+     */
     @Inject
     public WeatherBluetoothManagerImpl(
             @ApplicationContext Context context, @Nullable BluetoothAdapter bluetoothAdapter) {
@@ -192,6 +198,10 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Initiates a search for nearby Bluetooth devices. This starts both classic Bluetooth discovery
+     * and BLE scanning to find all compatible weather station hardware.
+     */
     @Override
     public void startDiscovery() {
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
@@ -222,6 +232,10 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Terminates any active Bluetooth discovery or BLE scan. This should be called when discovery
+     * is no longer needed to conserve battery power.
+     */
     @Override
     public void stopDiscovery() {
         if (bluetoothAdapter != null) {
@@ -241,6 +255,10 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Programmatically enables the Bluetooth adapter. This is used to ensure Bluetooth is active
+     * before attempting discovery or connection.
+     */
     @Override
     public void enableBluetooth() {
         if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
@@ -250,6 +268,10 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Programmatically disables the Bluetooth adapter. This can be used as part of an application
+     * exit sequence to restore hardware state.
+     */
     @Override
     public void disableBluetooth() {
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
@@ -259,16 +281,30 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Checks the current enablement state of the Bluetooth hardware.
+     *
+     * @return true if Bluetooth is enabled and ready for use.
+     */
     @Override
     public boolean isBluetoothEnabled() {
         return bluetoothAdapter != null && bluetoothAdapter.isEnabled();
     }
 
+    /**
+     * Provides an observable stream for the current discovery state.
+     *
+     * @return A LiveData object indicating if a scan is currently in progress.
+     */
     @Override
     public LiveData<Boolean> isDiscovering() {
         return isDiscovering;
     }
 
+    /**
+     * Sets up the necessary system-level broadcast receivers to monitor Bluetooth state and
+     * discovery results.
+     */
     @Override
     public void registerReceivers() {
         if (!isRegistered) {
@@ -292,6 +328,10 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Tears down the system-level broadcast receivers. This must be called when the manager is no
+     * longer active to prevent memory leaks.
+     */
     @Override
     public void unregisterReceivers() {
         if (isRegistered) {
@@ -305,27 +345,54 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Provides an observable list of all Bluetooth devices discovered during the current scan
+     * session.
+     *
+     * @return A LiveData list of discovered devices.
+     */
     @Override
     public LiveData<List<BluetoothDevice>> getDiscoveredDevices() {
         return discoveredDevices;
     }
 
+    /**
+     * Provides an observable string describing the current progress of the discovery operation.
+     *
+     * @return A LiveData string representing the discovery status.
+     */
     @Override
     public LiveData<String> getDiscoveryStatus() {
         return discoveryStatus;
     }
 
+    /**
+     * Provides an observable stream for the Bluetooth adapter's state (ON, OFF, etc.).
+     *
+     * @return A LiveData integer representing the adapter state.
+     */
     @Override
     public LiveData<Integer> getBluetoothState() {
         return bluetoothState;
     }
 
+    /**
+     * Retrieves the last recorded signal strength (RSSI) for a specific device.
+     *
+     * @param address The MAC address of the device.
+     * @return The signal strength in dBm, or 0 if unknown.
+     */
     @Override
     public int getDeviceRssi(String address) {
         Integer rssi = deviceRssiMap.get(address);
         return rssi != null ? rssi : 0;
     }
 
+    /**
+     * Attempts to initiate the standard Bluetooth pairing process with the specified device.
+     *
+     * @param device The Bluetooth device to pair with.
+     */
     @Override
     public void pairDevice(BluetoothDevice device) {
         if (PermissionHelper.hasConnectPermission(context)) {
@@ -333,6 +400,12 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Supplies a PIN code to the system for an ongoing pairing request.
+     *
+     * @param device The device requesting the PIN.
+     * @param pin The PIN code string.
+     */
     @Override
     public void setPin(BluetoothDevice device, String pin) {
         if (PermissionHelper.hasConnectPermission(context)) {
@@ -340,6 +413,12 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
         }
     }
 
+    /**
+     * Provides an observable event that triggers when a Bluetooth pairing request is received from
+     * a remote device.
+     *
+     * @return A LiveData object emitting the device that requested pairing.
+     */
     @Override
     public LiveData<BluetoothDevice> getPairingRequest() {
         return pairingRequest;

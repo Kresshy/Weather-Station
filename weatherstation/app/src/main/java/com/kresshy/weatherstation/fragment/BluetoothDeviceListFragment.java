@@ -26,8 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fragment that displays a list of paired and discovered Bluetooth devices. Allows the user to
- * select a device to initiate a weather station connection.
+ * Fragment that displays a list of paired and discovered Bluetooth devices. This component allows
+ * the user to discover nearby weather stations, initiate pairing, and select a device for
+ * connection.
  */
 @AndroidEntryPoint
 public class BluetoothDeviceListFragment extends Fragment {
@@ -38,19 +39,44 @@ public class BluetoothDeviceListFragment extends Fragment {
 
     private FragmentBluetoothdeviceBinding binding;
 
+    /** Required empty public constructor for fragment instantiation by the Android framework. */
     public BluetoothDeviceListFragment() {}
 
+    /**
+     * Called when the fragment is first attached to its context. This is the earliest point to
+     * initialize context-dependent resources.
+     *
+     * @param context The context the fragment is being attached to.
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
     }
 
+    /**
+     * Initializes the fragment's internal state. This is where the shared {@link WeatherViewModel}
+     * is retrieved to ensure data consistency across the application.
+     *
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
     }
 
+    /**
+     * Inflates the fragment's layout and initializes the data binding. This creates the visual
+     * structure of the device selection screen.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views.
+     * @param container If non-null, this is the parent view that the fragment's UI should be
+     *     attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state.
+     * @return The root view of the fragment's layout.
+     */
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,6 +84,14 @@ public class BluetoothDeviceListFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Sets up the RecyclerView and observes ViewModel data streams. This ensures the device list is
+     * dynamically updated as new hardware is discovered or pairing states change.
+     *
+     * @param view The View returned by {@link #onCreateView}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -166,9 +200,10 @@ public class BluetoothDeviceListFragment extends Fragment {
     }
 
     /**
-     * Updates the text displayed when the list is empty.
+     * Updates the text displayed when the device list is empty. This provides feedback to the user
+     * when no weather stations are currently available.
      *
-     * @param emptyText The message to show.
+     * @param emptyText The message to be displayed.
      */
     public void setEmptyText(CharSequence emptyText) {
         // Note: Empty view support for RecyclerView needs manual implementation
@@ -196,12 +231,20 @@ public class BluetoothDeviceListFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Cleans up the fragment's resources. This is essential to prevent memory leaks by nulling out
+     * the view binding.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
     }
 
+    /**
+     * Refreshes the list of paired devices when the fragment becomes visible. This ensures the user
+     * sees the most up-to-date information about known hardware.
+     */
     @Override
     public void onStart() {
         super.onStart();

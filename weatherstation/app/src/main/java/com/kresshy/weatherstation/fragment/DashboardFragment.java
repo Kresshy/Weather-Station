@@ -34,8 +34,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Fragment that displays real-time weather data in charts and indicates thermal suitability.
- * Features live-scrolling charts for wind speed and temperature, plus a 0-100 score indicator.
+ * Fragment that displays real-time weather data in charts and indicates thermal suitability. This
+ * component provides a visual dashboard for monitoring wind speed, temperature, and atmospheric
+ * trends, facilitating launch decisions for weather-sensitive activities.
  */
 @AndroidEntryPoint
 public class DashboardFragment extends Fragment {
@@ -54,16 +55,35 @@ public class DashboardFragment extends Fragment {
     private final SimpleDateFormat timeFormat =
             new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
+    /** Required empty public constructor for fragment instantiation by the Android framework. */
     public DashboardFragment() {
         // Required empty public constructor
     }
 
+    /**
+     * Initializes the fragment's internal state. This is where the shared {@link WeatherViewModel}
+     * is retrieved to access the centralized weather data and UI state.
+     *
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
     }
 
+    /**
+     * Inflates the fragment's layout and initializes the data binding. This creates the visual
+     * structure of the real-time weather dashboard.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views.
+     * @param container If non-null, this is the parent view that the fragment's UI should be
+     *     attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state.
+     * @return The root view of the fragment's layout.
+     */
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -71,6 +91,15 @@ public class DashboardFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Configures the charts, initializes history, and observes the unified UI state. This ensures
+     * that the dashboard is correctly set up and remains synchronized with the latest sensor data
+     * and connection status.
+     *
+     * @param view The View returned by {@link #onCreateView}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -352,12 +381,21 @@ public class DashboardFragment extends Fragment {
         chart.invalidate();
     }
 
+    /**
+     * Cleans up the fragment's resources. This is essential to prevent memory leaks by nulling out
+     * the view binding.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
     }
 
+    /**
+     * Called when the fragment is being detached from its activity. This is used to clear flags
+     * like keeping the screen on, ensuring the device can enter sleep mode when the dashboard is no
+     * longer visible.
+     */
     @Override
     public void onDetach() {
         super.onDetach();

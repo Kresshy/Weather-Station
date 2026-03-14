@@ -22,10 +22,21 @@ public class NavigationDelegate {
     private NavController navController;
     private AppBarConfiguration appBarConfiguration;
 
+    /** Interface for handling application exit requests from the navigation system. */
     public interface QuitHandler {
+        /**
+         * Called when the user explicitly requests to quit the application via the navigation menu.
+         */
         void onQuitRequested();
     }
 
+    /**
+     * Constructs a new NavigationDelegate.
+     *
+     * @param activity The host activity.
+     * @param binding The view binding for the activity.
+     * @param quitHandler The handler for application exit events.
+     */
     public NavigationDelegate(
             AppCompatActivity activity, ActivityMainBinding binding, QuitHandler quitHandler) {
         this.activity = activity;
@@ -68,14 +79,30 @@ public class NavigationDelegate {
                 });
     }
 
+    /**
+     * Handles the "up" navigation event (back arrow in toolbar).
+     *
+     * @return true if the navigation was handled by the NavController.
+     */
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(navController, appBarConfiguration);
     }
 
+    /**
+     * Delegates menu item selection to the navigation controller.
+     *
+     * @param item The selected menu item.
+     * @return true if the item was handled and navigation occurred.
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         return NavigationUI.onNavDestinationSelected(item, navController);
     }
 
+    /**
+     * Updates the text displayed in the activity's support action bar.
+     *
+     * @param title The title to set. If null, defaults to the current destination's label.
+     */
     public void setToolbarTitle(String title) {
         if (activity.getSupportActionBar() != null) {
             if (title != null) {
@@ -87,6 +114,11 @@ public class NavigationDelegate {
         }
     }
 
+    /**
+     * Provides access to the Jetpack Navigation Controller.
+     *
+     * @return The active NavController instance.
+     */
     public NavController getNavController() {
         return navController;
     }

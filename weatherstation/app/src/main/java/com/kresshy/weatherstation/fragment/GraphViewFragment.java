@@ -48,16 +48,34 @@ public class GraphViewFragment extends Fragment {
     private long totalPointsAddedWind = 0;
     private long totalPointsAddedTemp = 0;
 
+    /** Required empty public constructor for fragment instantiation. */
     public GraphViewFragment() {
         // Required empty public constructor
     }
 
+    /**
+     * Called when the fragment is first created. Initializes the WeatherViewModel.
+     *
+     * @param savedInstanceState If the fragment is being re-created from a previous saved state,
+     *     this is the state.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
     }
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the
+     *     fragment.
+     * @param container If non-null, this is the parent view that the fragment's UI should be
+     *     attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state as given here.
+     * @return Return the View for the fragment's UI, or null.
+     */
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,6 +83,14 @@ public class GraphViewFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Called immediately after {@link #onCreateView} has returned. Sets up charts, populates data
+     * from history, and begins observing UI state updates.
+     *
+     * @param view The View returned by {@link #onCreateView}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous
+     *     saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -249,12 +275,20 @@ public class GraphViewFragment extends Fragment {
         return set;
     }
 
+    /**
+     * Called when the view hierarchy associated with the fragment is being removed. Cleans up the
+     * binding to prevent memory leaks.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
     }
 
+    /**
+     * Called when the fragment is no longer attached to its activity. Ensures the screen-on flag is
+     * cleared to conserve battery.
+     */
     @Override
     public void onDetach() {
         super.onDetach();

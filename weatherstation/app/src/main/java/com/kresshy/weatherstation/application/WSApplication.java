@@ -19,6 +19,10 @@ public class WSApplication extends Application {
 
     @javax.inject.Inject FileLoggingTree fileLoggingTree;
 
+    /**
+     * Initializes the application. Sets up dependency injection, default preferences, and
+     * configures the Timber logging system based on user preferences.
+     */
     @Override
     public void onCreate() {
         super.onCreate();

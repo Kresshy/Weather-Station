@@ -19,19 +19,38 @@ import javax.inject.Singleton;
 @InstallIn(SingletonComponent.class)
 public abstract class RepositoryModule {
 
-    /** Binds the WeatherRepository implementation. */
+    /**
+     * Binds the WeatherRepository interface to its concrete implementation. This repository acts as
+     * the central hub for weather data and analysis.
+     *
+     * @param weatherRepositoryImpl The concrete repository implementation.
+     * @return The bound {@link WeatherRepository}.
+     */
     @Binds
     @Singleton
     public abstract WeatherRepository bindWeatherRepository(
             WeatherRepositoryImpl weatherRepositoryImpl);
 
-    /** Binds the WeatherBluetoothManager implementation. */
+    /**
+     * Binds the WeatherBluetoothManager interface to its concrete implementation. This manager
+     * handles low-level Bluetooth discovery and connectivity.
+     *
+     * @param weatherBluetoothManagerImpl The concrete Bluetooth manager implementation.
+     * @return The bound {@link WeatherBluetoothManager}.
+     */
     @Binds
     @Singleton
     public abstract WeatherBluetoothManager bindWeatherBluetoothManager(
             WeatherBluetoothManagerImpl weatherBluetoothManagerImpl);
 
-    /** Binds the WeatherConnectionController implementation. */
+    /**
+     * Binds the WeatherConnectionController interface to its concrete implementation. This
+     * controller orchestrates the connection lifecycle and provides state updates to the domain
+     * layer.
+     *
+     * @param weatherConnectionControllerImpl The concrete connection controller implementation.
+     * @return The bound {@link WeatherConnectionController}.
+     */
     @Binds
     @Singleton
     public abstract WeatherConnectionController bindWeatherConnectionController(

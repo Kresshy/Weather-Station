@@ -56,11 +56,21 @@ public class BleConnection implements Connection {
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    /**
+     * Constructs a new BleConnection.
+     *
+     * @param context The application context.
+     */
     @Inject
     public BleConnection(@dagger.hilt.android.qualifiers.ApplicationContext Context context) {
         this.context = context;
     }
 
+    /**
+     * Prepares the BLE service and initializes it to a disconnected state.
+     *
+     * @param listener The listener to receive hardware events.
+     */
     @Override
     public void start(HardwareEventListener listener) {
         this.listener = listener;
@@ -68,6 +78,13 @@ public class BleConnection implements Connection {
         listener.onConnectionStateChange(ConnectionState.disconnected);
     }
 
+    /**
+     * Establishes a GATT connection to the specified BLE hardware device. This starts service
+     * discovery upon success.
+     *
+     * @param device The target BluetoothDevice.
+     * @param listener The listener to receive hardware events.
+     */
     @Override
     public void connect(Parcelable device, HardwareEventListener listener) {
         if (!(device instanceof BluetoothDevice)) return;
@@ -85,6 +102,7 @@ public class BleConnection implements Connection {
         }
     }
 
+    /** Gracefully terminates the GATT connection and releases the Bluetooth resources. */
     @Override
     public void stop() {
         if (bluetoothGatt != null) {
@@ -100,6 +118,11 @@ public class BleConnection implements Connection {
         }
     }
 
+    /**
+     * Transmits raw bytes to the connected weather station via the discovered UART service.
+     *
+     * @param out The data payload to transmit.
+     */
     @Override
     public void write(byte[] out) {
         if (uartWriteCharacteristic != null
@@ -119,11 +142,21 @@ public class BleConnection implements Connection {
         }
     }
 
+    /**
+     * Provides the current status of the BLE connection.
+     *
+     * @return The current ConnectionState.
+     */
     @Override
     public ConnectionState getState() {
         return state;
     }
 
+    /**
+     * Updates the active event listener for this connection.
+     *
+     * @param listener The new listener.
+     */
     @Override
     public void setCallback(HardwareEventListener listener) {
         this.listener = listener;

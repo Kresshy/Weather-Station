@@ -27,7 +27,8 @@ public class Resource<T> {
     }
 
     /**
-     * Creates a Success resource.
+     * Creates a Success resource. This is used when an operation has completed successfully and has
+     * a valid data payload to return.
      *
      * @param data The result data.
      * @return A Resource with SUCCESS status.
@@ -37,7 +38,8 @@ public class Resource<T> {
     }
 
     /**
-     * Creates an Error resource.
+     * Creates an Error resource. This is used when an operation has failed, providing an error
+     * message and potentially returning stale or cached data.
      *
      * @param msg Error message.
      * @param data Previous/cached data if available.
@@ -48,7 +50,8 @@ public class Resource<T> {
     }
 
     /**
-     * Creates a Loading resource.
+     * Creates a Loading resource. This is used when an operation is currently in progress, allowing
+     * the UI to show a progress indicator while still having access to previous data.
      *
      * @param data Previous/cached data if available.
      * @return A Resource with LOADING status.

@@ -12,7 +12,10 @@ public class Measurement {
     private int numberOfNodes;
     private List<WeatherData> measurements;
 
-    /** Default constructor. */
+    /**
+     * Initializes a new Measurement batch with default values. This is primarily used by the JSON
+     * deserializer.
+     */
     public Measurement() {
         this.version = 1;
         this.numberOfNodes = 0;
@@ -20,6 +23,8 @@ public class Measurement {
     }
 
     /**
+     * Initializes a new Measurement batch with a specified version and node count.
+     *
      * @param version Protocol version.
      * @param numberOfNodes Number of sensor nodes included.
      */
@@ -30,6 +35,8 @@ public class Measurement {
     }
 
     /**
+     * Initializes a new Measurement batch with a complete set of data points.
+     *
      * @param version Protocol version.
      * @param numberOfNodes Number of sensor nodes.
      * @param measurements List of weather data points.
@@ -41,7 +48,8 @@ public class Measurement {
     }
 
     /**
-     * Adds a new data point to this measurement batch.
+     * Adds a new data point to this measurement batch. Used when aggregating results from multiple
+     * sensors.
      *
      * @param weatherData The weather data to add.
      */
@@ -50,7 +58,8 @@ public class Measurement {
     }
 
     /**
-     * Finds weather data for a specific sensor node.
+     * Finds weather data for a specific sensor node. This is used when the application needs to
+     * display or process data from a specific physical sensor.
      *
      * @param nodeId The ID of the node to find.
      * @return The WeatherData for that node, or null if not found.

@@ -32,6 +32,18 @@ public class WeatherViewModel extends ViewModel {
     private final androidx.lifecycle.MutableLiveData<List<android.os.Parcelable>> pairedDevices =
             new androidx.lifecycle.MutableLiveData<>(new java.util.ArrayList<>());
 
+    /**
+     * Initializes the ViewModel with its required dependencies. This ViewModel acts as the central
+     * data hub for the dashboard UI.
+     *
+     * @param weatherRepository Data repository for weather measurements.
+     * @param connectionController Controller for managing Bluetooth connections.
+     * @param getWeatherUiStateUseCase Use case for aggregating UI state.
+     * @param connectToDeviceUseCase Use case for initiating connections.
+     * @param getPairedDevicesUseCase Use case for retrieving system-paired devices.
+     * @param manageDiscoveryUseCase Use case for Bluetooth device discovery.
+     * @param pairDeviceUseCase Use case for pairing new hardware.
+     */
     @Inject
     public WeatherViewModel(
             WeatherRepository weatherRepository,
@@ -51,6 +63,9 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable stream of the unified UI state. Fragments should observe this to
+     * update the entire dashboard at once.
+     *
      * @return Observable unified UI state containing all dashboard data.
      */
     public LiveData<WeatherUiState> getWeatherUiState() {
@@ -58,6 +73,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable list of devices currently paired with the Android system.
+     *
      * @return Observable list of paired Bluetooth devices.
      */
     public LiveData<List<android.os.Parcelable>> getPairedDevices() {
@@ -65,34 +82,46 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable list of devices found during an active Bluetooth scan.
+     *
      * @return List of discovered (unpaired) Bluetooth devices.
      */
     public LiveData<List<android.os.Parcelable>> getDiscoveredDevices() {
         return connectionController.getDiscoveredDevices();
     }
 
-    /** Refreshes the list of paired devices. */
+    /**
+     * Triggers a refresh of the paired devices list from the Android system. This should be called
+     * when the device selection UI is opened.
+     */
     public void refreshPairedDevices() {
         pairedDevices.setValue(getPairedDevicesUseCase.execute());
     }
 
-    /** Clears the list of discovered devices. */
+    /**
+     * Clears any results found during the last Bluetooth scan. Used to reset the UI before a new
+     * search.
+     */
     public void clearDiscoveredDevices() {
         manageDiscoveryUseCase.clearResults();
     }
 
-    /** Starts scanning for new Bluetooth devices. */
+    /**
+     * Starts a new Bluetooth discovery scan. This is needed to find weather stations that are in
+     * pairing mode but not yet known to the system.
+     */
     public void startDiscovery() {
         manageDiscoveryUseCase.startDiscovery();
     }
 
-    /** Stops the active Bluetooth scan. */
+    /** Stops the currently active Bluetooth scan to conserve power and bandwidth. */
     public void stopDiscovery() {
         manageDiscoveryUseCase.stopDiscovery();
     }
 
     /**
-     * Attempts to connect to a specific Bluetooth device by its MAC address.
+     * Attempts to connect to a specific Bluetooth device by its MAC address. This initiates the
+     * data link required for real-time monitoring.
      *
      * @param address The MAC address of the weather station.
      */
@@ -101,6 +130,9 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable state for the connection process. Useful for showing loading spinners
+     * or error dialogs during initial setup.
+     *
      * @return Observable UI state (LOADING, SUCCESS, ERROR).
      */
     public LiveData<Resource<Void>> getUiState() {
@@ -108,6 +140,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the current launch suitability decision.
+     *
      * @return Observable launch decision based on current air quality.
      */
     public LiveData<WeatherRepository.LaunchDecision> getLaunchDecision() {
@@ -115,6 +149,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the current temperature trend.
+     *
      * @return Observable temperature trend.
      */
     public LiveData<Double> getTempTrend() {
@@ -122,6 +158,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the current wind speed trend.
+     *
      * @return Observable wind speed trend.
      */
     public LiveData<Double> getWindTrend() {
@@ -129,6 +167,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the current thermal suitability score.
+     *
      * @return Observable 0-100 thermal suitability score.
      */
     public LiveData<Integer> getThermalScore() {
@@ -136,6 +176,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Checks if the analytical engine for thermal detection is enabled.
+     *
      * @return Observable boolean for launch detector enabled state.
      */
     public LiveData<Boolean> isLaunchDetectorEnabled() {
@@ -143,6 +185,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the current Bluetooth connection state.
+     *
      * @return Observable connection state (connected, disconnected, etc.).
      */
     public LiveData<ConnectionState> getConnectionState() {
@@ -150,6 +194,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Retrieves historical weather data for graph visualization.
+     *
      * @return List of historical weather data points for chart persistence.
      */
     public List<WeatherData> getHistoricalWeatherData() {
@@ -157,6 +203,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable stream for transient UI notifications.
+     *
      * @return Observable toast messages for UI notifications.
      */
     public LiveData<String> getToastMessage() {
@@ -164,6 +212,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable stream for debug logging.
+     *
      * @return Observable log messages for debugging.
      */
     public LiveData<String> getLogMessage() {
@@ -171,6 +221,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Checks if a Bluetooth scan is currently in progress.
+     *
      * @return true if Bluetooth discovery is currently running.
      */
     public LiveData<Boolean> isDiscovering() {
@@ -178,6 +230,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides a status string explaining the current discovery phase.
+     *
      * @return The current discovery status message (e.g., "Searching...").
      */
     public LiveData<String> getDiscoveryStatus() {
@@ -185,6 +239,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the current state of the Bluetooth hardware.
+     *
      * @return Observable Bluetooth adapter state (ON/OFF).
      */
     public LiveData<Integer> getBluetoothState() {
@@ -192,6 +248,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides the name of the currently connected weather station.
+     *
      * @return Observable currently connected device name.
      */
     public LiveData<String> getConnectedDeviceName() {
@@ -199,7 +257,7 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
-     * Initiates pairing with a Bluetooth device.
+     * Initiates a pairing request with a specific Bluetooth device.
      *
      * @param device The device to pair with.
      */
@@ -208,7 +266,7 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
-     * Sets the PIN for a pairing request.
+     * Supplies a PIN code to respond to a pairing challenge.
      *
      * @param device The device requesting the PIN.
      * @param pin The PIN code.
@@ -218,6 +276,8 @@ public class WeatherViewModel extends ViewModel {
     }
 
     /**
+     * Provides an observable stream of incoming pairing requests.
+     *
      * @return Observable event when a pairing request is received.
      */
     public LiveData<android.bluetooth.BluetoothDevice> getPairingRequest() {

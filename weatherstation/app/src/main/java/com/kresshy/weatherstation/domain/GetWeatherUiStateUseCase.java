@@ -10,9 +10,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * UseCase that aggregates multiple data streams from the repository into a single unified {@link
- * WeatherUiState}. This centralizes the logic for merging connection status, sensor data, and
- * thermal analysis results.
+ * UseCase that aggregates multiple data streams into a single unified {@link WeatherUiState}. This
+ * component centralizes the complex logic of merging raw sensor readings, connection status, and
+ * analytical results into a format optimized for UI consumption.
  */
 @Singleton
 public class GetWeatherUiStateUseCase {
@@ -22,6 +22,14 @@ public class GetWeatherUiStateUseCase {
             connectionController;
     private final MediatorLiveData<WeatherUiState> uiState = new MediatorLiveData<>();
 
+    /**
+     * Initializes the UseCase and sets up the reactive data streams. It orchestrates multiple
+     * LiveData sources to ensure the UI state is always consistent and reflects the latest hardware
+     * and analysis updates.
+     *
+     * @param repository The repository providing raw and processed weather data.
+     * @param connectionController The controller providing connection state and device details.
+     */
     @Inject
     public GetWeatherUiStateUseCase(
             WeatherRepository repository,
@@ -44,7 +52,10 @@ public class GetWeatherUiStateUseCase {
     }
 
     /**
-     * @return A LiveData stream of the unified UI state.
+     * Provides the unified UI state stream. This is used by the fragments to observe all relevant
+     * weather and connection data through a single, stable interface.
+     *
+     * @return A LiveData stream of the unified {@link WeatherUiState}.
      */
     public LiveData<WeatherUiState> execute() {
         return uiState;

@@ -50,8 +50,10 @@ public class BluetoothConnection implements Connection {
     private final BluetoothAdapter bluetoothAdapter;
 
     /**
+     * Constructs a new BluetoothConnection.
+     *
      * @param context The application context.
-     * @param bluetoothAdapter Injected Bluetooth adapter.
+     * @param bluetoothAdapter The system Bluetooth adapter.
      */
     @Inject
     public BluetoothConnection(
@@ -63,9 +65,10 @@ public class BluetoothConnection implements Connection {
     }
 
     /**
-     * Starts the connection service, listening for incoming connections.
+     * Prepares the connection service. This clears any active background tasks and sets the initial
+     * state to disconnected.
      *
-     * @param listener The listener to notify.
+     * @param listener The listener to receive hardware events.
      */
     public synchronized void start(HardwareEventListener listener) {
         Timber.d("START SERVICE");
@@ -77,10 +80,10 @@ public class BluetoothConnection implements Connection {
     }
 
     /**
-     * Attempts to connect to a specific Bluetooth device.
+     * Initiates an outgoing RFCOMM connection to the specified Bluetooth device.
      *
-     * @param device The remote BluetoothDevice.
-     * @param listener The listener to notify.
+     * @param device The target Bluetooth device.
+     * @param listener The listener to receive hardware events.
      */
     public synchronized void connect(Parcelable device, HardwareEventListener listener) {
         Timber.d("connect to: " + device);
@@ -99,9 +102,10 @@ public class BluetoothConnection implements Connection {
     }
 
     /**
-     * Transition to the connected state once a socket is established.
+     * Finalizes the connection process once an RFCOMM socket is successfully established. This
+     * transitions the service to the connected state and begins data monitoring.
      *
-     * @param socket The active BluetoothSocket.
+     * @param socket The connected BluetoothSocket.
      */
     public synchronized void connected(BluetoothSocket socket) {
         Timber.d("connected");
@@ -130,7 +134,7 @@ public class BluetoothConnection implements Connection {
         listener.onConnectionStateChange(ConnectionState.connected);
     }
 
-    /** Stops all active threads and closes sockets. */
+    /** Shuts down all active connection tasks and closes the underlying sockets and streams. */
     public synchronized void stop() {
         Timber.d("stop");
         cancelAllTasks();
@@ -159,9 +163,9 @@ public class BluetoothConnection implements Connection {
     }
 
     /**
-     * Sends data to the connected device.
+     * Transmits raw bytes to the connected weather station.
      *
-     * @param out The byte array to transmit.
+     * @param out The data payload to send.
      */
     public void write(byte[] out) {
         ConnectedRunnable r;
@@ -175,12 +179,19 @@ public class BluetoothConnection implements Connection {
     }
 
     /**
-     * @return Current connection state.
+     * Provides the current state of the Bluetooth connection.
+     *
+     * @return The current ConnectionState.
      */
     public synchronized ConnectionState getState() {
         return state;
     }
 
+    /**
+     * Updates the active event listener.
+     *
+     * @param listener The new listener.
+     */
     @Override
     public void setCallback(HardwareEventListener listener) {
         this.listener = listener;

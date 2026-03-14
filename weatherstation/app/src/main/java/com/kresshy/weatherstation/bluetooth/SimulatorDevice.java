@@ -55,11 +55,24 @@ public class SimulatorDevice implements Parcelable {
         return address;
     }
 
+    /**
+     * Describes the kinds of special objects contained in this Parcelable instance's marshaled
+     * representation.
+     *
+     * @return A bitmask indicating the set of special object types marshaled by this Parcelable
+     *     object instance.
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Flattens this object into a Parcel.
+     *
+     * @param dest The Parcel in which the object should be written.
+     * @param flags Additional flags about how the object should be written.
+     */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);

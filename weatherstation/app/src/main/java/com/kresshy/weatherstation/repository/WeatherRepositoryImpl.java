@@ -55,7 +55,16 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
     private static final double MAX_TEMP_JUMP = 10.0; // Max physically possible jump in deg/sec
     private WeatherData lastSaneData = null;
 
-    /** Primary constructor used by Hilt. */
+    /**
+     * Initializes the WeatherRepository implementation. Connects to the hardware controller, loads
+     * initial settings, and sets up preference listeners for real-time configuration updates.
+     *
+     * @param context Application context.
+     * @param thermalAnalyzer Component for calculating thermal trends.
+     * @param messageParser Component for parsing raw sensor messages.
+     * @param sharedPreferences Persistent storage for user settings.
+     * @param connectionController Component managing the Bluetooth connection.
+     */
     @Inject
     public WeatherRepositoryImpl(
             @ApplicationContext Context context,
@@ -119,42 +128,82 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
         }
     }
 
+    /**
+     * Returns an observable stream of processed weather data.
+     *
+     * @return A LiveData containing processed data and trends.
+     */
     @Override
     public LiveData<com.kresshy.weatherstation.weather.ProcessedWeatherData>
             getProcessedWeatherData() {
         return processedWeatherData;
     }
 
+    /**
+     * Returns an observable stream of the launch decision.
+     *
+     * @return A LiveData containing the launch decision.
+     */
     @Override
     public LiveData<LaunchDecision> getLaunchDecision() {
         return launchDecision;
     }
 
+    /**
+     * Returns an observable stream of the temperature trend.
+     *
+     * @return A LiveData containing the temperature trend.
+     */
     @Override
     public LiveData<Double> getTempTrend() {
         return tempTrend;
     }
 
+    /**
+     * Returns an observable stream of the wind speed trend.
+     *
+     * @return A LiveData containing the wind speed trend.
+     */
     @Override
     public LiveData<Double> getWindTrend() {
         return windTrend;
     }
 
+    /**
+     * Returns an observable stream of the thermal score.
+     *
+     * @return A LiveData containing the thermal score.
+     */
     @Override
     public LiveData<Integer> getThermalScore() {
         return thermalScore;
     }
 
+    /**
+     * Checks if the launch detector is currently enabled.
+     *
+     * @return A LiveData indicating the enabled state.
+     */
     @Override
     public LiveData<Boolean> isLaunchDetectorEnabled() {
         return launchDetectorEnabled;
     }
 
+    /**
+     * Returns an observable stream of the latest raw weather data.
+     *
+     * @return A LiveData containing the latest measurement.
+     */
     @Override
     public LiveData<WeatherData> getLatestWeatherData() {
         return latestWeatherData;
     }
 
+    /**
+     * Retrieves a copy of the historical weather data points.
+     *
+     * @return A list of historical data.
+     */
     @Override
     public List<WeatherData> getHistoricalWeatherData() {
         synchronized (historicalData) {
@@ -162,11 +211,21 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
         }
     }
 
+    /**
+     * Returns an observable stream of toast messages for the UI.
+     *
+     * @return A LiveData containing toast messages.
+     */
     @Override
     public LiveData<String> getToastMessage() {
         return toastMessage;
     }
 
+    /**
+     * Returns an observable stream of log messages for debugging.
+     *
+     * @return A LiveData containing log messages.
+     */
     @Override
     public LiveData<String> getLogMessage() {
         return logMessage;
@@ -223,21 +282,37 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
         }
     }
 
+    /**
+     * Responds to changes in the hardware connection state. Currently handled by the controller.
+     *
+     * @param state The new connection state.
+     */
     @Override
     public void onConnectionStateChange(ConnectionState state) {
         // Handled by Controller
     }
 
+    /** Called when the hardware connection is successfully established. */
     @Override
     public void onConnected() {
         // Handled by Controller
     }
 
+    /**
+     * Posts a toast message to be displayed on the UI.
+     *
+     * @param message The message to display.
+     */
     @Override
     public void onToastMessage(String message) {
         toastMessage.postValue(message);
     }
 
+    /**
+     * Posts a log message to be displayed in the debug console.
+     *
+     * @param message The log entry.
+     */
     @Override
     public void onLogMessage(String message) {
         logMessage.postValue(message);

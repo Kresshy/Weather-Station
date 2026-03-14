@@ -16,102 +16,154 @@ import java.util.List;
 public interface WeatherConnectionController {
 
     /**
-     * @return Observable high-level UI status (LOADING, SUCCESS, ERROR).
+     * Provides an observable high-level UI status. This is used by UI components to show loading
+     * indicators, success states, or error messages during connection operations.
+     *
+     * @return LiveData containing the UI status resource.
      */
     LiveData<Resource<Void>> getUiState();
 
     /**
-     * @return Observable connection state.
+     * Provides an observable connection state. This allows the application to respond to state
+     * changes like "connected", "disconnected", or "connecting".
+     *
+     * @return LiveData containing the connection state.
      */
     LiveData<ConnectionState> getConnectionState();
 
     /**
-     * @return Observable currently connected device name.
+     * Provides an observable name of the currently connected device. This is typically used to
+     * update the UI title or status display.
+     *
+     * @return LiveData containing the device name string.
      */
     LiveData<String> getConnectedDeviceName();
 
     /**
-     * @return Observable discovery status (true if scanning).
+     * Provides an observable discovery status. This informs the UI whether a Bluetooth scan is
+     * currently in progress.
+     *
+     * @return LiveData indicating if discovery is active.
      */
     LiveData<Boolean> isDiscovering();
 
     /**
-     * @return Observable discovery status string.
+     * Provides an observable status string for the current scan. This is used to display a
+     * human-readable description of the scanning process.
+     *
+     * @return LiveData containing the status string.
      */
     LiveData<String> getDiscoveryStatus();
 
     /**
-     * @return Observable Bluetooth adapter state (ON/OFF).
+     * Provides an observable adapter state. This is used to monitor if Bluetooth is being toggled
+     * externally or via the app.
+     *
+     * @return LiveData containing the Bluetooth adapter state constant.
      */
     LiveData<Integer> getBluetoothState();
 
     /**
-     * @return Observable list of discovered (unpaired) devices.
+     * Provides an observable list of discovered (unpaired) devices. This is used to populate the
+     * "Available Devices" section of the connection list.
+     *
+     * @return LiveData containing a list of discovered devices.
      */
     LiveData<List<Parcelable>> getDiscoveredDevices();
 
     /**
-     * @return List of currently paired devices (including Simulator if enabled).
+     * Retrieves a list of currently paired devices and compatible simulator devices. This is used
+     * to populate the "Paired Devices" section of the list.
+     *
+     * @return A static list of paired hardware and virtual devices.
      */
     List<Parcelable> getPairedDevices();
 
     /**
-     * @return true if Bluetooth is currently enabled.
+     * Checks the current enablement state of the Bluetooth hardware.
+     *
+     * @return true if Bluetooth is currently enabled and ready.
      */
     boolean isBluetoothEnabled();
 
-    /** Requests to enable the Bluetooth adapter. */
+    /**
+     * Requests to enable the Bluetooth hardware. This ensures the system is ready for discovery and
+     * connection.
+     */
     void enableBluetooth();
 
-    /** Disables the Bluetooth adapter. */
+    /**
+     * Disables the Bluetooth hardware. This can be used to conserve power or as part of a clean
+     * application exit.
+     */
     void disableBluetooth();
 
-    /** Clears the current discovery results. */
+    /**
+     * Clears the current list of discovered devices. This is typically called before starting a
+     * fresh scan.
+     */
     void clearDiscoveredDevices();
 
-    /** Enables background connection management. */
+    /**
+     * Enables active connection management. This allows the controller to automatically handle
+     * reconnections if enabled.
+     */
     void startConnection();
 
-    /** Disables connection management. */
+    /**
+     * Disables connection management. This stops any active hardware connection and prevents
+     * automatic reconnection attempts.
+     */
     void stopConnection();
 
-    /** Starts a Bluetooth device scan. */
+    /** Starts searching for nearby weather station hardware. */
     void startDiscovery();
 
-    /** Stops the Bluetooth device scan. */
+    /** Terminates any active Bluetooth device scan. */
     void stopDiscovery();
 
-    /** Connects to a specific device. */
+    /**
+     * Attempts to establish a connection with the specified device.
+     *
+     * @param device The target device object.
+     */
     void connectToDevice(Parcelable device);
 
-    /** Registers Bluetooth and state receivers. */
+    /**
+     * Sets up system-level receivers for Bluetooth events. This is required for the controller to
+     * remain synchronized with hardware state changes.
+     */
     void registerReceivers();
 
-    /** Unregisters system receivers. */
+    /** Unregisters system broadcast receivers to prevent memory leaks. */
     void unregisterReceivers();
 
     /**
-     * @param address MAC address to connect to.
+     * Attempts to establish a connection to a specific device identified by its MAC address.
+     *
+     * @param address The MAC address of the device.
      */
     void connectToDeviceAddress(String address);
 
     /**
-     * Initiates pairing with a Bluetooth device.
+     * Initiates the standard Bluetooth pairing process.
      *
      * @param device The device to pair with.
      */
     void pairDevice(android.bluetooth.BluetoothDevice device);
 
     /**
-     * Sets the PIN for a pairing request.
+     * Supplies a PIN code for an ongoing pairing request.
      *
      * @param device The device requesting the PIN.
-     * @param pin The PIN code.
+     * @param pin The PIN code string.
      */
     void setPin(android.bluetooth.BluetoothDevice device, String pin);
 
     /**
-     * @return Observable event when a pairing request is received.
+     * Provides an observable event for incoming pairing requests from remote devices.
+     *
+     * @return LiveData emitting the device that requested pairing.
      */
     androidx.lifecycle.LiveData<android.bluetooth.BluetoothDevice> getPairingRequest();
 }

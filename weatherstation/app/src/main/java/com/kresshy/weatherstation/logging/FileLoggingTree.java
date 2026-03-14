@@ -30,6 +30,9 @@ public class FileLoggingTree extends Timber.DebugTree {
     private final Context context;
 
     /**
+     * Initializes the logging tree with the application context. This context is used to retrieve
+     * user preferences regarding log retention.
+     *
      * @param context Application context for accessing SharedPreferences.
      */
     @javax.inject.Inject

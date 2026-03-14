@@ -17,17 +17,23 @@ public class WeatherMessageParser {
 
     private final Gson gson;
 
+    /**
+     * Initializes the parser with a GSON instance for JSON processing.
+     *
+     * @param gson The GSON instance used for deserialization.
+     */
     @Inject
     public WeatherMessageParser(Gson gson) {
         this.gson = gson;
     }
 
     /**
-     * Parses a raw weather message. Expected format: "WS_{DATA}_end" where {DATA} can be JSON or
-     * legacy string.
+     * Parses a raw string message received from the hardware sensor. This method is the primary
+     * entry point for converting raw communication into domain objects. It automatically handles
+     * protocol framing and supports both modern JSON and legacy formats.
      *
      * @param rawData The raw message string from the sensor.
-     * @return A parsed WeatherData object, or null if parsing fails.
+     * @return A parsed WeatherData object, or null if parsing fails or data is invalid.
      */
     public WeatherData parse(String rawData) {
         if (rawData == null || rawData.trim().isEmpty()) {

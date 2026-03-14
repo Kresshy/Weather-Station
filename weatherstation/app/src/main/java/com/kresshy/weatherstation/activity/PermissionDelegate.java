@@ -20,9 +20,20 @@ import java.util.Map;
  */
 public class PermissionDelegate {
 
+    /**
+     * Interface for communicating the result of the permission request process back to the host.
+     */
     public interface Callback {
+        /**
+         * Triggered when all mandatory Bluetooth and Location permissions have been successfully
+         * granted by the user.
+         */
         void onPermissionsGranted();
 
+        /**
+         * Triggered when one or more required permissions were denied, preventing normal hardware
+         * operations.
+         */
         void onPermissionsDenied();
     }
 
@@ -30,6 +41,12 @@ public class PermissionDelegate {
     private final Callback callback;
     private final ActivityResultLauncher<String[]> launcher;
 
+    /**
+     * Constructs a new PermissionDelegate and registers the activity result launcher.
+     *
+     * @param activity The host activity.
+     * @param callback The callback to handle permission outcomes.
+     */
     public PermissionDelegate(AppCompatActivity activity, Callback callback) {
         this.activity = activity;
         this.callback = callback;
@@ -39,7 +56,10 @@ public class PermissionDelegate {
                         this::handleResult);
     }
 
-    /** Triggers the permission request flow. */
+    /**
+     * Initiates the system permission request flow. This dynamically selects the required
+     * permissions based on the device's Android version (SDK level).
+     */
     public void requestPermissions() {
         ArrayList<String> permissionList = new ArrayList<>();
 

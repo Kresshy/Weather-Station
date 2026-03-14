@@ -24,6 +24,13 @@ public class CompositeConnection implements Connection {
     private Connection activeConnection;
     private HardwareEventListener listener;
 
+    /**
+     * Constructs a new CompositeConnection.
+     *
+     * @param classicConnection The Bluetooth Classic implementation.
+     * @param bleConnection The Bluetooth Low Energy implementation.
+     * @param simulatorConnection The virtual station implementation.
+     */
     @Inject
     public CompositeConnection(
             BluetoothConnection classicConnection,
@@ -34,6 +41,11 @@ public class CompositeConnection implements Connection {
         this.simulatorConnection = simulatorConnection;
     }
 
+    /**
+     * Initializes all underlying connection services.
+     *
+     * @param listener The listener to receive hardware events.
+     */
     @Override
     public void start(HardwareEventListener listener) {
         this.listener = listener;
@@ -42,6 +54,13 @@ public class CompositeConnection implements Connection {
         simulatorConnection.start(listener);
     }
 
+    /**
+     * Routes a connection request to the appropriate implementation based on the provided device
+     * type (Classic, BLE, or Simulator). Stops any currently active connection before switching.
+     *
+     * @param device The target device.
+     * @param listener The listener to receive hardware events.
+     */
     @Override
     public void connect(Parcelable device, HardwareEventListener listener) {
         this.listener = listener;
@@ -84,6 +103,7 @@ public class CompositeConnection implements Connection {
         }
     }
 
+    /** Terminates the currently active connection if one exists. */
     @Override
     public void stop() {
         if (activeConnection != null) {
@@ -93,6 +113,11 @@ public class CompositeConnection implements Connection {
         }
     }
 
+    /**
+     * Transmits data via the currently active connection implementation.
+     *
+     * @param out The data payload to send.
+     */
     @Override
     public void write(byte[] out) {
         if (activeConnection != null) {
@@ -100,11 +125,21 @@ public class CompositeConnection implements Connection {
         }
     }
 
+    /**
+     * Provides the state of the currently active connection.
+     *
+     * @return The current ConnectionState, or ConnectionState.stopped if no connection is active.
+     */
     @Override
     public ConnectionState getState() {
         return activeConnection != null ? activeConnection.getState() : ConnectionState.stopped;
     }
 
+    /**
+     * Updates the active event listener for all underlying connection implementations.
+     *
+     * @param listener The new listener.
+     */
     @Override
     public void setCallback(HardwareEventListener listener) {
         this.listener = listener;

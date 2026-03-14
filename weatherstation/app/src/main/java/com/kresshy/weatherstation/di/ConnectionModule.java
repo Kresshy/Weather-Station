@@ -15,7 +15,14 @@ import javax.inject.Singleton;
 @InstallIn(SingletonComponent.class)
 public class ConnectionModule {
 
-    /** Provides the CompositeConnection that delegates to specific implementations. */
+    /**
+     * Provides the Connection implementation. This currently provides a {@link CompositeConnection}
+     * which allows the application to switch between physical Bluetooth hardware and a simulator at
+     * runtime.
+     *
+     * @param compositeConnection The composite connection implementation.
+     * @return The {@link Connection} instance to be used by the application.
+     */
     @Provides
     @Singleton
     public Connection provideConnection(CompositeConnection compositeConnection) {

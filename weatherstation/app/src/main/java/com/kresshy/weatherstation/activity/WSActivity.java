@@ -180,20 +180,34 @@ public class WSActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the "up" navigation event. Delegates the action to the navigation system to ensure
+     * proper back-stack management.
+     *
+     * @return true if the navigation was handled successfully.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         return navigationDelegate.onSupportNavigateUp() || super.onSupportNavigateUp();
     }
 
     /**
-     * Updates the toolbar title. If title is null, defaults to the app name or current destination.
+     * Updates the main toolbar title. If a specific title is provided, it is displayed; otherwise,
+     * the system defaults to the application name or current navigation destination.
      *
-     * @param title The title to display.
+     * @param title The title string to display.
      */
     public void setToolbarTitle(String title) {
         navigationDelegate.setToolbarTitle(title);
     }
 
+    /**
+     * Processes selection events for the options menu. Delegates navigation-related items to the
+     * navigation system.
+     *
+     * @param item The selected menu item.
+     * @return true if the menu item selection was handled.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

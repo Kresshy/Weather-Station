@@ -14,7 +14,9 @@ import androidx.core.app.ActivityCompat;
 public class PermissionHelper {
 
     /**
-     * Checks if the application has the necessary permissions to perform Bluetooth scanning.
+     * Checks if the application has the necessary permissions to perform Bluetooth scanning. This
+     * is required for discovering nearby weather stations. The check handles changes in permission
+     * requirements introduced in Android S (API 31).
      *
      * @param context The application context.
      * @return true if scanning permissions are granted.
@@ -43,7 +45,9 @@ public class PermissionHelper {
     }
 
     /**
-     * Checks if the application has the necessary permissions to connect to Bluetooth devices.
+     * Checks if the application has the necessary permissions to connect to Bluetooth devices. This
+     * is required to establish a data link with the weather station. For devices running Android S
+     * (API 31) and above, this requires the BLUETOOTH_CONNECT runtime permission.
      *
      * @param context The application context.
      * @return true if connection permissions are granted.

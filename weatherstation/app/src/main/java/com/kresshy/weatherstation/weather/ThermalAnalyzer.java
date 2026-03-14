@@ -55,10 +55,14 @@ public class ThermalAnalyzer {
     private boolean isEnabled = false;
     private double sensitivityFactor = 1.0;
 
+    /** Required constructor for Dagger Hilt dependency injection. */
     @Inject
     public ThermalAnalyzer() {}
 
     /**
+     * Enables or disables the thermal analysis logic. When disabled, the analyzer will always
+     * return a WAITING decision and a score of 0.
+     *
      * @param enabled Set to false to always return WAITING/0 score.
      */
     public void setEnabled(boolean enabled) {
@@ -66,6 +70,9 @@ public class ThermalAnalyzer {
     }
 
     /**
+     * Adjusts the sensitivity of the thermal score calculation. This allows users to fine-tune how
+     * aggressive the launch detector is.
+     *
      * @param sensitivity Factor to multiply the final score by (e.g., 0.7 to 1.3).
      */
     public void setSensitivity(double sensitivity) {
@@ -73,7 +80,9 @@ public class ThermalAnalyzer {
     }
 
     /**
-     * Analyzes the current weather data point against historical trends.
+     * Analyzes the current weather data point against historical trends using Exponential Moving
+     * Averages (EMA). This is used to detect rising temperatures and falling wind speeds, which
+     * indicate thermal activity.
      *
      * @param current The latest weather reading.
      * @return An AnalysisResult containing trends, score, and launch decision.

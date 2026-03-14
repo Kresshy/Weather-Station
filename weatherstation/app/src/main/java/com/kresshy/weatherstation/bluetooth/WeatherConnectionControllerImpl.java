@@ -58,6 +58,15 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
     private static final long INITIAL_RECONNECT_DELAY_MS = 2000;
     private static final long MAX_RECONNECT_DELAY_MS = 32000;
 
+    /**
+     * Constructs a new WeatherConnectionControllerImpl and initializes discovery stream bridging.
+     *
+     * @param context The application context.
+     * @param connectionManager The manager for physical and virtual connections.
+     * @param bluetoothAdapter The system Bluetooth adapter.
+     * @param bluetoothManager The manager for hardware state and discovery.
+     * @param sharedPreferences Access to persistent settings.
+     */
     @Inject
     public WeatherConnectionControllerImpl(
             @ApplicationContext Context context,
@@ -82,6 +91,12 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
         bluetoothManager.isDiscovering().observeForever(isDiscovering::postValue);
     }
 
+    /**
+     * Sets the primary listener for hardware and connection events. This listener will receive raw
+     * data packets and connection state updates.
+     *
+     * @param listener The listener instance.
+     */
     public void setHardwareEventListener(HardwareEventListener listener) {
         connectionManager.setListener(
                 new HardwareEventListener() {
@@ -171,41 +186,81 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
         reconnectDelayMs = Math.min(reconnectDelayMs * 2, MAX_RECONNECT_DELAY_MS);
     }
 
+    /**
+     * Provides access to the high-level UI status stream.
+     *
+     * @return LiveData containing the current UI resource status.
+     */
     @Override
     public LiveData<Resource<Void>> getUiState() {
         return uiState;
     }
 
+    /**
+     * Provides access to the connection state stream.
+     *
+     * @return LiveData containing the current connection state.
+     */
     @Override
     public LiveData<ConnectionState> getConnectionState() {
         return connectionState;
     }
 
+    /**
+     * Provides access to the name of the currently connected device.
+     *
+     * @return LiveData containing the device name string.
+     */
     @Override
     public LiveData<String> getConnectedDeviceName() {
         return connectedDeviceName;
     }
 
+    /**
+     * Checks if discovery is currently active.
+     *
+     * @return LiveData indicating the discovery state.
+     */
     @Override
     public LiveData<Boolean> isDiscovering() {
         return isDiscovering;
     }
 
+    /**
+     * Provides the current discovery status string.
+     *
+     * @return LiveData containing the status description.
+     */
     @Override
     public LiveData<String> getDiscoveryStatus() {
         return discoveryStatus;
     }
 
+    /**
+     * Provides access to the Bluetooth adapter state stream.
+     *
+     * @return LiveData containing the adapter state constant.
+     */
     @Override
     public LiveData<Integer> getBluetoothState() {
         return bluetoothManager.getBluetoothState();
     }
 
+    /**
+     * Provides access to the list of discovered devices.
+     *
+     * @return LiveData containing the list of discovered Parcelables.
+     */
     @Override
     public LiveData<List<Parcelable>> getDiscoveredDevices() {
         return discoveredDevices;
     }
 
+    /**
+     * Generates a list of paired hardware and virtual simulator devices.
+     *
+     * @return A list of paired devices and the simulator if enabled.
+     */
     @Override
     public List<Parcelable> getPairedDevices() {
         boolean useSimulator = sharedPreferences.getBoolean("pref_simulator_mode", false);
@@ -233,58 +288,77 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
         return devices;
     }
 
+    /**
+     * Checks if Bluetooth is currently active.
+     *
+     * @return true if Bluetooth is enabled.
+     */
     @Override
     public boolean isBluetoothEnabled() {
         return bluetoothManager.isBluetoothEnabled();
     }
 
+    /** Requests the Bluetooth adapter to be enabled. */
     @Override
     public void enableBluetooth() {
         bluetoothManager.enableBluetooth();
     }
 
+    /** Disables the Bluetooth adapter. */
     @Override
     public void disableBluetooth() {
         bluetoothManager.disableBluetooth();
     }
 
+    /** Resets the discovery result list. */
     @Override
     public void clearDiscoveredDevices() {
         discoveredDevices.postValue(new ArrayList<>());
     }
 
+    /** Begins searching for nearby devices. */
     @Override
     public void startDiscovery() {
         bluetoothManager.startDiscovery();
     }
 
+    /** Cancels any active device search. */
     @Override
     public void stopDiscovery() {
         bluetoothManager.stopDiscovery();
     }
 
+    /** Configures the system broadcast receivers for Bluetooth events. */
     @Override
     public void registerReceivers() {
         bluetoothManager.registerReceivers();
     }
 
+    /** Removes the system broadcast receivers. */
     @Override
     public void unregisterReceivers() {
         bluetoothManager.unregisterReceivers();
     }
 
+    /** Activates background connection management and enables reconnection logic. */
     @Override
     public void startConnection() {
         shouldReconnect = true;
         connectionManager.startConnection();
     }
 
+    /** Shuts down connection management and disables reconnection. */
     @Override
     public void stopConnection() {
         shouldReconnect = false;
         connectionManager.stopConnection();
     }
 
+    /**
+     * Attempts to connect to the specified device and tracks it for potential reconnection.
+     *
+     * @param device The target device.
+     */
     @Override
     public void connectToDevice(Parcelable device) {
         lastConnectedDevice = device;
@@ -293,6 +367,11 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
         connectionManager.connectToDevice(device);
     }
 
+    /**
+     * Attempts to connect to a device identified by its MAC address.
+     *
+     * @param address The MAC address of the device.
+     */
     @Override
     public void connectToDeviceAddress(String address) {
         if (address.equals(SimulatorDevice.SIMULATOR_ADDRESS)
@@ -307,16 +386,32 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
         }
     }
 
+    /**
+     * Initiates pairing with the specified Bluetooth device.
+     *
+     * @param device The device to pair with.
+     */
     @Override
     public void pairDevice(BluetoothDevice device) {
         bluetoothManager.pairDevice(device);
     }
 
+    /**
+     * Supplies a PIN for an active pairing request.
+     *
+     * @param device The device requesting the PIN.
+     * @param pin The PIN code string.
+     */
     @Override
     public void setPin(BluetoothDevice device, String pin) {
         bluetoothManager.setPin(device, pin);
     }
 
+    /**
+     * Provides access to incoming pairing request events.
+     *
+     * @return LiveData emitting the device that requested pairing.
+     */
     @Override
     public LiveData<BluetoothDevice> getPairingRequest() {
         return bluetoothManager.getPairingRequest();

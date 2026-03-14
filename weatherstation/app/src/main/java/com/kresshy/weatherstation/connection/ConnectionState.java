@@ -1,6 +1,9 @@
 package com.kresshy.weatherstation.connection;
 
-/** Enum representing the possible states of a weather station connection. */
+/**
+ * Enum representing the possible states of a weather station connection. This is used throughout
+ * the application to synchronize the UI and internal logic with the hardware's connectivity status.
+ */
 public enum ConnectionState {
     /** Hardware is disconnected but discovery might be running. */
     disconnected,

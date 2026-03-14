@@ -10,9 +10,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext;
 import javax.inject.Inject;
 
 /**
- * UseCase for initiating a connection to a weather station. Handles the logic of saving the device
- * address, selecting between simulator and physical hardware, and triggering the repository's
- * connection sequence.
+ * UseCase for initiating a connection to a weather station. This component handles the business
+ * logic for saving the device's unique identifier, selecting the appropriate hardware abstraction,
+ * and triggering the connection sequence.
  */
 public class ConnectToDeviceUseCase {
 
@@ -21,6 +21,14 @@ public class ConnectToDeviceUseCase {
     private final SharedPreferences sharedPreferences;
     private final Context context;
 
+    /**
+     * Initializes the UseCase with necessary dependencies for connection management and
+     * persistence.
+     *
+     * @param connectionController Controller for the hardware connection lifecycle.
+     * @param sharedPreferences For persisting the device address for future auto-reconnects.
+     * @param context Application context for accessing resource strings.
+     */
     @Inject
     public ConnectToDeviceUseCase(
             com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController,
@@ -32,9 +40,11 @@ public class ConnectToDeviceUseCase {
     }
 
     /**
-     * Connects to a device by its MAC address.
+     * Executes the connection logic for a specific device. This involves persisting the device
+     * address to ensure seamless reconnection in future sessions and instructing the controller to
+     * establish the physical link.
      *
-     * @param address The MAC address of the weather station.
+     * @param address The MAC address of the physical weather station or a simulator identifier.
      */
     public void execute(String address) {
         // 1. Persist the address for auto-reconnect
