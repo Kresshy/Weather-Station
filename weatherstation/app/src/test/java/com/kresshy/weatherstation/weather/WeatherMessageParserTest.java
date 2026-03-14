@@ -25,9 +25,7 @@ public class WeatherMessageParserTest {
     @Test
     public void parse_ModernJsonFormat() {
         String json =
-                """
-{"version":2,"numberOfNodes":1,"measurements":[{"windSpeed":5.5,"temperature":22.2,"nodeId":0}]}
-""";
+                "{\"version\":2,\"numberOfNodes\":1,\"measurements\":[{\"windSpeed\":5.5,\"temperature\":22.2,\"nodeId\":0}]}";
         String rawData = "WS_" + json.trim() + "_end";
 
         WeatherData result = parser.parse(rawData);
