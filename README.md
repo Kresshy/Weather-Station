@@ -28,8 +28,8 @@ The application follows **Clean Architecture** principles with a decoupled **Con
 3.  **Data Plane (`WeatherRepository`)**: Exclusively handles sensor data processing, parsing, and analytical trends using the **Single Heartbeat** pattern.
 4.  **Control Plane (`WeatherConnectionController`)**: Manages hardware lifecycles and Bluetooth discovery. Uses a **Composite Connection** router to automatically select between Classic BT, BLE, or Simulator drivers based on hardware type.
 Detailed hardware documentation can be found here:
-- **[Standard Wiring Diagram](WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
-- **[Future Hardware Roadmap](FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades.
+- **[Standard Wiring Diagram](docs/WIRING_DIAGRAM.md)**: Current Arduino Nano setup.
+- **[Future Hardware Roadmap](docs/FUTURE_IMPROVEMENTS.md)**: Potential sensor upgrades.
 
 ## 🛡️ Data Integrity & Performance
 
