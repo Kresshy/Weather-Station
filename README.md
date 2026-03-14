@@ -1,6 +1,9 @@
 # Weather Station for Free Flight Aeromodels
 
-A comprehensive weather monitoring and thermal analysis system specifically designed for **free-flight aeromodelling**. By deploying static weather stations on an airfield, this system monitors critical changes in wind speed and temperature to detect thermal activity in real-time. Launching a model into a thermal detected by this system significantly increases elevation and extends flight times.
+[![Android CI](https://github.com/Kresshy/Weather-Station/actions/workflows/android-verify.yml/badge.svg)](https://github.com/Kresshy/Weather-Station/actions/workflows/android-verify.yml)
+
+A comprehensive weather monitoring and thermal analysis system specifically designed for **free-flight aeromodelling**.
+ By deploying static weather stations on an airfield, this system monitors critical changes in wind speed and temperature to detect thermal activity in real-time. Launching a model into a thermal detected by this system significantly increases elevation and extends flight times.
 
 ## 🚀 Key Features
 

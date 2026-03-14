@@ -1,0 +1,37 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      working-directory: weatherstation
+
+    - name: Verify Formatting (Spotless)
+      run: ./gradlew spotlessCheck
+      working-directory: weatherstation
+
+    - name: Run Tests
+      run: ./gradlew test
+      working-directory: weatherstation
+
+    - name: Build Project
+      run: ./gradlew build
+      working-directory: weatherstation

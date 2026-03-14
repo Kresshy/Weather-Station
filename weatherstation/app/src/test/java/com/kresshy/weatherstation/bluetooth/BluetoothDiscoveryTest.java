@@ -7,6 +7,8 @@ import android.Manifest;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -40,6 +42,9 @@ public class BluetoothDiscoveryTest {
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        // Ensure adapter is enabled for tests
+        Shadows.shadowOf(bluetoothAdapter).setEnabled(true);
+
         weatherBluetoothManager = new WeatherBluetoothManagerImpl(context, bluetoothAdapter);
         shadowApplication = Shadows.shadowOf((Application) context);
 
@@ -103,5 +108,30 @@ public class BluetoothDiscoveryTest {
         assertNotNull(discovered);
         assertFalse("List should not be empty", discovered.isEmpty());
         assertEquals("00:11:22:33:44:55", discovered.get(0).getAddress());
+    }
+
+    @Test
+    public void bleScanResult_AddsToDiscoveredDevices() {
+        BluetoothDevice bleDevice = bluetoothAdapter.getRemoteDevice("AA:BB:CC:DD:EE:FF");
+        ScanResult result = mock(ScanResult.class);
+        when(result.getDevice()).thenReturn(bleDevice);
+        when(result.getRssi()).thenReturn(-60);
+
+        weatherBluetoothManager.bleScanCallback.onScanResult(
+                ScanSettings.CALLBACK_TYPE_ALL_MATCHES, result);
+        idle();
+
+        List<BluetoothDevice> discovered =
+                weatherBluetoothManager.getDiscoveredDevices().getValue();
+        assertNotNull(discovered);
+        boolean found = false;
+        for (BluetoothDevice device : discovered) {
+            if (device.getAddress().equals("AA:BB:CC:DD:EE:FF")) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue("BLE device should be in the discovered list", found);
+        assertEquals(-60, weatherBluetoothManager.getDeviceRssi("AA:BB:CC:DD:EE:FF"));
     }
 }

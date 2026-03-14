@@ -2,6 +2,10 @@ package com.kresshy.weatherstation.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +29,7 @@ import javax.inject.Singleton;
 
 /**
  * Implementation of {@link WeatherBluetoothManager} that uses standard Android BroadcastReceivers
- * to monitor Bluetooth state and discover new devices.
+ * and BluetoothLeScanner to monitor Bluetooth state and discover new devices (Classic + BLE).
  */
 @Singleton
 public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
@@ -62,7 +66,9 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                 }
             };
 
-    /** Receiver for handling discovered devices, bond state changes and pairing requests. */
+    /**
+     * Receiver for handling discovered classic devices, bond state changes and pairing requests.
+     */
     private final BroadcastReceiver discoveryReceiver =
             new BroadcastReceiver() {
                 @Override
@@ -85,19 +91,21 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                             deviceRssiMap.put(device.getAddress(), rssi);
                             if (PermissionHelper.hasConnectPermission(context)) {
                                 Timber.d(
-                                        "Device found: %s (%s) [RSSI: %d]",
+                                        "Classic Device found: %s (%s) [RSSI: %d]",
                                         device.getName(), device.getAddress(), rssi);
                             } else {
-                                Timber.d("Device found: %s [RSSI: %d]", device.getAddress(), rssi);
+                                Timber.d(
+                                        "Classic Device found: %s [RSSI: %d]",
+                                        device.getAddress(), rssi);
                             }
                             updateDeviceList(device);
                         }
                     } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                        Timber.d("Discovery Started");
+                        Timber.d("Classic Discovery Started");
                         isDiscovering.setValue(true);
                         discoveryStatus.setValue("Discovering...");
                     } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                        Timber.d("Discovery Finished");
+                        Timber.d("Classic Discovery Finished");
                         isDiscovering.setValue(false);
                         discoveryStatus.setValue("Discovery Finished");
                     } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
@@ -117,6 +125,38 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                             pairingRequest.setValue(device);
                         }
                     }
+                }
+            };
+
+    /** Callback for handling BLE scan results. Package-private for testing. */
+    final ScanCallback bleScanCallback =
+            new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    BluetoothDevice device = result.getDevice();
+                    int rssi = result.getRssi();
+                    deviceRssiMap.put(device.getAddress(), rssi);
+
+                    if (PermissionHelper.hasConnectPermission(context)) {
+                        Timber.v(
+                                "BLE Device found: %s (%s) [RSSI: %d]",
+                                device.getName(), device.getAddress(), rssi);
+                    } else {
+                        Timber.v("BLE Device found: %s [RSSI: %d]", device.getAddress(), rssi);
+                    }
+                    updateDeviceList(device);
+                }
+
+                @Override
+                public void onBatchScanResults(List<ScanResult> results) {
+                    for (ScanResult result : results) {
+                        onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES, result);
+                    }
+                }
+
+                @Override
+                public void onScanFailed(int errorCode) {
+                    Timber.e("BLE Scan Failed with code: %d", errorCode);
                 }
             };
 
@@ -154,11 +194,27 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
 
     @Override
     public void startDiscovery() {
-        if (bluetoothAdapter != null) {
+        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
             if (PermissionHelper.hasScanPermission(context)) {
                 discoveredDevices.postValue(new ArrayList<>());
                 discoveryStatus.postValue("Discovering...");
+                isDiscovering.postValue(true);
+
+                // 1. Start Classic Bluetooth Discovery
                 bluetoothAdapter.startDiscovery();
+
+                // 2. Start BLE Scanning
+                BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+                if (scanner != null) {
+                    ScanSettings settings =
+                            new ScanSettings.Builder()
+                                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                                    .build();
+                    scanner.startScan(null, settings, bleScanCallback);
+                    Timber.d("BLE Scanning started");
+                } else {
+                    Timber.w("BluetoothLeScanner not available");
+                }
             } else {
                 Timber.e("Missing scan permission for discovery");
                 discoveryStatus.postValue("Missing Permissions");
@@ -170,8 +226,18 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
     public void stopDiscovery() {
         if (bluetoothAdapter != null) {
             if (PermissionHelper.hasScanPermission(context)) {
+                // 1. Stop Classic Bluetooth Discovery
                 bluetoothAdapter.cancelDiscovery();
+
+                // 2. Stop BLE Scanning
+                BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+                if (scanner != null) {
+                    scanner.stopScan(bleScanCallback);
+                    Timber.d("BLE Scanning stopped");
+                }
             }
+            isDiscovering.postValue(false);
+            discoveryStatus.postValue("Discovery Finished");
         }
     }
 
