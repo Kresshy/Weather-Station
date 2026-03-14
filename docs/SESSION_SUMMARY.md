@@ -1,32 +1,37 @@
 # Weather Station - Development Summary (The BLE & Connectivity Update)
 
-##  Overview
-Successfully expanded the application's connectivity layer to support modern Bluetooth Low Energy (BLE) hardware while resolving critical device discovery issues on Android 12+. The architecture has evolved into a **Unified Connection Plane**, seamlessly routing between Classic BT, BLE, and Simulated environments.
+## Overview
+Successfully expanded the application's connectivity layer to support modern Bluetooth Low Energy (BLE) hardware while resolving critical device discovery issues on Android 12+. The architecture has evolved into a Unified Connection Plane, seamlessly routing between Classic BT, BLE, and Simulated environments.
 
-##  Architectural Evolution (Current Session - March 14, 2026)
+## Architectural Evolution (Current Session - March 14, 2026)
 
-###  The Unified Connection Plane (v3.6.1)
-*   **Unified Discovery**: Refactored `WeatherBluetoothManagerImpl` to scan for both Classic Bluetooth and BLE devices simultaneously. This ensures modern BLE-only hardware is detected alongside legacy HC-05 modules.
-*   **BLE Scanning Logic**: Integrated `BluetoothLeScanner` and `ScanCallback` into the discovery lifecycle. BLE scans are triggered in parallel with classic `startDiscovery()`.
-*   **Atomic PDU Parsing**: Both BLE and Classic Bluetooth use a unified buffer-based parsing strategy to ensure weather packets are never fragmented or lost during transmission.
+### The Unified Connection Plane (v3.6.1)
+*   **Unified Discovery**: Refactored WeatherBluetoothManagerImpl to scan for both Classic Bluetooth and BLE devices simultaneously. This ensures modern BLE-only hardware is detected alongside legacy HC-05 modules.
+*   **BLE Scanning Logic**: Integrated BluetoothLeScanner and ScanCallback into the discovery lifecycle. BLE scans are triggered in parallel with classic startDiscovery().
+*   **Legacy Compatibility**: Downgraded Android source and target compatibility to Java 8 to ensure 100% reliability on legacy Android 6.0 (API 23) airfield tablets without requiring desugaring overhead.
 
-###  Discovery & Permission Resilience
-*   **BLE Scan Verification**: Added `bleScanResult_AddsToDiscoveredDevices` test case to `BluetoothDiscoveryTest.java` to verify the new LE scanner integration.
-*   **Android 12+ Discovery Fix**: Resolved a critical bug where unpaired devices were blocked by missing `ACCESS_FINE_LOCATION` checks on newer Android versions.
-*   **Receiver Security**: Hardened the application for Android 14+ by implementing `RECEIVER_NOT_EXPORTED` for all Bluetooth-related `BroadcastReceivers`.
+### Discovery & Permission Resilience
+*   **BLE Scan Verification**: Added bleScanResult_AddsToDiscoveredDevices test case to BluetoothDiscoveryTest.java to verify the new LE scanner integration.
+*   **Android 12+ Discovery Fix**: Resolved a critical bug where unpaired devices were blocked by missing ACCESS_FINE_LOCATION checks on newer Android versions.
+*   **Receiver Security**: Hardened the application for Android 14+ by implementing RECEIVER_NOT_EXPORTED for all Bluetooth-related BroadcastReceivers.
 
-###  UI & UX Modernization
+### UI & UX Modernization
 *   **Visual Scan Progress**: Introduced a bottom-docked discovery status bar with a progress spinner and "Searching..." text to provide clear scan feedback.
 *   **BLE Branding**: Added a visual "BLE" badge to the device list to help users identify modern Low Energy hardware.
 *   **Dynamic Discovery Status**: The discovery state is now bridged all the way from the hardware manager to the fragment UI, ensuring the scan spinner is always accurate.
 
-##  Bug Fixes & Refinements
+## Bug Fixes & Refinements
 *   **Missing BLE Discovery**: Fixed a major regression where BLE devices were not appearing in the scan list because the system only used Classic Bluetooth discovery.
-*   **LiveData Race Condition**: Fixed a bug where in-place list modifications were not triggering UI updates by ensuring new list instances are posted.
+*   **Installation Fix**: Built and signed a Debug APK to resolve "Problem parsing the package" issues encountered with unsigned releases on tester devices.
+*   **Comprehensive Code Documentation**: Added JavaDoc to all 46 files in the codebase, ensuring every class and public method is documented following the "Why and How" standard.
+*   **Enhanced Test Coverage**: Backfilled unit tests for WeatherRepositoryImpl, BleConnection, BluetoothConnection, and ConnectToDeviceUseCase, bringing the total to 100 passing tests.
+*   **Project Reorganization**: Moved all secondary documentation and reports into the docs/ directory to maintain a clean project root.
+*   **Emoji Ban**: Enforced a strict ban on emojis across the entire project codebase and documentation for professional consistency.
 
-###  Latest Deliverable
-*   **WeatherStation_v3.6.1.apk**: Connectivity release with unified Classic + BLE discovery, discovery fixes, and enhanced scan feedback.
+### Latest Deliverable
+*   **WeatherStation_v3.6.1_debug.apk**: Connectivity release with unified Classic + BLE discovery, Java 8 compatibility, and full codebase documentation.
 *   **Build Status**: Successful (Verified via mandatory sequence).
 
 ---
 *Generated by Gemini CLI - March 14, 2026*
+
