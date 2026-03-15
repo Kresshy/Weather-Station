@@ -70,10 +70,12 @@ public class CompositeConnection implements Connection {
 
         // 1. Check if we are already trying to connect to this EXACT device address
         if (currentDevice != null && isSameDevice(currentDevice, device)) {
-            if (activeConnection != null
-                    && activeConnection.getState() != ConnectionState.stopped) {
-                Timber.d("Already connecting/connected to this device: %s. Ignoring.", device);
-                return;
+            if (activeConnection != null) {
+                ConnectionState state = activeConnection.getState();
+                if (state == ConnectionState.connecting || state == ConnectionState.connected) {
+                    Timber.d("Already %s to this device: %s. Ignoring.", state, device);
+                    return;
+                }
             }
         }
 

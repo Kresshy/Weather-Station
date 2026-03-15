@@ -79,6 +79,16 @@ public class BleConnection implements Connection {
         if (!(device instanceof BluetoothDevice)) return;
         BluetoothDevice btDevice = (BluetoothDevice) device;
 
+        // Ensure any previous connection is fully closed before re-connecting
+        if (bluetoothGatt != null) {
+            Timber.d("Closing existing GATT before new connection attempt");
+            if (PermissionHelper.hasConnectPermission(context)) {
+                bluetoothGatt.disconnect();
+                bluetoothGatt.close();
+            }
+            bluetoothGatt = null;
+        }
+
         this.listener = listener;
         this.state = ConnectionState.connecting;
         listener.onConnectionStateChange(ConnectionState.connecting);
@@ -148,6 +158,12 @@ public class BleConnection implements Connection {
                         }
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         Timber.d("BLE Disconnected: %s", gatt.getDevice().getAddress());
+                        if (PermissionHelper.hasConnectPermission(context)) {
+                            gatt.close();
+                        }
+                        if (bluetoothGatt == gatt) {
+                            bluetoothGatt = null;
+                        }
                         state = ConnectionState.disconnected;
                         mainHandler.post(
                                 () -> {
