@@ -6,19 +6,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+
+import androidx.test.core.app.ApplicationProvider;
 
 import com.kresshy.weatherstation.bluetooth.BleConnection;
 import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 /**
  * Unit tests for {@link CompositeConnection}. Verifies routing logic and identifies reconnection
  * bugs.
  */
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = android.os.Build.VERSION_CODES.S)
 public class CompositeConnectionTest {
 
+    private Context context;
     private CompositeConnection compositeConnection;
     private BluetoothConnection classicConnection;
     private BleConnection bleConnection;
@@ -27,13 +36,20 @@ public class CompositeConnectionTest {
 
     @Before
     public void setUp() {
+        context = ApplicationProvider.getApplicationContext();
+
+        // Grant permissions for tests
+        org.robolectric.Shadows.shadowOf((android.app.Application) context)
+                .grantPermissions(android.Manifest.permission.BLUETOOTH_CONNECT);
+
         classicConnection = mock(BluetoothConnection.class);
         bleConnection = mock(BleConnection.class);
         simulatorConnection = mock(SimulatorConnection.class);
         listener = mock(HardwareEventListener.class);
 
         compositeConnection =
-                new CompositeConnection(classicConnection, bleConnection, simulatorConnection);
+                new CompositeConnection(
+                        context, classicConnection, bleConnection, simulatorConnection);
     }
 
     @Test
@@ -178,8 +194,8 @@ public class CompositeConnectionTest {
 
     @Test
     public void connect_WhenConnectingWithClassicButDiscoveryFindsBle_ShouldUpgradeToBle() {
-        // Arrange
-        String address = "0C:B2:B7:7A:43:00";
+        // Arrange - Use a generic address that won't trigger the OUI heuristic
+        String address = "AA:BB:CC:DD:EE:FF";
         BluetoothDevice unknownDevice = mock(BluetoothDevice.class);
         when(unknownDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_UNKNOWN);
         when(unknownDevice.getAddress()).thenReturn(address);
@@ -188,7 +204,7 @@ public class CompositeConnectionTest {
         when(bleDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_LE);
         when(bleDevice.getAddress()).thenReturn(address);
 
-        // 1. Initial connect with UNKNOWN -> Routes to Classic
+        // 1. Initial connect with UNKNOWN -> Routes to Classic (Default)
         when(classicConnection.getState()).thenReturn(ConnectionState.stopped);
         compositeConnection.connect(unknownDevice, listener);
         verify(classicConnection).connect(unknownDevice, listener);
@@ -205,7 +221,7 @@ public class CompositeConnectionTest {
     }
 
     @Test
-    public void connect_WhenSwitchingToDifferentDeviceWithSameDriver_ShouldStopFirst() {
+    public void connect_WhenSwitchToDifferentDeviceWithSameDriver_ShouldStopFirst() {
         // Arrange
         BluetoothDevice stationA = mock(BluetoothDevice.class);
         when(stationA.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_CLASSIC);
@@ -251,5 +267,34 @@ public class CompositeConnectionTest {
 
         // Assert: Should NOT ignore. Should trigger connect again.
         verify(bleConnection, times(2)).connect(bleDevice, listener);
+    }
+
+    @Test
+    public void connect_WhenUnknownTypeButHasBleName_ShouldRouteToBle() {
+        // Arrange
+        BluetoothDevice unknownDevice = mock(BluetoothDevice.class);
+        when(unknownDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_UNKNOWN);
+        when(unknownDevice.getAddress()).thenReturn("AA:BB:CC:DD:EE:FF");
+        when(unknownDevice.getName()).thenReturn("HM-10 Weather Station");
+
+        // Act
+        compositeConnection.connect(unknownDevice, listener);
+
+        // Assert: Heuristic should match "HM-10" and route to BLE
+        verify(bleConnection).connect(unknownDevice, listener);
+    }
+
+    @Test
+    public void connect_WhenUnknownTypeButHasBleOui_ShouldRouteToBle() {
+        // Arrange - Huamao/HM-10 OUI
+        BluetoothDevice unknownDevice = mock(BluetoothDevice.class);
+        when(unknownDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_UNKNOWN);
+        when(unknownDevice.getAddress()).thenReturn("0C:B2:B7:AA:BB:CC");
+
+        // Act
+        compositeConnection.connect(unknownDevice, listener);
+
+        // Assert: Heuristic should match OUI and route to BLE
+        verify(bleConnection).connect(unknownDevice, listener);
     }
 }

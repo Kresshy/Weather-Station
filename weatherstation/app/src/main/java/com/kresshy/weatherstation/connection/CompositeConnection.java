@@ -1,11 +1,13 @@
 package com.kresshy.weatherstation.connection;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.os.Parcelable;
 
 import com.kresshy.weatherstation.bluetooth.BleConnection;
 import com.kresshy.weatherstation.bluetooth.BluetoothConnection;
 import com.kresshy.weatherstation.bluetooth.SimulatorDevice;
+import com.kresshy.weatherstation.util.PermissionHelper;
 
 import timber.log.Timber;
 
@@ -17,6 +19,7 @@ import javax.inject.Inject;
  */
 public class CompositeConnection implements Connection {
 
+    private final Context context;
     private final BluetoothConnection classicConnection;
     private final BleConnection bleConnection;
     private final SimulatorConnection simulatorConnection;
@@ -28,15 +31,18 @@ public class CompositeConnection implements Connection {
     /**
      * Constructs a new CompositeConnection.
      *
+     * @param context The application context for permission checks.
      * @param classicConnection The Bluetooth Classic implementation.
      * @param bleConnection The Bluetooth Low Energy implementation.
      * @param simulatorConnection The virtual station implementation.
      */
     @Inject
     public CompositeConnection(
+            @dagger.hilt.android.qualifiers.ApplicationContext Context context,
             BluetoothConnection classicConnection,
             BleConnection bleConnection,
             SimulatorConnection simulatorConnection) {
+        this.context = context;
         this.classicConnection = classicConnection;
         this.bleConnection = bleConnection;
         this.simulatorConnection = simulatorConnection;
@@ -118,7 +124,10 @@ public class CompositeConnection implements Connection {
             } else if (type == BluetoothDevice.DEVICE_TYPE_CLASSIC) {
                 return classicConnection;
             } else {
-                // Type is UNKNOWN (0) - Use persistence if address matches active session
+                // Type is UNKNOWN (0) - This is common for bonded devices or specific vendors
+                // on some Android versions.
+
+                // 1. Use persistence if address matches active session
                 if (activeConnection != null
                         && activeConnection != simulatorConnection
                         && isSameDevice(oldDevice, device)) {
@@ -127,7 +136,38 @@ public class CompositeConnection implements Connection {
                             btDevice.getAddress(), activeConnection.getClass().getSimpleName());
                     return activeConnection;
                 }
-                // Default to Classic for unknown new devices
+
+                // 2. Heuristic check based on Name/OUI
+                String name = null;
+                if (PermissionHelper.hasConnectPermission(context)) {
+                    name = btDevice.getName();
+                }
+
+                if (name != null) {
+                    String lowerName = name.toLowerCase();
+                    if (lowerName.contains("hm-10")
+                            || lowerName.contains("hm10")
+                            || lowerName.contains("bt05")
+                            || lowerName.contains("mlt")
+                            || lowerName.contains("jdy")
+                            || lowerName.contains("nordic")
+                            || lowerName.contains("nus")
+                            || lowerName.contains("ble")) {
+                        Timber.i(
+                                "Device type UNKNOWN for %s, guessing BLE based on name: %s",
+                                btDevice.getAddress(), name);
+                        return bleConnection;
+                    }
+                }
+
+                // Known BLE OUIs (e.g., Huamao/HM-10)
+                String address = btDevice.getAddress().toUpperCase();
+                if (address.startsWith("0C:B2:B7") || address.startsWith("D0:B5:C2")) {
+                    Timber.i("Device type UNKNOWN for %s, guessing BLE based on OUI", address);
+                    return bleConnection;
+                }
+
+                // Default to Classic for unknown new devices (HC-05 is very common)
                 return classicConnection;
             }
         }

@@ -219,7 +219,12 @@ public class BleConnection implements Connection {
                 @Override
                 public void onCharacteristicChanged(
                         BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                    // Handled by the modern overload below to ensure single processing
+                    // This overload is called on Android 12 (API 31) and older.
+                    // The newer overload (with byte[] value) is called on Android 13+.
+                    if (android.os.Build.VERSION.SDK_INT
+                            < android.os.Build.VERSION_CODES.TIRAMISU) {
+                        processRawData(characteristic.getValue());
+                    }
                 }
 
                 @Override
@@ -227,6 +232,7 @@ public class BleConnection implements Connection {
                         @NonNull BluetoothGatt gatt,
                         @NonNull BluetoothGattCharacteristic characteristic,
                         @NonNull byte[] value) {
+                    // This overload is called on Android 13 (API 33) and newer.
                     processRawData(value);
                 }
             };

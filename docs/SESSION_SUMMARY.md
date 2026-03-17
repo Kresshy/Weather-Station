@@ -17,9 +17,18 @@ Successfully expanded the application's connectivity layer to support modern Blu
 
 ### UI & UX Modernization
 *   **Visual Scan Progress**: Introduced a bottom-docked discovery status bar with a progress spinner and "Searching..." text to provide clear scan feedback.
-### Latest Deliverable (v3.6.6)
-*   **WeatherStation_v3.6.6_debug.apk**: Reconnection Resilience update with fixed Unified Connection Plane routing and GATT resource leak prevention.
+### Latest Deliverable (v3.7.4)
+*   **WeatherStation_v3.7.4_debug.apk**: Multi-Generation Compatibility update.
+*   **Legacy Android Fix**: Implemented legacy `onCharacteristicChanged` callback for data reception on Android 12 and older (API < 33).
+*   **Heuristic Typing**: Added name and OUI-based "guessing" engine to correctly route BLE devices incorrectly reported as `UNKNOWN` type by the OS.
+*   **Discovery Hardening**: Prevented "type downgrading" during simultaneous scans to ensure consistent device identification.
 *   **Build Status**: Successful (Verified via mandatory sequence).
+
+## Bug Fixes & Refinements (v3.7.4)
+*   **Resolved "Not Drawing" on Older Devices**: Fixed a critical gap where the modern Android 13+ Bluetooth callback was used without providing the legacy fallback. This ensures the **Single Heartbeat** triggers correctly on Samsung (Android 8) and Xiaomi (Android 11) devices.
+*   **Unified Connection Plane Routing**: Improved `CompositeConnection` to handle `UNKNOWN` device types by checking for common BLE keywords (HM-10, Nordic, etc.) and known OUIs (Huamao). This resolves connection timeouts on modern devices like the Xiaomi 13/HyperOS.
+*   **Type Preservation**: Refined `WeatherBluetoothManagerImpl` to prevent a device's identified type (LE/Classic) from being overwritten by `UNKNOWN` during discovery updates.
+*   **Test Suite Expansion**: Added comprehensive tests to `CompositeConnectionTest.java` verifying the new heuristic routing logic.
 
 ## Bug Fixes & Refinements (v3.6.6)
 *   **Unified Reconnection Plane Fix**: Resolved a logic error in `CompositeConnection` that blocked reconnection attempts when a device entered the `disconnected` state. The router now correctly permits retries from drivers that have lost their link while maintaining protection against redundant calls during active handshakes.

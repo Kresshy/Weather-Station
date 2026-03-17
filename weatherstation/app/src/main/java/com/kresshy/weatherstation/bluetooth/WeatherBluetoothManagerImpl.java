@@ -174,7 +174,17 @@ public class WeatherBluetoothManagerImpl implements WeatherBluetoothManager {
                 break;
             }
         }
+
         if (index != -1) {
+            BluetoothDevice existing = newList.get(index);
+            // If the existing device has a known type but the new one is UNKNOWN, keep the existing
+            // one (but maybe update the name/RSSI via other paths if needed, but for now we
+            // prioritize type)
+            if (device.getType() == BluetoothDevice.DEVICE_TYPE_UNKNOWN
+                    && existing.getType() != BluetoothDevice.DEVICE_TYPE_UNKNOWN) {
+                // Keep existing to preserve type information
+                return;
+            }
             newList.set(index, device);
         } else {
             newList.add(device);

@@ -38,12 +38,18 @@ public class WeatherConnectionControllerImplTest {
     @Before
     public void setUp() {
         // Mock the LiveData returned by WeatherBluetoothManager
-        when(bluetoothManager.getDiscoveredDevices()).thenReturn(new MutableLiveData<>(new ArrayList<>()));
+        when(bluetoothManager.getDiscoveredDevices())
+                .thenReturn(new MutableLiveData<>(new ArrayList<>()));
         when(bluetoothManager.getDiscoveryStatus()).thenReturn(new MutableLiveData<>(""));
         when(bluetoothManager.isDiscovering()).thenReturn(new MutableLiveData<>(false));
 
-        controller = new WeatherConnectionControllerImpl(
-                context, connectionManager, bluetoothAdapter, bluetoothManager, sharedPreferences);
+        controller =
+                new WeatherConnectionControllerImpl(
+                        context,
+                        connectionManager,
+                        bluetoothAdapter,
+                        bluetoothManager,
+                        sharedPreferences);
     }
 
     @Test
@@ -59,14 +65,17 @@ public class WeatherConnectionControllerImplTest {
     @Test
     public void startConnection_WhenNotStopped_ShouldIgnoreRequest() {
         // 1. Capture the internal listener that the controller sets on the manager
-        com.kresshy.weatherstation.connection.HardwareEventListener capturedListener = 
+        com.kresshy.weatherstation.connection.HardwareEventListener capturedListener =
                 mock(com.kresshy.weatherstation.connection.HardwareEventListener.class);
         controller.setHardwareEventListener(capturedListener);
-        
-        org.mockito.ArgumentCaptor<com.kresshy.weatherstation.connection.HardwareEventListener> listenerCaptor = 
-                org.mockito.ArgumentCaptor.forClass(com.kresshy.weatherstation.connection.HardwareEventListener.class);
+
+        org.mockito.ArgumentCaptor<com.kresshy.weatherstation.connection.HardwareEventListener>
+                listenerCaptor =
+                        org.mockito.ArgumentCaptor.forClass(
+                                com.kresshy.weatherstation.connection.HardwareEventListener.class);
         verify(connectionManager).setListener(listenerCaptor.capture());
-        com.kresshy.weatherstation.connection.HardwareEventListener internalListener = listenerCaptor.getValue();
+        com.kresshy.weatherstation.connection.HardwareEventListener internalListener =
+                listenerCaptor.getValue();
 
         // 2. Transition to 'connecting'
         internalListener.onConnectionStateChange(ConnectionState.connecting);
@@ -74,7 +83,7 @@ public class WeatherConnectionControllerImplTest {
 
         // 3. Call startConnection() - should be ignored because state is NOT stopped
         controller.startConnection();
-        
+
         // Should still only have 0 calls to startConnection() because it was already connecting
         verify(connectionManager, times(0)).startConnection();
     }
