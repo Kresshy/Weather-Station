@@ -3,6 +3,7 @@ package com.kresshy.weatherstation.util;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
@@ -12,6 +13,24 @@ import androidx.core.app.ActivityCompat;
  * Corrects issues where newer Bluetooth permissions (API 31+) were being checked on older devices.
  */
 public class PermissionHelper {
+
+    /**
+     * Checks if the system-level Location Services (GPS or Network) are enabled.
+     *
+     * @param context The application context.
+     * @return true if location services are active.
+     */
+    public static boolean isLocationEnabled(Context context) {
+        LocationManager locationManager =
+                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager == null) return false;
+
+        boolean isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkEnabled =
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        return isGpsEnabled || isNetworkEnabled;
+    }
 
     /**
      * Checks if the application has the necessary permissions to perform Bluetooth scanning. This

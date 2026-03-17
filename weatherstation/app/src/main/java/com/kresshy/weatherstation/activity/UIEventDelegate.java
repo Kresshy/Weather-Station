@@ -1,6 +1,7 @@
 package com.kresshy.weatherstation.activity;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -111,6 +112,28 @@ public class UIEventDelegate {
                         activity.getString(R.string.error_prefix, message),
                         Snackbar.LENGTH_LONG)
                 .setAction(R.string.retry_action, v -> retryAction.run())
+                .show();
+    }
+
+    /**
+     * Displays a modal Dialog alerting the user that system-level Location Services are required
+     * for Bluetooth discovery, providing a direct link to the system settings.
+     */
+    public void showLocationServicesDialog() {
+        new AlertDialog.Builder(activity)
+                .setTitle("Location Services Required")
+                .setMessage(
+                        "System-level Location Services must be enabled to discover nearby weather"
+                                + " stations.")
+                .setPositiveButton(
+                        "GO TO SETTINGS",
+                        (dialog, id) -> {
+                            activity.startActivity(
+                                    new Intent(
+                                            android.provider.Settings
+                                                    .ACTION_LOCATION_SOURCE_SETTINGS));
+                        })
+                .setNegativeButton("CANCEL", (dialog, id) -> dialog.cancel())
                 .show();
     }
 }

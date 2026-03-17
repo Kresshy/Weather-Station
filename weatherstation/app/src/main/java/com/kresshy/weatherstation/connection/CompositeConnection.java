@@ -68,58 +68,70 @@ public class CompositeConnection implements Connection {
     public void connect(Parcelable device, HardwareEventListener listener) {
         this.listener = listener;
 
-        // 1. Check if we are already trying to connect to this EXACT device address
-        if (currentDevice != null && isSameDevice(currentDevice, device)) {
-            if (activeConnection != null) {
+        Timber.d("connect() called with device: %s", device);
+        Parcelable oldDevice = currentDevice;
+
+        // 1. Resolve the correct implementation based on device type and persistence
+        Connection targetConnection = resolveTargetConnection(device, oldDevice);
+        if (targetConnection == null) {
+            Timber.e("Unknown device type: %s", device.getClass().getName());
+            return;
+        }
+
+        // 2. Perform Unified Handover / Redundancy Check
+        if (activeConnection != null) {
+            boolean isSameAddress = isSameDevice(oldDevice, device);
+            boolean isSameDriver = (activeConnection == targetConnection);
+
+            if (isSameAddress && isSameDriver) {
                 ConnectionState state = activeConnection.getState();
                 if (state == ConnectionState.connecting || state == ConnectionState.connected) {
-                    Timber.d("Already %s to this device: %s. Ignoring.", state, device);
+                    Timber.d("Already %s to this device. Ignoring redundant update.", state);
                     return;
                 }
+            } else {
+                // Address changed OR Driver changed (Upgrade/Switch)
+                Timber.d(
+                        "Stopping existing connection (Handover/Upgrade): %s -> %s",
+                        activeConnection.getClass().getSimpleName(),
+                        targetConnection.getClass().getSimpleName());
+                activeConnection.stop();
             }
         }
 
-        Timber.d("connect() called with device: %s", device);
+        // 3. Start the target connection
         currentDevice = device;
+        activeConnection = targetConnection;
+        activeConnection.connect(device, listener);
+    }
 
-        Connection targetConnection = null;
-
-        // 2. Identify the correct implementation
+    private Connection resolveTargetConnection(Parcelable device, Parcelable oldDevice) {
         if (device instanceof SimulatorDevice) {
-            Timber.i("Routing to SimulatorConnection");
-            targetConnection = simulatorConnection;
+            return simulatorConnection;
         } else if (device instanceof BluetoothDevice) {
             BluetoothDevice btDevice = (BluetoothDevice) device;
             int type = btDevice.getType();
 
             if (type == BluetoothDevice.DEVICE_TYPE_LE
                     || type == BluetoothDevice.DEVICE_TYPE_DUAL) {
-                Timber.i(
-                        "Routing to BleConnection (Type: %d, Address: %s)",
-                        type, btDevice.getAddress());
-                targetConnection = bleConnection;
+                return bleConnection;
+            } else if (type == BluetoothDevice.DEVICE_TYPE_CLASSIC) {
+                return classicConnection;
             } else {
-                Timber.i(
-                        "Routing to BluetoothConnection (Classic) (Type: %d, Address: %s)",
-                        type, btDevice.getAddress());
-                targetConnection = classicConnection;
+                // Type is UNKNOWN (0) - Use persistence if address matches active session
+                if (activeConnection != null
+                        && activeConnection != simulatorConnection
+                        && isSameDevice(oldDevice, device)) {
+                    Timber.i(
+                            "Device type is UNKNOWN for %s, persisting active %s driver.",
+                            btDevice.getAddress(), activeConnection.getClass().getSimpleName());
+                    return activeConnection;
+                }
+                // Default to Classic for unknown new devices
+                return classicConnection;
             }
         }
-
-        // 3. Only switch if the implementation changed
-        if (targetConnection != null) {
-            if (activeConnection != null && activeConnection != targetConnection) {
-                Timber.d(
-                        "Stopping existing connection before switching: %s -> %s",
-                        activeConnection.getClass().getSimpleName(),
-                        targetConnection.getClass().getSimpleName());
-                activeConnection.stop();
-            }
-            activeConnection = targetConnection;
-            activeConnection.connect(device, listener);
-        } else {
-            Timber.e("Unknown device type: %s", device.getClass().getName());
-        }
+        return null;
     }
 
     /** Terminates the currently active connection if one exists. */

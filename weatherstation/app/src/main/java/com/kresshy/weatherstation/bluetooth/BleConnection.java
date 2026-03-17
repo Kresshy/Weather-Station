@@ -219,7 +219,7 @@ public class BleConnection implements Connection {
                 @Override
                 public void onCharacteristicChanged(
                         BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                    processRawData(characteristic.getValue());
+                    // Handled by the modern overload below to ensure single processing
                 }
 
                 @Override
@@ -345,7 +345,9 @@ public class BleConnection implements Connection {
     private void processRawData(byte[] data) {
         if (data == null || data.length == 0) return;
 
-        String incoming = new String(data, StandardCharsets.UTF_8);
+        String incoming = new String(data, StandardCharsets.UTF_8).trim();
+        if (incoming.isEmpty()) return;
+
         Timber.v("BLE Data Received: %s", incoming);
         messageBuffer.append(incoming);
 

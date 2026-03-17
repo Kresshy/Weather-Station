@@ -343,6 +343,12 @@ public class WeatherConnectionControllerImpl implements WeatherConnectionControl
     /** Activates background connection management and enables reconnection logic. */
     @Override
     public void startConnection() {
+        if (connectionState.getValue() != ConnectionState.stopped) {
+            Timber.d(
+                    "Controller: startConnection() ignored - already in state %s",
+                    connectionState.getValue());
+            return;
+        }
         shouldReconnect = true;
         connectionManager.startConnection();
     }

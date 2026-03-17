@@ -75,6 +75,16 @@ public class WSActivity extends AppCompatActivity {
                                                 v -> permissionDelegate.requestPermissions())
                                         .show();
                             }
+
+                            @Override
+                            public void onBluetoothEnableResult(boolean enabled) {
+                                if (enabled) {
+                                    Timber.d("Bluetooth enabled by user");
+                                    checkHardwareStatus();
+                                } else {
+                                    Timber.w("Bluetooth enablement denied by user");
+                                }
+                            }
                         });
 
         navigationDelegate = new NavigationDelegate(this, binding, this::quitApp);
@@ -149,12 +159,35 @@ public class WSActivity extends AppCompatActivity {
 
     private void handlePermissionsGranted() {
         permissionsGranted = true;
+        checkHardwareStatus();
         weatherViewModel.refreshPairedDevices();
+    }
+
+    /**
+     * Executes a strict sequential hardware status check. 1. Bluetooth: Prompts user if disabled.
+     * 2. Location: Alerts user if system services are disabled (required for discovery). 3.
+     * Finalize: Shows reconnect dialog and starts background service.
+     */
+    private void checkHardwareStatus() {
+        if (!permissionsGranted) return;
+
+        // 1. Bluetooth MUST be enabled first
         if (!connectionController.isBluetoothEnabled()) {
-            connectionController.enableBluetooth();
-        } else {
-            uiEventDelegate.showReconnectDialogIfNeeded();
+            Timber.d("Bluetooth is disabled. Prompting user to enable...");
+            permissionDelegate.requestBluetoothEnable();
+            return; // EXIT: Wait for user response or onResume
         }
+
+        // 2. System-level Location Services MUST be enabled for discovery
+        if (!com.kresshy.weatherstation.util.PermissionHelper.isLocationEnabled(this)) {
+            Timber.d("Location services are disabled.");
+            uiEventDelegate.showLocationServicesDialog();
+            return; // EXIT: Wait for user to enable in settings
+        }
+
+        // 3. Both are enabled - proceed with reconnection and background service
+        uiEventDelegate.showReconnectDialogIfNeeded();
+        startWeatherServiceIfReady();
     }
 
     @Override
@@ -162,14 +195,10 @@ public class WSActivity extends AppCompatActivity {
         super.onResume();
         Timber.d("ONRESUME");
 
-        if (!connectionController.isBluetoothEnabled()) {
-            if (permissionsGranted) {
-                connectionController.enableBluetooth();
-            }
-        } else {
-            uiEventDelegate.showReconnectDialogIfNeeded();
-        }
+        checkHardwareStatus();
+    }
 
+    private void startWeatherServiceIfReady() {
         ConnectionState currentState = weatherViewModel.getConnectionState().getValue();
         if (currentState == null
                 || currentState == ConnectionState.disconnected

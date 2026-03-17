@@ -145,4 +145,111 @@ public class CompositeConnectionTest {
         verify(bleConnection).stop();
         verify(classicConnection).connect(classicDevice, listener);
     }
+
+    @Test
+    public void connect_WhenBleDeviceReportsUnknownTypeDuringReconnect_ShouldStayOnBleDriver() {
+        // Arrange
+        String address = "0C:B2:B7:7A:43:00";
+        BluetoothDevice bleDevice = mock(BluetoothDevice.class);
+        when(bleDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_LE);
+        when(bleDevice.getAddress()).thenReturn(address);
+
+        BluetoothDevice unknownDevice = mock(BluetoothDevice.class);
+        when(unknownDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_UNKNOWN);
+        when(unknownDevice.getAddress()).thenReturn(address);
+
+        // 1. Initial successful BLE connection
+        when(bleConnection.getState()).thenReturn(ConnectionState.stopped);
+        compositeConnection.connect(bleDevice, listener);
+        verify(bleConnection).connect(bleDevice, listener);
+
+        // 2. Disconnect happens
+        when(bleConnection.getState()).thenReturn(ConnectionState.disconnected);
+
+        // 3. Reconnect triggers, but Android reports UNKNOWN (0) type
+        compositeConnection.connect(unknownDevice, listener);
+
+        // Assert: Should NOT switch to classicConnection. Should NOT stop() the active driver.
+        // It should call connect() on the SAME bleConnection driver again.
+        verify(classicConnection, times(0)).connect(unknownDevice, listener);
+        verify(bleConnection, times(0)).stop(); // Should not stop if it's the same logical driver
+        verify(bleConnection, times(1)).connect(unknownDevice, listener);
+    }
+
+    @Test
+    public void connect_WhenConnectingWithClassicButDiscoveryFindsBle_ShouldUpgradeToBle() {
+        // Arrange
+        String address = "0C:B2:B7:7A:43:00";
+        BluetoothDevice unknownDevice = mock(BluetoothDevice.class);
+        when(unknownDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_UNKNOWN);
+        when(unknownDevice.getAddress()).thenReturn(address);
+
+        BluetoothDevice bleDevice = mock(BluetoothDevice.class);
+        when(bleDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_LE);
+        when(bleDevice.getAddress()).thenReturn(address);
+
+        // 1. Initial connect with UNKNOWN -> Routes to Classic
+        when(classicConnection.getState()).thenReturn(ConnectionState.stopped);
+        compositeConnection.connect(unknownDevice, listener);
+        verify(classicConnection).connect(unknownDevice, listener);
+
+        // 2. State becomes 'connecting'
+        when(classicConnection.getState()).thenReturn(ConnectionState.connecting);
+
+        // 3. Discovery finds it as BLE and triggers connect again
+        compositeConnection.connect(bleDevice, listener);
+
+        // Assert: It should STOP the failing Classic connection and START the correct BLE one
+        verify(classicConnection).stop();
+        verify(bleConnection).connect(bleDevice, listener);
+    }
+
+    @Test
+    public void connect_WhenSwitchingToDifferentDeviceWithSameDriver_ShouldStopFirst() {
+        // Arrange
+        BluetoothDevice stationA = mock(BluetoothDevice.class);
+        when(stationA.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_CLASSIC);
+        when(stationA.getAddress()).thenReturn("AA:AA:AA:AA:AA:AA");
+
+        BluetoothDevice stationB = mock(BluetoothDevice.class);
+        when(stationB.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_CLASSIC);
+        when(stationB.getAddress()).thenReturn("BB:BB:BB:BB:BB:BB");
+
+        // 1. Connect to Station A
+        when(classicConnection.getState()).thenReturn(ConnectionState.stopped);
+        compositeConnection.connect(stationA, listener);
+        verify(classicConnection).connect(stationA, listener);
+
+        // 2. State becomes 'connected'
+        when(classicConnection.getState()).thenReturn(ConnectionState.connected);
+
+        // 3. Connect to Station B (same Classic driver)
+        compositeConnection.connect(stationB, listener);
+
+        // Assert: It MUST stop the driver first to clear Station A's socket
+        verify(classicConnection).stop();
+        verify(classicConnection).connect(stationB, listener);
+    }
+
+    @Test
+    public void connect_WhenSameDeviceSameDriverButDisconnected_ShouldReconnect() {
+        // Arrange
+        BluetoothDevice bleDevice = mock(BluetoothDevice.class);
+        when(bleDevice.getType()).thenReturn(BluetoothDevice.DEVICE_TYPE_LE);
+        when(bleDevice.getAddress()).thenReturn("00:11:22:33:44:55");
+
+        // 1. Initial connect
+        when(bleConnection.getState()).thenReturn(ConnectionState.stopped);
+        compositeConnection.connect(bleDevice, listener);
+        verify(bleConnection).connect(bleDevice, listener);
+
+        // 2. State is 'disconnected'
+        when(bleConnection.getState()).thenReturn(ConnectionState.disconnected);
+
+        // 3. Connect again (Same device, same driver)
+        compositeConnection.connect(bleDevice, listener);
+
+        // Assert: Should NOT ignore. Should trigger connect again.
+        verify(bleConnection, times(2)).connect(bleDevice, listener);
+    }
 }

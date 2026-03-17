@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 
@@ -41,6 +42,7 @@ public class WeatherService extends LifecycleService {
     @Inject WeatherRepository weatherRepository;
     @Inject com.kresshy.weatherstation.bluetooth.WeatherConnectionController connectionController;
     @Inject NotificationManager notificationManager;
+    @Inject SharedPreferences sharedPreferences;
 
     /**
      * Called when the service is first created. Initializes the notification channel, starts the
@@ -92,10 +94,12 @@ public class WeatherService extends LifecycleService {
                 return START_NOT_STICKY;
             } else if (ACTION_RECONNECT.equals(action)) {
                 connectionController.startConnection();
+                return START_STICKY;
             }
         }
 
-        Timber.d("WeatherService started");
+        // Only start if this is the initial launch (intent or action is null)
+        Timber.d("WeatherService started (Initial)");
         connectionController.startConnection();
         return START_STICKY;
     }
@@ -168,6 +172,28 @@ public class WeatherService extends LifecycleService {
                 notificationManager.createNotificationChannel(serviceChannel);
             }
         }
+    }
+
+    /**
+     * Called when the user swipes the app away from the recent apps list. This is the only reliable
+     * way to detect app "exit" on Android when not using the back/quit button.
+     *
+     * @param rootIntent The intent that was used to launch the task.
+     */
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        Timber.d("WeatherService: onTaskRemoved - App swiped away from recents");
+
+        boolean disableBluetoothOnQuit =
+                sharedPreferences.getBoolean("pref_disable_bluetooth_on_quit", false);
+
+        if (disableBluetoothOnQuit && connectionController.isBluetoothEnabled()) {
+            Timber.d("Disabling bluetooth adapter as per user preference (Task Removed)");
+            connectionController.disableBluetooth();
+        }
+
+        stopSelf();
     }
 
     /**

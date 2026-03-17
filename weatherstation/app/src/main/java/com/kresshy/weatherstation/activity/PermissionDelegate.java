@@ -1,6 +1,8 @@
 package com.kresshy.weatherstation.activity;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
 import android.os.Build;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -35,14 +37,18 @@ public class PermissionDelegate {
          * operations.
          */
         void onPermissionsDenied();
+
+        /** Triggered when the user responds to the interactive Bluetooth enablement prompt. */
+        void onBluetoothEnableResult(boolean enabled);
     }
 
     private final AppCompatActivity activity;
     private final Callback callback;
-    private final ActivityResultLauncher<String[]> launcher;
+    private final ActivityResultLauncher<String[]> permissionLauncher;
+    private final ActivityResultLauncher<Intent> bluetoothLauncher;
 
     /**
-     * Constructs a new PermissionDelegate and registers the activity result launcher.
+     * Constructs a new PermissionDelegate and registers the activity result launchers.
      *
      * @param activity The host activity.
      * @param callback The callback to handle permission outcomes.
@@ -50,10 +56,17 @@ public class PermissionDelegate {
     public PermissionDelegate(AppCompatActivity activity, Callback callback) {
         this.activity = activity;
         this.callback = callback;
-        this.launcher =
+        this.permissionLauncher =
                 activity.registerForActivityResult(
                         new ActivityResultContracts.RequestMultiplePermissions(),
-                        this::handleResult);
+                        this::handlePermissionResult);
+        this.bluetoothLauncher =
+                activity.registerForActivityResult(
+                        new ActivityResultContracts.StartActivityForResult(),
+                        result -> {
+                            boolean enabled = result.getResultCode() == AppCompatActivity.RESULT_OK;
+                            callback.onBluetoothEnableResult(enabled);
+                        });
     }
 
     /**
@@ -79,10 +92,16 @@ public class PermissionDelegate {
         }
 
         Timber.d("PermissionDelegate: Launching request...");
-        launcher.launch(permissionList.toArray(new String[0]));
+        permissionLauncher.launch(permissionList.toArray(new String[0]));
     }
 
-    private void handleResult(Map<String, Boolean> result) {
+    /** Launches the system dialog to request Bluetooth enablement. */
+    public void requestBluetoothEnable() {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        bluetoothLauncher.launch(enableBtIntent);
+    }
+
+    private void handlePermissionResult(Map<String, Boolean> result) {
         boolean scanGranted = PermissionHelper.hasScanPermission(activity);
         boolean connectGranted = PermissionHelper.hasConnectPermission(activity);
         boolean mandatoryGranted = scanGranted && connectGranted;
