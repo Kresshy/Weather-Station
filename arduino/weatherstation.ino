@@ -2,22 +2,11 @@
 #include <ArduinoJson.h>
 
 /**
- * Weather Station Firmware v2.0
+ * Weather Station Firmware v2.1
  * Optimized for Arduino Nano / HC-05 Bluetooth
  * 
- * This firmware implements a high-precision, non-blocking weather monitor
- * designed for free-flight aeromodelling airfield deployment.
- * 
- * Hardware Connections:
- * - D2: Anemometer (Interrupt-driven, Pull-up required)
- * - D5: DS18B20 / DS18S20 Temperature Sensor (OneWire)
- * - TX/RX: HC-05 Bluetooth Module (Configured at 9600 baud)
- * 
- * Features:
- * - Non-blocking timing loop (millis based)
- * - Randomized sampling jitter to prevent signal collisions on the airfield
- * - Automatic DS18x20 family detection and high-resolution conversion
- * - Robust JSON-framed serial protocol
+ * High-precision, non-blocking weather monitor designed for 
+ * custom 4-cup carbon-fiber anemometers with 5-window optical encoders.
  */
 
 // --- Configuration ---
@@ -28,7 +17,8 @@
 
 // --- Sensor Objects ---
 OneWire oneWire(PIN_ONEWIRE);
-volatile byte pulseCount = 0; // Incremented by ISR on every anemometer click
+// volatile unsigned int for safety: Prevents overflow at high wind speeds (5 windows/rev)
+volatile unsigned int pulseCount = 0; 
 
 // --- State Variables ---
 unsigned long previousMillis = 0;
@@ -39,10 +29,11 @@ byte sensorAddr[8];
 bool isSensorFound = false;
 bool isFamilyS20 = false;     // True for DS18S20, False for DS18B20
 
-// --- Calibration Constants ---
-// Adjust this based on your specific anemometer cup size
-// Standard hobby anemometer: 2.25 m/s per 1 rotation/sec
-const double WIND_CALIBRATION = 2.25; 
+// --- Calibration Constants (Custom 4-Cup 5-Window Carbon Anemometer) ---
+// R = 28.5mm, 4 cups, 5 pulses/rev, K = 2.7
+// Formula: v = (Hz * WIND_SCALE) + WIND_OFFSET
+const double WIND_SCALE = 0.097;   // Calculated: 0.0967 m/s per pulse/sec
+const double WIND_OFFSET = 0.05;  // Tunable: Minimal friction threshold
 
 /**
  * Entry point: Configures hardware pins, serial communication,
@@ -80,15 +71,17 @@ void loop() {
     // Safety check to prevent division by zero
     if (timeDeltaSeconds < 0.001) timeDeltaSeconds = 0.001;
 
-    // 1. Calculate Wind Speed
-    // Detach interrupt briefly to ensure atomicity of the pulse count read
-    detachInterrupt(digitalPinToInterrupt(PIN_ANEMOMETER));
-    
-    // Two edges (CHANGE) per pulse, so divide by 2.0
-    double wind = (pulseCount / 2.0) * (WIND_CALIBRATION / timeDeltaSeconds);
+    // 1. Calculate Wind Speed (Atomic read of pulseCount)
+    noInterrupts();
+    unsigned int currentPulses = pulseCount;
     pulseCount = 0;
+    interrupts();
     
-    attachInterrupt(digitalPinToInterrupt(PIN_ANEMOMETER), onWindPulse, CHANGE);
+    // Convert edges (CHANGE) to full pulses and calculate frequency
+    double frequency = (currentPulses / 2.0) / timeDeltaSeconds;
+    
+    // Apply linear calibration if moving (> 0.01 Hz), otherwise 0
+    double wind = (frequency > 0.01) ? (frequency * WIND_SCALE + WIND_OFFSET) : 0.0;
     
     // Basic noise filtering: speeds > 50m/s are likely electrical noise
     if (wind >= 0 && wind < 50.0) {
@@ -99,9 +92,7 @@ void loop() {
     if (isSensorFound) {
       double newTemp = readTemperatureFromSensor();
       
-      // Sanity Filter:
-      // 85.0 is the sensor power-on default (read before conversion is ready)
-      // -127.0 is the OneWire "not found" error
+      // Sanity Filter: 85.0 is sensor default, -127.0 is error
       if (newTemp != 85.0 && newTemp > -35.0 && newTemp < 65.0) {
         lastValidTemp = newTemp;
       }
@@ -114,8 +105,6 @@ void loop() {
     sendTelemetryPacket(lastValidWind, lastValidTemp);
 
     // 4. Update timing with jitter
-    // We add 10% random jitter to the 500ms base interval to prevent
-    // multiple stations from transmitting at the exact same microsecond.
     previousMillis = currentMillis;
     currentInterval = random(450, 550);
   }
@@ -123,15 +112,13 @@ void loop() {
 
 /**
  * Interrupt Service Routine (ISR) triggered by the anemometer.
- * Must be kept extremely lean.
  */
 void onWindPulse() {
   pulseCount++;
 }
 
 /**
- * Scans the OneWire bus for a DS18x20 series sensor and
- * identifies its family code for proper temperature scaling.
+ * Scans the OneWire bus for a DS18x20 series sensor.
  */
 void initializeTemperatureSensor() {
   if (!oneWire.search(sensorAddr)) {
@@ -155,24 +142,17 @@ void initializeTemperatureSensor() {
   }
 }
 
-/**
- * Signals the DS18x20 sensor to begin a temperature-to-digital conversion.
- */
 void startTemperatureConversion() {
   oneWire.reset();
   oneWire.select(sensorAddr);
-  oneWire.write(0x44, 1); // 0x44 = Start Conversion
+  oneWire.write(0x44, 1); 
 }
 
-/**
- * Reads the 9-byte scratchpad from the temperature sensor and
- * converts the raw data to a Celsius double.
- */
 double readTemperatureFromSensor() {
   byte data[12];
   oneWire.reset();
   oneWire.select(sensorAddr);
-  oneWire.write(0xBE); // 0xBE = Read Scratchpad
+  oneWire.write(0xBE);
 
   for (int i = 0; i < 9; i++) {
     data[i] = oneWire.read();
@@ -180,7 +160,6 @@ double readTemperatureFromSensor() {
 
   int16_t raw = (data[1] << 8) | data[0];
   if (isFamilyS20) {
-    // DS18S20 has a fixed 9-bit resolution
     raw = raw << 3; 
     if (data[7] == 0x10) {
       raw = (raw & 0xFFF0) + 12 - data[6];
@@ -189,10 +168,6 @@ double readTemperatureFromSensor() {
   return (double)raw / 16.0;
 }
 
-/**
- * Formats sensor data into a JSON packet and transmits it via Serial.
- * Format: "WS_{JSON_DATA}_end"
- */
 void sendTelemetryPacket(double wind, double temp) {
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
@@ -206,7 +181,6 @@ void sendTelemetryPacket(double wind, double temp) {
   m0["temperature"] = temp;
   m0["nodeId"] = 0;
 
-  // Frame synchronization markers for the Android app
   Serial.print("WS_");
   root.printTo(Serial);
   Serial.println("_end");

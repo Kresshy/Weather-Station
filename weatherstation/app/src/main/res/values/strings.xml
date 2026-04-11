@@ -19,9 +19,16 @@
     <string name="pref_interval">Interval</string>
     <string name="pref_interval_summ">The time interval to show on the graphs</string>
     <string name="pref_logging_title">Application logging enabled (restart needed)</string>
-    <string name="pref_logging_sum">Write application logs to storage, find logs in Downloads folder</string>
+    <string name="pref_logging_sum">Write application logs to internal storage</string>
     <string name="pref_logging_days_to_keep_title">Days to keep logs</string>
     <string name="pref_logging_days_to_keep_sum">Maximum days to keep logs, older logs will be deleted</string>
+    <string name="pref_manage_logs_title">Manage Log Files</string>
+    <string name="pref_manage_logs_summary">View, share, or delete stored log files</string>
+    <string name="log_manager_view">Manage Logs</string>
+    <string name="confirm_delete_logs">Are you sure you want to delete %d selected log files?</string>
+    <string name="no_logs_found">No log files found</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>

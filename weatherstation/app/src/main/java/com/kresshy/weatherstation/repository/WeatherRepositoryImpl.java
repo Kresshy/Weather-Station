@@ -49,7 +49,7 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
     private final MutableLiveData<Integer> thermalScore = new MutableLiveData<>(0);
     private final MutableLiveData<Boolean> launchDetectorEnabled = new MutableLiveData<>(false);
     private final List<WeatherData> historicalData = new ArrayList<>();
-    private static final int MAX_HISTORY_SIZE = 300;
+    private long windowIntervalMillis = 300000; // Default 5 minutes
 
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
@@ -91,7 +91,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
         this.preferenceChangeListener =
                 (prefs, key) -> {
                     if (PREF_LAUNCH_DETECTOR_ENABLED.equals(key)
-                            || PREF_LAUNCH_DETECTOR_SENSITIVITY.equals(key)) {
+                            || PREF_LAUNCH_DETECTOR_SENSITIVITY.equals(key)
+                            || "pref_interval".equals(key)) {
                         loadLaunchDetectorSettings(prefs);
                     }
                 };
@@ -105,6 +106,9 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
                 parseDoubleSafe(
                         sharedPreferences.getString(PREF_LAUNCH_DETECTOR_SENSITIVITY, "1.0"), 1.0);
 
+        long intervalSeconds = Long.parseLong(sharedPreferences.getString("pref_interval", "300"));
+        windowIntervalMillis = intervalSeconds * 1000;
+
         thermalAnalyzer.setEnabled(enabled);
         thermalAnalyzer.setSensitivity(sensitivity);
         launchDetectorEnabled.postValue(enabled);
@@ -115,8 +119,8 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
         }
 
         Timber.d(
-                "Loaded Launch Detector Settings - enabled: %b, sensitivity: %.1f",
-                enabled, sensitivity);
+                "Loaded Settings - enabled: %b, sensitivity: %.1f, window: %dms",
+                enabled, sensitivity, windowIntervalMillis);
     }
 
     @VisibleForTesting
@@ -258,9 +262,14 @@ public class WeatherRepositoryImpl implements WeatherRepository, HardwareEventLi
             lastSaneData = weatherData;
 
             // Track historical data for chart persistence
+            long dataTime = weatherData.getTimestamp().getTime();
             synchronized (historicalData) {
                 historicalData.add(weatherData);
-                if (historicalData.size() > MAX_HISTORY_SIZE) {
+
+                // Prune data older than the window relative to the new data point
+                while (!historicalData.isEmpty()
+                        && (dataTime - historicalData.get(0).getTimestamp().getTime()
+                                > windowIntervalMillis)) {
                     historicalData.remove(0);
                 }
             }

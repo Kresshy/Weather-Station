@@ -32,10 +32,11 @@ public class WSApplication extends Application {
         // Always use standard console debugging
         Timber.plant(new Timber.DebugTree());
 
-        // Optionally enable logging to a local file in the Downloads folder
+        // Optionally enable logging to a local file in the internal logs folder
         if (Boolean.parseBoolean(
                 sharedPreferences.getString(
                         "pref_logging_enabled", Boolean.toString(Boolean.FALSE)))) {
+            fileLoggingTree.cleanup();
             Timber.plant(fileLoggingTree);
         }
 

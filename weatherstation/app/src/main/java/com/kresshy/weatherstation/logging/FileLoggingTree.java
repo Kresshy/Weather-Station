@@ -2,7 +2,6 @@ package com.kresshy.weatherstation.logging;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -18,16 +17,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * A Timber Tree that logs messages to a local HTML file in the public Downloads directory. Useful
- * for debugging field tests where a computer is not available to read Logcat. Automatically rotates
+ * A Timber Tree that logs messages to a local HTML file in the internal app directory. Useful for
+ * debugging field tests where a computer is not available to read Logcat. Automatically rotates
  * logs based on user-defined retention settings.
  */
 public class FileLoggingTree extends Timber.DebugTree {
 
     private static final String TAG = FileLoggingTree.class.getSimpleName();
     private final Context context;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * Initializes the logging tree with the application context. This context is used to retrieve
@@ -40,65 +42,71 @@ public class FileLoggingTree extends Timber.DebugTree {
         this.context = context;
     }
 
-    /** Captures a log event and appends it to an HTML file. */
+    /**
+     * Performs a one-time cleanup of old log files based on user preferences. This should be called
+     * during application initialization.
+     */
+    public void cleanup() {
+        executor.execute(
+                () -> {
+                    File directory = new File(context.getExternalFilesDir(null), "logs");
+                    if (directory.exists()) {
+                        ArrayList<File> files = getAllFilesInDir(directory);
+                        deleteLogFilesOld(files);
+                    }
+                });
+    }
+
+    /** Captures a log event and appends it to an HTML file asynchronously. */
     @Override
     protected void log(int priority, String tag, String message, Throwable t) {
+        executor.execute(
+                () -> {
+                    try {
+                        File directory = new File(context.getExternalFilesDir(null), "logs");
 
-        try {
-            File directory =
-                    new File(
-                            Environment.getExternalStoragePublicDirectory(
-                                            Environment.DIRECTORY_DOWNLOADS)
-                                    + "/WeatherStationLogs");
+                        if (!directory.exists()) {
+                            directory.mkdirs();
+                        }
 
-            if (!directory.exists()) {
-                directory.mkdir();
-            }
+                        String fileNameTimeStamp =
+                                new SimpleDateFormat("dd-MM-yyyy-HH", Locale.ENGLISH)
+                                        .format(new Date());
 
-            // Cleanup old logs before writing new ones
-            ArrayList<File> files = getAllFilesInDir(directory);
-            deleteLogFilesOld(files);
+                        String logTimeStamp =
+                                new SimpleDateFormat(
+                                                "E MMM dd yyyy 'at' HH:mm:ss:SSS aaa",
+                                                Locale.ENGLISH)
+                                        .format(new Date());
 
-            String fileNameTimeStamp =
-                    new SimpleDateFormat("dd-MM-yyyy-HH", Locale.ENGLISH).format(new Date());
+                        String fileName = fileNameTimeStamp + ".html";
 
-            String logTimeStamp =
-                    new SimpleDateFormat("E MMM dd yyyy 'at' HH:mm:ss:SSS aaa", Locale.ENGLISH)
-                            .format(new Date());
+                        File file = new File(directory, fileName);
 
-            String fileName = fileNameTimeStamp + ".html";
+                        if (!file.exists()) {
+                            if (file.createNewFile()) {
+                                Log.d(TAG, "Logging file created: " + file.getAbsolutePath());
+                            }
+                        }
 
-            File file =
-                    new File(
-                            Environment.getExternalStoragePublicDirectory(
-                                            Environment.DIRECTORY_DOWNLOADS)
-                                    + "/WeatherStationLogs"
-                                    + File.separator
-                                    + fileName);
-
-            if (!file.exists()) {
-                if (file.createNewFile()) {
-                    Timber.d("Logging file created!");
-                }
-            }
-
-            if (file.exists()) {
-                OutputStream fileOutputStream = new FileOutputStream(file, true);
-                fileOutputStream.write(
-                        ("<p style=\"background:lightgray; padding:10px;\"><strong"
-                                        + " style=\"background:lightblue;\"> "
-                                        + logTimeStamp
-                                        + " | "
-                                        + tag
-                                        + ":</strong> "
-                                        + message
-                                        + "</p>")
-                                .getBytes());
-                fileOutputStream.close();
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error while logging into file : " + e);
-        }
+                        if (file.exists()) {
+                            OutputStream fileOutputStream = new FileOutputStream(file, true);
+                            fileOutputStream.write(
+                                    ("<p style=\"background:lightgray; padding:10px;\"><strong"
+                                                    + " style=\"background:lightblue;\"> "
+                                                    + logTimeStamp
+                                                    + " | "
+                                                    + tag
+                                                    + ":</strong> "
+                                                    + message
+                                                    + "</p>")
+                                            .getBytes());
+                            fileOutputStream.close();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error while logging into file : " + e);
+                    }
+                });
     }
 
     /** Recursively retrieves all files in a directory. */

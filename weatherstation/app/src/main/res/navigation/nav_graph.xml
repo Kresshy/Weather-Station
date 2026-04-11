@@ -28,4 +28,10 @@
         android:name="com.kresshy.weatherstation.fragment.SettingsFragment"
         android:label="@string/settings_view" />
 
+    <fragment
+        android:id="@+id/logManagerFragment"
+        android:name="com.kresshy.weatherstation.fragment.LogManagerFragment"
+        android:label="@string/log_manager_view"
+        tools:layout="@layout/fragment_log_manager" />
+
 </navigation>

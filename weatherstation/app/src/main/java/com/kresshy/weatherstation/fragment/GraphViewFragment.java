@@ -18,6 +18,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.kresshy.weatherstation.R;
 import com.kresshy.weatherstation.activity.WSActivity;
 import com.kresshy.weatherstation.databinding.FragmentDashboardBinding;
@@ -27,8 +28,11 @@ import com.kresshy.weatherstation.weather.WeatherViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * A fragment that provides a detailed graph-only view of weather trends. Unlike the Dashboard, it
@@ -37,7 +41,7 @@ import java.util.List;
 @AndroidEntryPoint
 public class GraphViewFragment extends Fragment {
 
-    private int numberOfSamples = 300;
+    private int windowIntervalSeconds = 300;
     @javax.inject.Inject SharedPreferences sharedPreferences;
 
     private WeatherViewModel weatherViewModel;
@@ -45,8 +49,12 @@ public class GraphViewFragment extends Fragment {
 
     private LineDataSet windSpeedSet;
     private LineDataSet temperatureSet;
-    private long totalPointsAddedWind = 0;
-    private long totalPointsAddedTemp = 0;
+    private Long firstTimestamp = null;
+    private Double firstWindValue = null;
+    private Double firstTempValue = null;
+
+    private final SimpleDateFormat xAxisFormat =
+            new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
     /** Required empty public constructor for fragment instantiation. */
     public GraphViewFragment() {
@@ -95,7 +103,7 @@ public class GraphViewFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        numberOfSamples =
+        windowIntervalSeconds =
                 Integer.parseInt(
                         sharedPreferences.getString(SettingsFragment.KEY_PREF_INTERVAL, "300"));
 
@@ -135,13 +143,22 @@ public class GraphViewFragment extends Fragment {
     private void populateChartsFromHistory() {
         List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
         if (history != null && !history.isEmpty()) {
-            totalPointsAddedWind = 0;
-            totalPointsAddedTemp = 0;
+            windSpeedSet.clear();
+            temperatureSet.clear();
+
+            WeatherData first = history.get(0);
+            firstTimestamp = first.getTimestamp().getTime();
+            firstWindValue = first.getWindSpeed();
+            firstTempValue = first.getTemperature();
+
+            // Anchor the start of the session to the bottom corner
+            binding.windSpeedChart.getAxisLeft().setAxisMinimum(firstWindValue.floatValue());
+            binding.temperatureChart.getAxisLeft().setAxisMinimum(firstTempValue.floatValue());
+
             for (WeatherData data : history) {
-                windSpeedSet.addEntry(
-                        new Entry(totalPointsAddedWind++, (float) data.getWindSpeed()));
-                temperatureSet.addEntry(
-                        new Entry(totalPointsAddedTemp++, (float) data.getTemperature()));
+                float offsetSeconds = (data.getTimestamp().getTime() - firstTimestamp) / 1000f;
+                windSpeedSet.addEntry(new Entry(offsetSeconds, (float) data.getWindSpeed()));
+                temperatureSet.addEntry(new Entry(offsetSeconds, (float) data.getTemperature()));
             }
             binding.windSpeedChart.getData().notifyDataChanged();
             binding.windSpeedChart.notifyDataSetChanged();
@@ -152,19 +169,28 @@ public class GraphViewFragment extends Fragment {
             binding.temperatureChart.invalidate();
 
             // Correctly set initial visible window
-            binding.windSpeedChart.setVisibleXRangeMaximum(numberOfSamples);
-            binding.windSpeedChart.moveViewToX(windSpeedSet.getEntryCount());
-            binding.temperatureChart.setVisibleXRangeMaximum(numberOfSamples);
-            binding.temperatureChart.moveViewToX(temperatureSet.getEntryCount());
+            float lastX =
+                    (history.get(history.size() - 1).getTimestamp().getTime() - firstTimestamp)
+                            / 1000f;
+
+            binding.windSpeedChart.getXAxis().setAxisMaximum(lastX);
+            binding.windSpeedChart
+                    .getXAxis()
+                    .setAxisMinimum(Math.max(0, lastX - windowIntervalSeconds));
+
+            binding.temperatureChart.getXAxis().setAxisMaximum(lastX);
+            binding.temperatureChart
+                    .getXAxis()
+                    .setAxisMinimum(Math.max(0, lastX - windowIntervalSeconds));
 
             // Initialize overlay text from history
             WeatherData latest = history.get(history.size() - 1);
             binding.currentWindText.setText(
                     String.format(
-                            java.util.Locale.getDefault(), "%.1f m/s", latest.getWindSpeed()));
+                            java.util.Locale.getDefault(), "%.2f m/s", latest.getWindSpeed()));
             binding.currentTempText.setText(
                     String.format(
-                            java.util.Locale.getDefault(), "%.1f°C", latest.getTemperature()));
+                            java.util.Locale.getDefault(), "%.2f°C", latest.getTemperature()));
 
             // Initialize trends from history/viewmodel
             binding.windTrendText.setText(
@@ -207,7 +233,18 @@ public class GraphViewFragment extends Fragment {
         xAxis.setDrawGridLines(false);
         xAxis.setEnabled(true);
         xAxis.setAxisMinimum(0f);
-        xAxis.setAxisMaximum(numberOfSamples);
+        xAxis.setAxisMaximum(windowIntervalSeconds);
+
+        // Show real-time clock labels (HH:mm:ss)
+        xAxis.setValueFormatter(
+                new ValueFormatter() {
+                    @Override
+                    public String getFormattedValue(float value) {
+                        if (firstTimestamp == null) return "";
+                        long absoluteTime = firstTimestamp + (long) (value * 1000);
+                        return xAxisFormat.format(new Date(absoluteTime));
+                    }
+                });
 
         chart.getAxisLeft().setTextColor(Color.LTGRAY);
         chart.getAxisLeft().setDrawGridLines(true);
@@ -218,36 +255,64 @@ public class GraphViewFragment extends Fragment {
     private void updateUI(WeatherUiState state) {
         WeatherData data = state.getLatestData();
         binding.currentWindText.setText(
-                String.format(java.util.Locale.getDefault(), "%.1f m/s", data.getWindSpeed()));
+                String.format(java.util.Locale.getDefault(), "%.2f m/s", data.getWindSpeed()));
         binding.currentTempText.setText(
-                String.format(java.util.Locale.getDefault(), "%.1f°C", data.getTemperature()));
+                String.format(java.util.Locale.getDefault(), "%.2f°C", data.getTemperature()));
 
         // Use trends directly from the snapshot
         binding.windTrendText.setText(getString(R.string.wind_trend_format, state.getWindTrend()));
         binding.tempTrendText.setText(getString(R.string.temp_trend_format, state.getTempTrend()));
 
-        addValueToSet(binding.windSpeedChart, windSpeedSet, (float) data.getWindSpeed());
-        addValueToSet(binding.temperatureChart, temperatureSet, (float) data.getTemperature());
+        // Initialize session anchors if this is the first data point
+        if (firstTimestamp == null) {
+            firstTimestamp = data.getTimestamp().getTime();
+            firstWindValue = data.getWindSpeed();
+            firstTempValue = data.getTemperature();
+
+            // Anchor the start of the session to the bottom corner for both charts
+            binding.windSpeedChart.getAxisLeft().setAxisMinimum(firstWindValue.floatValue());
+            binding.temperatureChart.getAxisLeft().setAxisMinimum(firstTempValue.floatValue());
+        }
+
+        addValueToSet(
+                binding.windSpeedChart,
+                windSpeedSet,
+                (float) data.getWindSpeed(),
+                data.getTimestamp().getTime());
+        addValueToSet(
+                binding.temperatureChart,
+                temperatureSet,
+                (float) data.getTemperature(),
+                data.getTimestamp().getTime());
     }
 
-    private void addValueToSet(LineChart chart, LineDataSet set, float value) {
-        // Efficiency Optimization: Use increasing X coordinates and set the visible window.
-        float nextX = (set == windSpeedSet) ? totalPointsAddedWind++ : totalPointsAddedTemp++;
+    private void addValueToSet(LineChart chart, LineDataSet set, float value, long timestamp) {
+        // Calculation of nextX remains relative to the captured firstTimestamp
+        float nextX = (timestamp - firstTimestamp) / 1000f;
         set.addEntry(new Entry(nextX, value));
 
-        // Prune data if it becomes too large to keep memory usage low.
-        if (set.getEntryCount() > numberOfSamples * 2) {
-            set.removeEntry(0);
+        // Synchronize with repository's pruning
+        List<WeatherData> history = weatherViewModel.getHistoricalWeatherData();
+        if (history != null && !history.isEmpty()) {
+            // Remove entries from the UI set that are no longer in the repository history
+            while (set.getEntryCount() > 0
+                    && set.getEntryForIndex(0).getX()
+                            < (history.get(0).getTimestamp().getTime() - firstTimestamp) / 1000f) {
+                set.removeEntry(0);
+            }
         }
 
         chart.getData().notifyDataChanged();
         chart.notifyDataSetChanged();
 
-        // Ensure the chart "scrolls" to the right and maintains fixed visible window.
-        if (nextX >= numberOfSamples) {
-            chart.getXAxis().resetAxisMaximum();
-            chart.setVisibleXRangeMaximum(numberOfSamples);
-            chart.moveViewToX(nextX);
+        // Right-to-Left Sliding: Ensure the latest data point is always at the right edge
+        // once the interval is reached.
+        chart.getXAxis().setAxisMaximum(nextX);
+        chart.getXAxis().setAxisMinimum(Math.max(0, nextX - windowIntervalSeconds));
+
+        // Let the Y-axis auto-scale if data goes below the initial anchor point
+        if (value < chart.getAxisLeft().getAxisMinimum()) {
+            chart.getAxisLeft().resetAxisMinimum();
         }
 
         chart.invalidate();

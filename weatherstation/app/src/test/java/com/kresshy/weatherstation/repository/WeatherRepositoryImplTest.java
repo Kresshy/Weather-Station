@@ -46,7 +46,8 @@ public class WeatherRepositoryImplTest {
         MockitoAnnotations.openMocks(this);
 
         // Mock SharedPreferences
-        when(sharedPreferences.getString(anyString(), anyString())).thenReturn("0.0");
+        when(sharedPreferences.getString(anyString(), anyString())).thenReturn("300");
+        when(sharedPreferences.getBoolean(anyString(), any(Boolean.class))).thenReturn(false);
 
         repository =
                 new WeatherRepositoryImpl(
@@ -119,7 +120,7 @@ public class WeatherRepositoryImplTest {
                 0.001);
     }
 
-    /** Verifies that historical data is tracked and limited to MAX_HISTORY_SIZE. */
+    /** Verifies that historical data is tracked correctly. */
     @Test
     public void onRawDataReceived_TracksHistoricalData() {
         String rawData = "WS_data_end";
@@ -130,15 +131,12 @@ public class WeatherRepositoryImplTest {
                         new ThermalAnalyzer.AnalysisResult(
                                 WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
 
-        // Add 310 points (max is 300)
-        for (int i = 0; i < 310; i++) {
+        // Add 10 points within the window
+        for (int i = 0; i < 10; i++) {
             repository.onRawDataReceived(rawData);
         }
 
-        assertEquals(
-                "History size should be capped at 300",
-                300,
-                repository.getHistoricalWeatherData().size());
+        assertEquals(10, repository.getHistoricalWeatherData().size());
     }
 
     @Test
@@ -178,6 +176,44 @@ public class WeatherRepositoryImplTest {
 
         repository.onLogMessage("Test Log");
         assertEquals("Test Log", repository.getLogMessage().getValue());
+    }
+
+    /** Verifies that historical data is pruned based on the selected time window. */
+    @Test
+    public void onRawDataReceived_PrunesHistoricalDataByTimeWindow() {
+        // 1. Mock SharedPreferences to return "120" (2 minutes = 120000ms)
+        when(sharedPreferences.getString("pref_interval", "300")).thenReturn("120");
+        repository.loadLaunchDetectorSettings(sharedPreferences); // Re-load to pick up interval
+
+        String rawData1 = "WS_old_data_end";
+        WeatherData oldData = new WeatherData(5.0, 25.0);
+        // Set timestamp to 3 minutes ago
+        long threeMinutesAgo = System.currentTimeMillis() - (3 * 60 * 1000);
+        oldData.setTimestamp(new java.util.Date(threeMinutesAgo));
+
+        String rawData2 = "WS_new_data_end";
+        WeatherData newData = new WeatherData(6.0, 26.0);
+
+        when(messageParser.parse(rawData1)).thenReturn(oldData);
+        when(messageParser.parse(rawData2)).thenReturn(newData);
+        when(thermalAnalyzer.analyze(any()))
+                .thenReturn(
+                        new ThermalAnalyzer.AnalysisResult(
+                                WeatherRepository.LaunchDecision.WAITING, 0, 0, 0));
+
+        // 2. Add old data
+        repository.onRawDataReceived(rawData1);
+        assertEquals(1, repository.getHistoricalWeatherData().size());
+
+        // 3. Add new data (should trigger pruning of the 3-minute-old data)
+        repository.onRawDataReceived(rawData2);
+
+        // 4. Assert: Only the new data remains
+        assertEquals(
+                "Old data should be pruned from history",
+                1,
+                repository.getHistoricalWeatherData().size());
+        assertEquals(26.0, repository.getHistoricalWeatherData().get(0).getTemperature(), 0.001);
     }
 
     @Test

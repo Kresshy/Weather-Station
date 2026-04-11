@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.kresshy.weatherstation.R;
@@ -38,6 +40,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from the XML resource
         setPreferencesFromResource(R.xml.preferences, rootKey);
+
+        Preference manageLogsPref = findPreference("pref_manage_logs");
+        if (manageLogsPref != null) {
+            manageLogsPref.setOnPreferenceClickListener(
+                    preference -> {
+                        NavHostFragment.findNavController(this).navigate(R.id.logManagerFragment);
+                        return true;
+                    });
+        }
     }
 
     /**

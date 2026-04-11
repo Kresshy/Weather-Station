@@ -67,5 +67,10 @@
             android:key="pref_logging_days"
             android:summary="@string/pref_logging_days_to_keep_sum"
             android:title="@string/pref_logging_days_to_keep_title" />
+
+        <Preference
+            android:key="pref_manage_logs"
+            android:summary="@string/pref_manage_logs_summary"
+            android:title="@string/pref_manage_logs_title" />
     </PreferenceCategory>
 </PreferenceScreen>
