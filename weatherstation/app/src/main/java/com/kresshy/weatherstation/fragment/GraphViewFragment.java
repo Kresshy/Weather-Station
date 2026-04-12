@@ -174,14 +174,10 @@ public class GraphViewFragment extends Fragment {
                             / 1000f;
 
             binding.windSpeedChart.getXAxis().setAxisMaximum(lastX);
-            binding.windSpeedChart
-                    .getXAxis()
-                    .setAxisMinimum(Math.max(0, lastX - windowIntervalSeconds));
+            binding.windSpeedChart.getXAxis().setAxisMinimum(lastX - windowIntervalSeconds);
 
             binding.temperatureChart.getXAxis().setAxisMaximum(lastX);
-            binding.temperatureChart
-                    .getXAxis()
-                    .setAxisMinimum(Math.max(0, lastX - windowIntervalSeconds));
+            binding.temperatureChart.getXAxis().setAxisMinimum(lastX - windowIntervalSeconds);
 
             // Initialize overlay text from history
             WeatherData latest = history.get(history.size() - 1);
@@ -305,10 +301,10 @@ public class GraphViewFragment extends Fragment {
         chart.getData().notifyDataChanged();
         chart.notifyDataSetChanged();
 
-        // Right-to-Left Sliding: Ensure the latest data point is always at the right edge
-        // once the interval is reached. Maintain constant scale (width) from the start.
-        chart.getXAxis().setAxisMaximum(Math.max(windowIntervalSeconds, nextX));
-        chart.getXAxis().setAxisMinimum(Math.max(0, nextX - windowIntervalSeconds));
+        // Right-to-Left Filling: Ensure the latest data point is always at the right edge.
+        // The window is always 'windowIntervalSeconds' wide, starting from the latest point.
+        chart.getXAxis().setAxisMaximum(nextX);
+        chart.getXAxis().setAxisMinimum(nextX - windowIntervalSeconds);
 
         // Let the Y-axis auto-scale if data goes below the initial anchor point
         if (value < chart.getAxisLeft().getAxisMinimum()) {
