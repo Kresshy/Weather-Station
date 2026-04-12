@@ -306,8 +306,8 @@ public class GraphViewFragment extends Fragment {
         chart.notifyDataSetChanged();
 
         // Right-to-Left Sliding: Ensure the latest data point is always at the right edge
-        // once the interval is reached.
-        chart.getXAxis().setAxisMaximum(nextX);
+        // once the interval is reached. Maintain constant scale (width) from the start.
+        chart.getXAxis().setAxisMaximum(Math.max(windowIntervalSeconds, nextX));
         chart.getXAxis().setAxisMinimum(Math.max(0, nextX - windowIntervalSeconds));
 
         // Let the Y-axis auto-scale if data goes below the initial anchor point
